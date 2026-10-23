@@ -1,0 +1,4 @@
+.DS_Store
+# 버전 백업 사본 (git 기록으로 대체)
+index_v*.html
+node_modules/

@@ -537,6 +537,14 @@
   .ccode { margin: 8px 0; padding: 12px; font: 900 28px/1.2 ui-monospace, Menlo, monospace; letter-spacing: 4px; text-align: center; color: #ffd25a; background: #0b1130; border: 2px dashed #ffd25a; user-select: all; }
   #cloudDlg { z-index: 60; background: rgba(6,10,30,.78); } #cloudDlg .box { background: linear-gradient(rgba(24,33,76,.98), rgba(13,19,48,.98)); border: 2px solid #4fd8ff; border-radius: 0; color: #e8ecff; text-align: left; }
   #cloudDlg button { background: #20306c; border: 1.5px solid #5a6cc0; color: #eef2ff; border-radius: 4px; } #cloudDlg button.big { background: linear-gradient(#ff8a3c, #ff5a1f); border-color: #ffc89a; } #cloudDlg button.sec { border-color: #7fb0ff; }
+  .lgtabs { display: flex; gap: 4px; margin-bottom: 8px; } .ov .lgtabs button { display: inline-block; width: auto; flex: 1; margin: 0; padding: 7px 6px; font-size: 14px; font-weight: 800; background: #0f1638; border: 1.5px solid #3a4a98; color: #c9d3ff; border-radius: 4px; }
+  .ov .lgtabs button.on { background: #1b2a66; border-color: #4fd8ff; color: #fff; } .ov .lgtabs button:disabled { opacity: .4; cursor: not-allowed; }
+  .lgrow { display: flex; gap: 6px; align-items: center; } .lgrow input { flex: 1; } .ov .lgrow button { width: auto; margin: 0; white-space: nowrap; }
+  .msg.ok { color: #9fe36a; } [hidden] { display: none !important; }
+  .lglocal { margin-top: 10px; } .lglocal .lgl-h { font-size: 12px; color: #9fb0e8; margin-bottom: 4px; } .ov .lglocal button { display: inline-block; width: auto; margin: 0 6px 6px 0; padding: 5px 12px; font-size: 13px; }
+  .pf-acct { margin: 6px 0 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; } .pf-acct .tag { padding: 3px 9px; border: 1px solid #4a5cb0; background: rgba(15,22,56,.8); border-radius: 4px; }
+  .ov .pf-acct button { display: inline-block; width: auto; margin: 0; padding: 5px 12px; font-size: 13px; }
+  .cl-form { display: flex; flex-direction: column; gap: 6px; max-width: 400px; margin: 6px 0; } .cl-form input { padding: 7px 10px; font: inherit; background: #0f1638; color: #fff; border: 1.5px solid #4a5cb0; border-radius: 6px; }
   .recov { margin-top: 8px; font-size: 13px; color: #9fb0e8; } .recov summary { cursor: pointer; } .recov summary:hover { color: #7fe3ff; }
   /* PVP: 모드 카드 · 친구 방 · 순위표 */
   .pvp-top { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } @media (max-width: 600px) { .pvp-top { grid-template-columns: 1fr; } }
@@ -731,15 +739,29 @@
 <div id="login" class="ov scr menu">
   <div class="logo"><small>MINI WAR ZONE</small><b>미니워존</b><i>등고선 위의 작은 전쟁</i></div>
   <div class="regp sf">
-    <div class="tabh">🎖️ 지휘관 등록</div>
-    <div class="form"><input id="lgName" maxlength="12" placeholder="지휘관 이름을 입력하세요"></div>
-    <label class="natlbl">소속 국가</label><div id="lgNation" class="natgrid"></div>
-    <div id="lgIntro"></div>
-    <div id="lgMsg" class="msg"></div>
-    <label class="agree"><input type="checkbox" id="lgAgree"> <span>(필수) <a href="#" data-legal="terms">이용약관</a>과 <a href="#" data-legal="privacy">개인정보 처리방침</a>에 동의합니다</span></label>
-    <button id="lgGo" class="mbtn go" data-primary>등록하고 시작 ▶</button>
-    <details class="recov" id="lgRecov"><summary>🔑 다른 기기에서 하던 기록 불러오기 (복구 코드)</summary><div class="form" style="display:flex;gap:6px;margin-top:6px"><input id="lgCode" maxlength="16" placeholder="XXXX-XXXX-XXXX" style="flex:1"><button id="lgRecover" class="sec" style="width:auto;margin:0">불러오기</button></div></details>
-    <small class="dim">처음 한 번만 등록합니다 · 기록은 이 브라우저에만 저장 · 스토리는 저장 슬롯마다 나라를 따로 고를 수 있어요</small>
+    <div class="lgtabs"><button data-lt="login">🔑 로그인</button><button data-lt="signup">📝 회원가입</button><button data-lt="guest">🎖️ 게스트</button></div>
+    <div class="lgp" data-p="login">
+      <div class="form"><input id="liId" maxlength="20" placeholder="아이디" autocomplete="username" autocapitalize="off"><input id="liPw" type="password" maxlength="64" placeholder="비밀번호" autocomplete="current-password"></div>
+      <div id="liMsg" class="msg"></div>
+      <button id="liGo" class="mbtn go" data-primary>로그인 ▶</button>
+      <details class="recov" id="lgRecov"><summary>🔑 아이디 없이 만든 기록 불러오기 (복구 코드)</summary><div class="form" style="display:flex;gap:6px;margin-top:6px"><input id="lgCode" maxlength="16" placeholder="XXXX-XXXX-XXXX" style="flex:1"><button id="lgRecover" class="sec" style="width:auto;margin:0">불러오기</button></div></details>
+      <small class="dim">회원은 어느 기기에서든 아이디로 로그인해 이어 합니다 · 기록은 서버에 자동 저장</small>
+    </div>
+    <div class="lgp" data-p="new">
+      <div class="form" id="suAcc">
+        <div class="lgrow"><input id="suId" maxlength="20" placeholder="아이디 (영문 소문자 + 숫자 6~20자)" autocomplete="username" autocapitalize="off"><button id="suChk" class="sec">중복확인</button></div>
+        <input id="suPw" type="password" maxlength="64" placeholder="비밀번호 (영문 · 숫자 · 특수문자 6자 이상)" autocomplete="new-password">
+        <input id="suPw2" type="password" maxlength="64" placeholder="비밀번호 확인" autocomplete="new-password">
+      </div>
+      <div class="form"><input id="lgName" maxlength="12" placeholder="지휘관 이름을 입력하세요"></div>
+      <label class="natlbl">소속 국가</label><div id="lgNation" class="natgrid"></div>
+      <div id="lgIntro"></div>
+      <div id="lgMsg" class="msg"></div>
+      <label class="agree"><input type="checkbox" id="lgAgree"> <span>(필수) <a href="#" data-legal="terms">이용약관</a>과 <a href="#" data-legal="privacy">개인정보 처리방침</a>에 동의합니다</span></label>
+      <button id="lgGo" class="mbtn go" data-primary>가입하고 시작 ▶</button>
+      <small class="dim" id="lgNote"></small>
+    </div>
+    <div id="lgLocal" class="lglocal"></div>
   </div>
   <div class="ver">MINI WAR ZONE · v2026.10 · © 2026 휴먼에이드 HumanAid · <a href="#" data-legal="terms">이용약관</a> · <a href="#" data-legal="privacy">개인정보 처리방침</a></div>
 </div>
@@ -766,6 +788,7 @@
     <div class="pf-left"><canvas id="pfArt"></canvas>
       <div class="pf-name"><input id="pfName" maxlength="12"><button id="pfRename">이름 변경</button></div>
       <div class="pf-name"><input id="pfMotto" maxlength="20" placeholder="좌우명 (예: 필승!)"><button id="pfMottoSave">저장</button></div>
+      <div id="pfAcct" class="pf-acct"></div>
       <div id="pfNation" class="dim"></div>
     </div>
     <div class="pf-right"><div id="pfRank"></div><div class="pf-h">🪜 진급 경로</div><div id="pfLadder" class="pf-ladder"></div></div>
@@ -4156,16 +4179,102 @@ function natGrid(el, cur, onPick) {   // 플레이 가능한 국가 버튼 목�
     Object.entries(NATIONS).filter(([, N]) => N.home === th).map(([k, N]) => `<button data-k="${k}" class="${k === cur ? 'sel' : ''}"><span>${N.flag}</span>${N.name}</button>`).join('')).join('');
   for (const b of el.querySelectorAll('button')) b.onclick = () => { onPick(b.dataset.k); natGrid(el, b.dataset.k, onPick); };
 }
-function renderLogin() { const up = () => { $('lgIntro').innerHTML = natIntro(pickNation); }; natGrid($('lgNation'), pickNation, k => { pickNation = k; up(); }); up(); }
-$('lgGo').onclick = () => {   // 지휘관은 한 명: 처음 한 번만 등록
-  const name = $('lgName').value.trim();
-  if (!name) { $('lgMsg').textContent = '지휘관 이름을 입력하세요'; return; }
-  if (!$('lgAgree').checked) { $('lgMsg').textContent = '이용약관과 개인정보 처리방침에 동의해 주세요'; $('lgAgree').parentNode.classList.add('need'); return; }
+// 로그인 화면 탭: 🔑 로그인(회원) · 📝 회원가입(서버 계정 + 자동 클라우드 저장) · 🎖️ 게스트(이 브라우저에만)
+// 서버 없이 파일로 열면 게스트만. 회원 정보(아이디 · 비밀번호 해시)는 서버 DB에만 있고 브라우저에는 접속 토큰만 남음
+const LOGIN_RE = /^(?=.*[a-z])(?=.*\d)[a-z\d]{6,20}$/, PW_RE = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*]).{6,64}$/;
+const OUT_KEY = 'miniwarzone.loggedOut';   // 로그아웃하면 다음에 열 때 자동 입장하지 않음
+const setOut = v => { try { if (v) localStorage.setItem(OUT_KEY, '1'); else localStorage.removeItem(OUT_KEY); } catch (e) {} };
+const isOut = () => { try { return localStorage.getItem(OUT_KEY) === '1'; } catch (e) { return false; } };
+let lgTab = 'signup', suChecked = null;
+const lgMsg = (id, t, ok) => { $(id).textContent = t; $(id).className = 'msg' + (ok ? ' ok' : ''); };
+async function papi(method, path, body) {   // 토큰 없이 부르는 API (로그인 · 회원가입 · 중복확인)
+  return fetch(path, { method, headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined })
+    .then(async x => ({ status: x.status, body: await x.json().catch(() => null) })).catch(() => ({ status: 0, body: null }));
+}
+const netMsg = r => r.status === 429 ? '시도가 너무 많습니다. 잠시 뒤에 다시 하세요' : (r.body && r.body.message) || '서버에 연결할 수 없습니다';
+function lgSet(t) {
+  if (!serverOn()) t = 'guest';
+  lgTab = t;
+  for (const b of document.querySelectorAll('#login [data-lt]')) { b.classList.toggle('on', b.dataset.lt === t); b.disabled = !serverOn() && b.dataset.lt !== 'guest'; }
+  for (const el of document.querySelectorAll('#login .lgp')) el.hidden = el.dataset.p !== (t === 'login' ? 'login' : 'new');
+  $('suAcc').hidden = t !== 'signup';
+  $('lgGo').textContent = t === 'signup' ? '가입하고 시작 ▶' : '게스트로 시작 ▶';
+  $('lgNote').textContent = t === 'signup' ? '아이디로 어느 기기에서든 로그인 · 기록은 서버에 자동 저장 · 스토리는 저장 슬롯마다 나라를 따로 고를 수 있어요'
+    : serverOn() ? '기록은 이 브라우저에만 저장됩니다 · 나중에 프로필 → 설정에서 회원가입하면 기록을 그대로 옮겨요' : '서버 없이 파일로 열면 게스트로만 플레이합니다 (회원가입 · 로그인은 node server.js 로 실행)';
+  lgMsg('lgMsg', ''); lgMsg('liMsg', '');
+  renderLgLocal();
+}
+function renderLgLocal() {   // 이 기기의 게스트 지휘관은 비밀번호 없이 바로 이어 하기
+  const P = loadProfiles(), list = Object.keys(P).filter(n => !P[n].login).sort((a, b) => (P[b].last || 0) - (P[a].last || 0));
+  const el = $('lgLocal'); el.hidden = lgTab === 'signup' || !list.length;
+  el.innerHTML = list.length ? '<div class="lgl-h">이 기기의 게스트 지휘관</div>' + list.map(n => `<button class="sec" data-local="${esc(n)}">▶ ${(NATIONS[P[n].nation] || NATIONS.ROK).flag} ${esc(n)}</button>`).join('') : '';
+  for (const b of el.querySelectorAll('[data-local]')) b.onclick = () => { setOut(false); const P2 = loadProfiles(); P2[b.dataset.local].last = Date.now(); saveProfiles(P2); enterAs(b.dataset.local); };
+}
+function renderLogin(tab) {
+  const up = () => { $('lgIntro').innerHTML = natIntro(pickNation); }; natGrid($('lgNation'), pickNation, k => { pickNation = k; up(); }); up();
   const P = loadProfiles();
+  lgSet(tab || (Object.values(P).some(x => x.login) || isOut() ? 'login' : 'signup'));
+}
+for (const b of document.querySelectorAll('#login [data-lt]')) b.onclick = () => { sfx('click'); lgSet(b.dataset.lt); };
+async function enterMember(b, fresh) {   // 회원 로그인 · 가입 → 이 기기에 지휘관 자리를 만들고 서버 기록과 맞춤
+  const P = loadProfiles(), name = b.name, old = P[name];
+  if (old && old.login !== b.login && !(fresh && !old.login)) {   // 같은 이름의 다른 지휘관 기록은 지우지 않고 따로 보관 (가입할 때 같은 이름의 게스트 기록은 그대로 옮겨 감)
+    try { const r = localStorage.getItem('miniwarzone.rec.' + name); if (r) localStorage.setItem(`miniwarzone.rec.${name}.bak${Date.now()}`, r); localStorage.removeItem('miniwarzone.rec.' + name); localStorage.removeItem(cloudKey(name)); } catch (e) {}
+    toast('📦 이 기기의 같은 이름 지휘관 기록은 따로 보관했습니다');
+  }
+  P[name] = { ...(old && (old.login === b.login || fresh) ? old : { created: Date.now() }), nation: b.nation, login: b.login, last: Date.now(), ...(fresh ? { agree: { ver: LEGAL_VER, at: Date.now() } } : {}) };
+  saveProfiles(P); profile = name;
+  setCloudMeta({ id: b.id, token: b.token, rev: 0, dirty: !!fresh, localMod: Date.now(), login: b.login });
+  if (!fresh) {
+    const s = await capi('GET', '/api/save').catch(() => ({ status: 0 })), m = cloudMeta();
+    if (s.status === 200) { cloudApply(s.body.data); m.rev = s.body.rev; m.synced = Date.now(); } else if (s.status === 404) m.dirty = true;
+    setCloudMeta(m);
+  }
+  setOut(false); enterAs(name); cloudSync();
+}
+$('liGo').onclick = async () => {
+  const id = $('liId').value.trim().toLowerCase(), pw = $('liPw').value;
+  if (!id || !pw) return lgMsg('liMsg', '아이디와 비밀번호를 입력하세요');
+  $('liGo').disabled = true; const r = await papi('POST', '/api/login', { login: id, password: pw }); $('liGo').disabled = false;
+  if (r.status !== 200) return lgMsg('liMsg', r.status === 401 ? '아이디 또는 비밀번호가 올바르지 않습니다' : netMsg(r));
+  $('liPw').value = ''; toast(`🔑 ${r.body.name} 지휘관, 다시 오신 걸 환영합니다!`);
+  await enterMember(r.body, false);
+};
+for (const id of ['liId', 'liPw']) $(id).onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); $('liGo').click(); } };
+$('suId').oninput = () => { suChecked = null; };
+$('suChk').onclick = async () => {
+  const id = $('suId').value.trim();
+  if (!LOGIN_RE.test(id)) return lgMsg('lgMsg', '아이디는 6~20자 영문 소문자 + 숫자 조합입니다');
+  const r = await papi('GET', '/api/signup/check?login=' + encodeURIComponent(id));
+  if (r.status !== 200) return lgMsg('lgMsg', netMsg(r));
+  if (!r.body.available) return lgMsg('lgMsg', '이미 사용 중인 아이디입니다');
+  suChecked = id; lgMsg('lgMsg', '✅ 사용할 수 있는 아이디입니다', true);
+};
+$('lgGo').onclick = async () => {   // 회원가입 또는 게스트 등록
+  const name = $('lgName').value.trim();
+  if (lgTab === 'signup') {
+    const id = $('suId').value.trim(), pw = $('suPw').value;
+    if (!LOGIN_RE.test(id)) return lgMsg('lgMsg', '아이디는 6~20자 영문 소문자 + 숫자 조합입니다');
+    if (suChecked !== id) return lgMsg('lgMsg', '아이디 중복확인을 해 주세요');
+    if (!PW_RE.test(pw)) return lgMsg('lgMsg', '비밀번호는 영문 · 숫자 · 특수문자 조합 6자리 이상입니다');
+    if (pw !== $('suPw2').value) return lgMsg('lgMsg', '비밀번호 확인이 일치하지 않습니다');
+  }
+  if (!name) { lgMsg('lgMsg', '지휘관 이름을 입력하세요'); return; }
+  if (!$('lgAgree').checked) { lgMsg('lgMsg', '이용약관과 개인정보 처리방침에 동의해 주세요'); $('lgAgree').parentNode.classList.add('need'); return; }
+  if (lgTab === 'signup') {
+    $('lgGo').disabled = true; const r = await papi('POST', '/api/signup', { login: $('suId').value.trim(), password: $('suPw').value, name, nation: pickNation }); $('lgGo').disabled = false;
+    if (r.status === 409) { suChecked = null; return lgMsg('lgMsg', '이미 사용 중인 아이디입니다'); }
+    if (r.status !== 201) return lgMsg('lgMsg', netMsg(r));
+    $('suPw').value = $('suPw2').value = ''; lgMsg('lgMsg', '');
+    toast(`${NATIONS[pickNation].flag} ${name} 지휘관 회원가입 완료!`);
+    return enterMember(r.body, true);
+  }
+  const P = loadProfiles();
+  if (P[name] && P[name].login) { lgMsg('lgMsg', '이 기기에 같은 이름의 회원 지휘관이 있습니다. 다른 이름을 쓰거나 로그인하세요'); return; }
   if (!Object.keys(P).length) try { const old = localStorage.getItem(REC_KEY); if (old) localStorage.setItem('miniwarzone.rec.' + name, old); } catch (e) {}   // 예전 기록 이어받기
   P[name] = { ...(P[name] || { created: Date.now() }), nation: pickNation, last: Date.now(), agree: { ver: LEGAL_VER, at: Date.now() } }; saveProfiles(P);
   $('lgMsg').textContent = ''; toast(`${NATIONS[pickNation].flag} ${name} 지휘관 등록!`);
-  enterAs(name);
+  setOut(false); enterAs(name);
 };
 $('lgName').onkeydown = e => { if (e.key === 'Enter') $('lgGo').click(); };
 $('lgRecover').onclick = () => cloudRecover($('lgCode').value); $('lgCode').onkeydown = e => { if (e.key === 'Enter') { e.stopPropagation(); cloudRecover($('lgCode').value); } };
@@ -5023,14 +5132,14 @@ function renderSettings() {   // (소속 국가·게임 속도·지형 표시는
 }
 // ---- 개발사 · 이용약관 · 개인정보 처리방침
 const DEV = { ko: '휴먼에이드', en: 'HumanAid', contact: '' };   // contact: 문의 이메일 (정해지면 입력)
-const LEGAL_VER = '2026-10-23.2', LEGAL_DATE = '2026-10-23';   // 2판: 클라우드 저장 · 서버 순위표 · 순위전 추가
+const LEGAL_VER = '2026-10-29.3', LEGAL_DATE = '2026-10-29';   // 3판: 회원가입(아이디 · 비밀번호) · 로그인 · 로그아웃 추가 (2판: 클라우드 저장 · 서버 순위표 · 순위전)
 const LEGAL = {
   terms: ['📜 이용약관', [
     ['제1조 (목적)', `이 약관은 ${DEV.ko}(이하 "개발사")가 제공하는 브라우저 전략 게임 「미니워존」(이하 "게임")의 이용 조건과 절차, 개발사와 이용자의 권리·의무를 정합니다.`],
     ['제2조 (약관의 효력과 변경)', '이 약관은 지휘관 등록 화면에서 동의한 때부터 효력이 생깁니다. 개발사는 관련 법령을 지키는 범위에서 약관을 바꿀 수 있으며, 바꾼 내용과 시행일을 게임 안에서 미리 알립니다. 바뀐 약관에 동의하지 않으면 이용을 멈추고 기록을 지울 수 있습니다.'],
     ['제3조 (서비스 내용)', '게임은 무료로 제공되는 웹 브라우저 게임이며 스토리 모드, 튜토리얼·자유 전투, PVP 대전, 도감, 상점(게임 안 재화 전용) 등을 포함합니다. 개발사는 더 나은 서비스를 위해 내용을 바꾸거나 일부를 멈출 수 있습니다.'],
-    ['제4조 (지휘관 등록과 기록)', '이용자는 지휘관 이름과 소속 국가를 정해 등록합니다. 기록은 기본적으로 이용자의 브라우저 안에만 저장되며, 브라우저의 사이트 데이터를 지우면 사라집니다.'],
-    ['제4조의2 (클라우드 저장)', '이용자가 [설정 → ☁️ 클라우드 연결]을 고르면 기록이 서버에도 저장되어 다른 기기에서 이어 할 수 있습니다. 연결할 때 받는 복구 코드는 계정의 열쇠이므로 이용자가 안전하게 보관해야 하며, 잃어버리면 다른 기기에서 기록을 불러올 수 없고 남에게 알려 주면 그 사람이 기록에 접근할 수 있습니다. 이용자는 언제든 클라우드 계정을 지울 수 있습니다.'],
+    ['제4조 (회원가입 · 게스트와 기록)', '이용자는 ① 아이디 · 비밀번호로 회원가입하거나 ② 게스트로 지휘관 이름과 소속 국가만 정해 시작합니다. 회원의 기록은 게임 서버에 저장되어 어느 기기에서든 로그인해 이어 할 수 있고, 게스트의 기록은 그 브라우저 안에만 저장되어 사이트 데이터를 지우면 사라집니다. 이용자는 비밀번호를 남에게 알려 주지 말아야 하며, 공용 기기에서는 [프로필 → 🚪 로그아웃]을 눌러야 합니다.'],
+    ['제4조의2 (클라우드 저장 · 복구 코드)', '게스트는 [설정 → 📝 회원가입]으로 지금 기록을 그대로 서버에 옮길 수 있습니다. 예전 방식(아이디 없이 클라우드 연결)으로 만든 계정은 복구 코드로 불러오며, 아이디 · 비밀번호를 붙일 수 있습니다. 연결할 때 받는 복구 코드는 계정의 열쇠이므로 이용자가 안전하게 보관해야 하며, 잃어버리면 다른 기기에서 기록을 불러올 수 없고 남에게 알려 주면 그 사람이 기록에 접근할 수 있습니다. 이용자는 언제든 클라우드 계정을 지울 수 있습니다.'],
     ['제5조 (게임 안 재화)', '골드·경험치·계급·꾸미기 아이템은 게임 안에서만 쓰이는 가상의 값으로 현금 가치가 없고, 현금이나 다른 재화로 바꾸거나 사고팔 수 없습니다. 현재 게임에는 유료 결제가 없습니다.'],
     ['제6조 (이용자의 의무)', '이용자는 ① 다른 사람을 불쾌하게 하거나 남을 사칭하는 지휘관 이름을 쓰지 않고, ② 게임이나 PVP 서버를 해킹·변조하거나 정상적인 운영을 방해하지 않으며, ③ PVP에서 상대 이용자를 존중해야 합니다.'],
     ['제7조 (PVP 대전과 순위)', 'PVP는 게임 서버를 통해 연결되며, 대전을 위해 지휘관 이름·소속 국가·전투 명령이 서버를 거쳐 상대에게 실시간으로 전달됩니다. 클라우드에 연결한 두 이용자의 빠른 대전은 순위전으로 서버 레이팅에 반영되고, 친구 방 코드 대전은 반영되지 않습니다. 결과는 양쪽 보고가 같을 때만 반영되며, 대전 도중 나가거나 연결이 끊긴 뒤 30초 안에 돌아오지 않으면 패배로 처리됩니다. 순위표에는 지휘관 이름·소속 국가·점수가 공개됩니다. 부정한 방법으로 순위를 올리면 순위에서 빼거나 계정을 지울 수 있습니다.'],
@@ -5040,7 +5149,7 @@ const LEGAL = {
   ]],
   privacy: ['🔒 개인정보 처리방침', [
     ['1. 기본 원칙', `${DEV.ko}는 「미니워존」을 개인정보를 최소한으로 다루도록 만들었습니다. 기록은 기본적으로 이용자 브라우저의 저장공간(localStorage)에만 보관합니다. 이용자가 클라우드 저장을 켜거나 PVP를 할 때만 아래 정보가 게임 서버에 저장·전달됩니다.`],
-    ['2. 다루는 정보', '① 브라우저: 지휘관 이름, 소속 국가, 좌우명(선택), 전투 기록·골드·경험치·계급·저장 슬롯·설정, 약관 동의 시각. ② 클라우드 연결 시 서버: 계정 번호, 지휘관 이름, 소속 국가, 위 게임 기록 사본, 최근 접속 시각, 복구 코드와 접속 토큰의 해시값(원문은 저장하지 않음). ③ PVP 순위전: 시즌별 레이팅·전적, 대전 기록(대전 번호·전장·결과·시각). 실명·이메일·전화번호·주소·위치·기기 식별자는 수집하지 않습니다.'],
+    ['2. 다루는 정보', '① 브라우저: 지휘관 이름, 소속 국가, 좌우명(선택), 전투 기록·골드·경험치·계급·저장 슬롯·설정, 약관 동의 시각. ② 회원가입 · 클라우드 연결 시 서버: 계정 번호, 아이디, 지휘관 이름, 소속 국가, 위 게임 기록 사본, 최근 접속 시각, 비밀번호(솔트를 넣은 scrypt 해시) · 복구 코드 · 접속 토큰의 해시값(원문은 저장하지 않음). 브라우저에는 회원의 접속 토큰과 기록 사본이 남으며 로그아웃하면 지웁니다. ③ PVP 순위전: 시즌별 레이팅·전적, 대전 기록(대전 번호·전장·결과·시각). 실명·이메일·전화번호·주소·위치·기기 식별자는 수집하지 않습니다.'],
     ['3. 이용 목적', '게임 진행 저장과 다른 기기에서 이어 하기, 계급·훈장·기록실 표시, PVP 매칭과 레이팅 계산, 서버 순위표 표시(지휘관 이름·소속 국가·점수가 다른 이용자에게 공개), 부정 이용 방지.'],
     ['4. 보관 기간과 삭제', '브라우저 기록은 [설정 → 내 기록 모두 지우기]나 사이트 데이터 삭제로 지울 수 있습니다. 서버 기록은 클라우드 계정을 지울 때까지 보관하며, [설정 → 🗑️ 클라우드 계정 삭제]를 누르면 계정·저장 기록·레이팅·접속 정보가 바로 지워지고 대전 기록은 계정과의 연결을 끊어 누구인지 알 수 없게 바꿉니다. 지운 기록은 되살릴 수 없습니다.'],
     ['5. PVP 대전 시 전달되는 정보', 'PVP에 접속하면 지휘관 이름과 소속 국가가 게임 서버를 거쳐 대기실과 상대 이용자에게 보입니다. 전투 중에는 게임 진행에 필요한 명령·상태만 오가며 저장하지 않습니다. 접속 IP 주소는 요청 제한(무차별 대입 방지)을 위해 접속하는 동안 서버 메모리에서만 쓰고 저장하지 않습니다. 서버 실행 기록(로그)에는 계정 번호·지휘관 이름·대전 정보가 남을 수 있으나 IP 주소·토큰·복구 코드는 남기지 않습니다.'],
@@ -5109,7 +5218,7 @@ function cloudData() { const P = loadProfiles()[profile] || {}; let rec = null; 
 function cloudApply(data) {   // 서버 기록을 이 브라우저에 덮어씀 (saveRec을 거치지 않아 다시 올라가지 않음)
   if (!data || !data.rec) return;
   cloudApplying = true;
-  try { localStorage.setItem(recKey(), JSON.stringify(data.rec)); const P = loadProfiles(); if (P[profile] && data.profile && data.profile.nation) { P[profile].nation = data.profile.nation; saveProfiles(P); } } catch (e) {}
+  try { localStorage.setItem(recKey(), JSON.stringify(data.rec)); const P = loadProfiles(); if (P[profile] && data.profile) { if (data.profile.nation) P[profile].nation = data.profile.nation; if (data.profile.agree) P[profile].agree = data.profile.agree; saveProfiles(P); } } catch (e) {}
   cloudApplying = false;
   SETTINGS = loadRec().settings; if ($('station').style.display === 'flex') renderStation();
 }
@@ -5152,14 +5261,13 @@ async function cloudNewCode() { const r = await capi('POST', '/api/account/code'
 async function cloudDelete() {
   if (!confirm('서버에 있는 클라우드 계정 · 저장 기록 · PVP 레이팅을 모두 지울까요?\n이 브라우저의 기록은 남습니다. 지운 뒤에는 되살릴 수 없습니다.')) return;
   const r = await capi('DELETE', '/api/me').catch(() => ({ status: 0 }));
-  if (r.status === 200 || r.status === 401) { setCloudMeta(null); toast('🗑️ 클라우드 계정을 지웠습니다'); } else toast('서버에 연결할 수 없습니다');
+  if (r.status === 200 || r.status === 401) { setCloudMeta(null); const P = loadProfiles(); if (P[profile]) { delete P[profile].login; saveProfiles(P); } toast('🗑️ 서버 계정을 지웠습니다 · 이 기기의 기록은 게스트로 남습니다'); } else toast('서버에 연결할 수 없습니다');
   renderCloudBox();
 }
 function cloudUnlink() { if (!confirm('이 기기에서 클라우드 연결을 끊을까요? (서버 기록은 남고, 복구 코드로 다시 연결할 수 있습니다)')) return; setCloudMeta(null); renderCloudBox(); }
 async function cloudRecover(code) {   // 로그인 화면: 복구 코드로 다른 기기의 지휘관과 기록 불러오기
-  const msg = t => { $('lgMsg').textContent = t; };
-  if (!$('lgAgree').checked) { msg('이용약관과 개인정보 처리방침에 동의해 주세요'); $('lgAgree').parentNode.classList.add('need'); return; }
-  const r = await fetch('/api/account/recover', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code }) }).then(async x => ({ status: x.status, body: await x.json().catch(() => null) })).catch(() => ({ status: 0 }));
+  const msg = t => lgMsg('liMsg', t);
+  const r = await papi('POST', '/api/account/recover', { code });
   if (r.status !== 200) return msg(r.status === 404 ? '복구 코드가 맞지 않습니다' : r.status === 429 ? '시도가 너무 많습니다. 잠시 뒤에 다시 하세요' : '서버에 연결할 수 없습니다');
   const name = r.body.name, P = loadProfiles();
   P[name] = { ...(P[name] || { created: Date.now() }), nation: r.body.nation, last: Date.now(), agree: { ver: LEGAL_VER, at: Date.now() } }; saveProfiles(P);
@@ -5167,7 +5275,39 @@ async function cloudRecover(code) {   // 로그인 화면: 복구 코드로 다�
   profile = name;
   const s = await capi('GET', '/api/save').catch(() => ({ status: 0 }));
   if (s.status === 200) { cloudApply(s.body.data); const m = cloudMeta(); m.rev = s.body.rev; m.synced = Date.now(); setCloudMeta(m); }
-  toast(`☁️ ${name} 지휘관의 기록을 불러왔습니다`); enterAs(name);
+  toast(`☁️ ${name} 지휘관의 기록을 불러왔습니다`); setOut(false); enterAs(name);
+}
+async function logout() {   // 프로필 → 🚪 로그아웃: 올릴 기록을 먼저 올리고, 회원이면 이 기기의 토큰과 기록 사본을 지움
+  const name = profile, m = cloudMeta(), member = !!(m && m.login);
+  if (member && m.dirty && serverOn()) { clearTimeout(cloudT); await Promise.race([cloudSync(), new Promise(r => setTimeout(r, 5000))]); }
+  if (member) {
+    const left = cloudMeta();
+    if (left && left.dirty) return toast('⚠️ 서버에 기록을 올리지 못해 로그아웃을 멈췄습니다 (기록 보호). 연결을 확인한 뒤 다시 하세요');
+    await capi('POST', '/api/logout').catch(() => {});
+    try { localStorage.removeItem(recKey()); localStorage.removeItem(cloudKey()); const P = loadProfiles(); delete P[name]; saveProfiles(P); } catch (e) {}
+  }
+  profile = null; try { localStorage.removeItem(CUR_KEY); } catch (e) {} setOut(true);
+  SETTINGS = loadRec().settings; newGame(); renderLogin('login'); showScreen('login'); sfx('click');
+  toast(member ? '🚪 로그아웃했습니다 · 기록은 서버에 안전하게 저장돼 있어요' : '🚪 로그아웃했습니다 · 게스트 기록은 이 기기에 남아 있어요');
+}
+async function cloudJoin() {   // 설정: 게스트 → 회원가입 (지금 기록 그대로 서버로) / 복구 코드 계정 → 아이디 · 비밀번호 만들기
+  const m = cloudMeta(), id = $('cjId').value.trim(), pw = $('cjPw').value, say = (t, ok) => lgMsg('cjMsg', t, ok);
+  if (!LOGIN_RE.test(id)) return say('아이디는 6~20자 영문 소문자 + 숫자 조합입니다');
+  if (!PW_RE.test(pw)) return say('비밀번호는 영문 · 숫자 · 특수문자 조합 6자리 이상입니다');
+  if (pw !== $('cjPw2').value) return say('비밀번호 확인이 일치하지 않습니다');
+  const r = m ? await capi('POST', '/api/me/login', { login: id, password: pw }).catch(() => ({ status: 0 })) : await papi('POST', '/api/signup', { login: id, password: pw, name: profile, nation: myNation() });
+  if (r.status === 409) return say(r.body && r.body.error === 'has_login' ? '이미 아이디가 있는 계정입니다' : '이미 사용 중인 아이디입니다');
+  if (r.status !== 200 && r.status !== 201) return say(netMsg(r));
+  if (m) { m.login = id; setCloudMeta(m); } else setCloudMeta({ id: r.body.id, token: r.body.token, rev: 0, dirty: true, localMod: Date.now(), login: id });
+  const P = loadProfiles(); if (P[profile]) { P[profile].login = id; saveProfiles(P); }
+  toast(`📝 회원가입 완료! 이제 아이디 ${id}(으)로 어느 기기에서든 로그인할 수 있어요`); cloudSync(); renderCloudBox();
+}
+function renderAcct() {   // 프로필: 회원/게스트 표시 + 로그아웃
+  const el = $('pfAcct'); if (!el) return;
+  const m = cloudMeta(), login = m && m.login;
+  el.innerHTML = (login ? `<span class="tag">🔑 회원 · 아이디 <b>${esc(login)}</b> · ☁️ 서버 저장</span>` : `<span class="tag">🎖️ 게스트 · ${m ? '☁️ 복구 코드 연결' : '이 브라우저에만 저장'}</span>${serverOn() ? '<button id="pfJoin" class="sec">📝 회원가입</button>' : ''}`) +
+    '<button id="pfLogout" class="ghost">🚪 로그아웃</button>';
+  $('pfLogout').onclick = logout; if ($('pfJoin')) $('pfJoin').onclick = () => showScreen('settings');
 }
 function showCloudCode(code, first) {
   $('cloudDlg').innerHTML = `<div class="box" style="width:min(460px,92vw)"><h1 style="font-size:22px">🔑 복구 코드</h1>
@@ -5182,9 +5322,12 @@ function renderCloudBox() {
   const el = $('cloudBox'); if (!el) return;
   const m = cloudMeta(), t = d => { const x = new Date(d); return `${x.getMonth() + 1}/${x.getDate()} ${String(x.getHours()).padStart(2, '0')}:${String(x.getMinutes()).padStart(2, '0')}`; };
   if (!serverOn()) { el.innerHTML = '<small class="dim">서버로 실행하면 쓸 수 있어요 (터미널에서 <code>node server.js</code> → http://localhost:8080)</small>'; return; }
-  el.innerHTML = m ? `<div class="cl-st">✅ 연결됨 · ${m.dirty ? '⏳ 올릴 기록 있음' : m.synced ? `마지막 동기화 ${t(m.synced)}` : '동기화 대기'}${m.offline && (!m.synced || m.offline > m.synced) ? ' · ⚠️ 서버 응답 없음' : ''}</div>
-      <button id="clSync" class="sec">🔄 지금 동기화</button><button id="clCode">🔑 새 복구 코드</button><button id="clOff">🔌 연결 끊기</button><button id="clDel" class="danger">🗑️ 클라우드 계정 삭제</button>`
-    : `<div class="cl-st">기록을 서버에 저장해 다른 기기에서 이어하고, PVP 순위전 · 서버 순위표에 참여합니다</div><button id="clLink" class="big">☁️ 클라우드 연결</button>`;
+  const joinForm = (title, btn) => `<div class="cl-st">${title}</div><div class="cl-form"><input id="cjId" maxlength="20" placeholder="아이디 (영문 소문자 + 숫자 6~20자)" autocomplete="username" autocapitalize="off"><input id="cjPw" type="password" maxlength="64" placeholder="비밀번호 (영문 · 숫자 · 특수문자 6자 이상)" autocomplete="new-password"><input id="cjPw2" type="password" maxlength="64" placeholder="비밀번호 확인" autocomplete="new-password"><div id="cjMsg" class="msg"></div><button id="cjGo" class="big">${btn}</button></div>`;
+  if (!m) { el.innerHTML = joinForm('회원가입하면 지금 기록을 그대로 서버에 저장하고, 어느 기기에서든 아이디로 로그인해 이어 합니다 · PVP 순위전 · 서버 순위표 참여', '📝 회원가입 (지금 기록 그대로)'); $('cjGo').onclick = cloudJoin; return; }
+  el.innerHTML = (m.login ? `<div class="cl-st">🔑 회원 · 아이디 <b>${esc(m.login)}</b></div>` : '') + `<div class="cl-st">✅ 연결됨 · ${m.dirty ? '⏳ 올릴 기록 있음' : m.synced ? `마지막 동기화 ${t(m.synced)}` : '동기화 대기'}${m.offline && (!m.synced || m.offline > m.synced) ? ' · ⚠️ 서버 응답 없음' : ''}</div>
+      <button id="clSync" class="sec">🔄 지금 동기화</button><button id="clCode">🔑 새 복구 코드</button>${m.login ? '' : '<button id="clOff">🔌 연결 끊기</button>'}<button id="clDel" class="danger">🗑️ ${m.login ? '회원 탈퇴 (서버 계정 삭제)' : '클라우드 계정 삭제'}</button>` +
+    (m.login ? '' : joinForm('🔑 아이디 · 비밀번호를 만들면 복구 코드 없이 로그인할 수 있어요', '🔑 아이디 만들기'));
+  if ($('cjGo')) $('cjGo').onclick = cloudJoin;
   const on = (id, f) => { const b = $(id); if (b) b.onclick = f; };
   on('clLink', cloudLink); on('clSync', () => { const mm = cloudMeta(); if (mm) { mm.dirty = true; mm.localMod = Date.now(); setCloudMeta(mm); } cloudSync(); }); on('clCode', cloudNewCode); on('clOff', cloudUnlink); on('clDel', cloudDelete);
 }
@@ -6924,6 +7067,7 @@ function renderProfile() {
   const rec = loadRec(), rk = rankOf(rec.xp), N = NATIONS[myNation()], S = rec.stats;
   $('pfName').value = profile || ''; $('pfMotto').value = rec.motto || '';
   $('pfNation').innerHTML = `${N.flag} ${N.name}군 소속 · ${natIntro(myNation())}`;
+  renderAcct();
   $('pfRank').innerHTML = `<div class="pf-rank">${rankBadge(rk.i, true)}<div><b>${rk.name}</b><small class="dim">${RANK_GROUP(rk.i)} · ${rk.i + 1} / ${RANKS.length} 단계</small></div></div>
     <div class="xbar"><i style="width:${Math.round(rk.prog * 100)}%"></i><span>⭐ ${rec.xp.toLocaleString()} XP · ${rk.next ? `${rk.next}까지 ${rk.need.toLocaleString()} XP` : '최고 계급 달성!'}</span></div>
     <small class="dim">스토리 모드에서 이길 때마다 경험치와 골드를 얻습니다 (공격전 100 · 방어전 60 XP × 난이도, 수도 +80, 전장 통일 +500). 진급하면 보너스 골드!</small>`;
@@ -6971,6 +7115,7 @@ const LANGS = { ko: '한국어', en: 'English', zh: '中文', ja: '日本語' };
 const I18N = [
   // [한국어, English, 中文, 日本語]
   ['미니워존', 'Mini War Zone', '迷你战区', 'ミニウォーゾーン'], ['등고선 위의 작은 전쟁', 'A tiny war on the contours', '等高线上的小战争', '等高線の上の小さな戦争'],
+  ['로그인', 'Log in', '登录', 'ログイン'], ['회원가입', 'Sign up', '注册', '会員登録'], ['게스트', 'Guest', '游客', 'ゲスト'], ['아이디', 'ID', '账号', 'ID'], ['비밀번호', 'Password', '密码', 'パスワード'], ['비밀번호 확인', 'Confirm password', '确认密码', 'パスワード確認'], ['로그인 ▶', 'Log in ▶', '登录 ▶', 'ログイン ▶'], ['가입하고 시작 ▶', 'Sign up & start ▶', '注册并开始 ▶', '登録して開始 ▶'], ['게스트로 시작 ▶', 'Start as guest ▶', '以游客开始 ▶', 'ゲストで開始 ▶'], ['중복확인', 'Check', '查重', '重複確認'], ['로그아웃', 'Log out', '退出登录', 'ログアウト'], ['아이디 (영문 소문자 + 숫자 6~20자)', 'ID (6-20 lowercase letters + digits)', '账号（6~20位小写字母+数字）', 'ID（英小文字+数字 6〜20字）'], ['비밀번호 (영문 · 숫자 · 특수문자 6자 이상)', 'Password (letters, digits, symbol; 6+)', '密码（字母·数字·特殊字符 6位以上）', 'パスワード（英字・数字・記号 6字以上）'], ['아이디와 비밀번호를 입력하세요', 'Enter your ID and password', '请输入账号和密码', 'IDとパスワードを入力してください'], ['아이디 또는 비밀번호가 올바르지 않습니다', 'Wrong ID or password', '账号或密码错误', 'IDまたはパスワードが正しくありません'], ['아이디는 6~20자 영문 소문자 + 숫자 조합입니다', 'ID must be 6-20 lowercase letters and digits', '账号须为6~20位小写字母+数字', 'IDは英小文字+数字の6〜20字です'], ['비밀번호는 영문 · 숫자 · 특수문자 조합 6자리 이상입니다', 'Password needs letters, digits and a symbol (6+)', '密码须含字母·数字·特殊字符，6位以上', 'パスワードは英字・数字・記号を含む6字以上です'], ['비밀번호 확인이 일치하지 않습니다', 'Passwords do not match', '两次密码不一致', 'パスワードが一致しません'], ['이미 사용 중인 아이디입니다', 'This ID is already taken', '该账号已被使用', 'このIDは使用中です'], ['아이디 중복확인을 해 주세요', 'Please check the ID first', '请先查重账号', 'IDの重複確認をしてください'], ['✅ 사용할 수 있는 아이디입니다', '✅ This ID is available', '✅ 该账号可以使用', '✅ 使えるIDです'], ['서버에 연결할 수 없습니다', 'Cannot reach the server', '无法连接服务器', 'サーバーに接続できません'], ['이 기기의 게스트 지휘관', 'Guest commanders on this device', '本设备的游客指挥官', 'この端末のゲスト指揮官'], ['회원은 어느 기기에서든 아이디로 로그인해 이어 합니다 · 기록은 서버에 자동 저장', 'Members log in on any device · records saved to the server', '会员可在任何设备登录继续 · 记录自动保存到服务器', '会員はどの端末でもログインして続行 · 記録はサーバーに自動保存'], ['🔑 아이디 없이 만든 기록 불러오기 (복구 코드)', '🔑 Load a record made without ID (recovery code)', '🔑 读取无账号记录（恢复码）', '🔑 ID なしで作った記録を読み込む（復旧コード）'], ['🚪 로그아웃', '🚪 Log out', '🚪 退出登录', '🚪 ログアウト'], ['📝 회원가입', '📝 Sign up', '📝 注册', '📝 会員登録'], ['📝 회원가입 (지금 기록 그대로)', '📝 Sign up (keep current records)', '📝 注册（保留当前记录）', '📝 会員登録（今の記録のまま）'], ['🔑 아이디 만들기', '🔑 Create ID', '🔑 创建账号', '🔑 IDを作る'],
   ['전투 흐름', 'Battle Flow', '战斗走势', '戦闘の流れ'], ['병력', 'Army', '兵力', '兵力'], ['자원 수입', 'Income', '资源收入', '資源収入'], ['적군', 'Enemy', '敌军', '敵軍'], ['표로 보기', 'Show as table', '以表格查看', '表で見る'],
   ['아군 / 적군', 'Ally / Enemy', '我军 / 敌军', '味方 / 敵'], ['살아 있는 부대 가치 (생산비 × 남은 체력)', 'Value of living units (cost × HP left)', '存活部队价值（生产费 × 剩余体力）', '生存部隊の価値（生産費 × 残り体力）'],
   ['건물에서 들어온 돈 + 철광 누적', 'Cumulative money + iron from buildings', '建筑累计收入（资金 + 铁矿）', '建物からの資金 + 鉄鉱の累計'], ['누적 격파 수', 'Cumulative kills', '累计击毁数', '累計撃破数'],
@@ -7418,13 +7563,14 @@ window.addEventListener('resize', resize);
 resize();
 try { profile = localStorage.getItem(CUR_KEY); } catch (e) {}
 if (profile && !loadProfiles()[profile]) profile = null;
-if (!profile) { const P = loadProfiles(), n = Object.keys(P).sort((a, b) => (P[b].last || 0) - (P[a].last || 0))[0]; if (n) { profile = n; try { localStorage.setItem(CUR_KEY, n); } catch (e) {} } }   // 지휘관은 한 명: 등록돼 있으면 바로 입장
+if (!profile && !isOut()) { const P = loadProfiles(), n = Object.keys(P).sort((a, b) => (P[b].last || 0) - (P[a].last || 0))[0]; if (n) { profile = n; try { localStorage.setItem(CUR_KEY, n); } catch (e) {} } }   // 등록돼 있으면 바로 입장 (로그아웃했으면 로그인 화면)
+const AUTH_Q = new URLSearchParams(location.search).get('auth');   // /member/signup.html · login.html 이 넘겨 줌
 SETTINGS = loadRec().settings;
 buildCoBar();
 setLang(SETTINGS.lang || 'ko');
 applyHud();
 newGame();
-if (profile) { showScreen('station'); firstTutorial(); } else { renderLogin(); showScreen('login'); }
+if (profile) { showScreen('station'); firstTutorial(); } else { renderLogin(AUTH_Q === 'signup' || AUTH_Q === 'login' ? AUTH_Q : null); showScreen('login'); }
 requestAnimationFrame(frame);
 </script>
 </body>

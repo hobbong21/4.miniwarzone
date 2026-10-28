@@ -1,10 +1,10 @@
 // REST API: 계정 · 클라우드 저장 · 순위표 · 상태 확인
 'use strict';
-const { cleanName, cleanNation, seasonId, limiter, log } = require('./util');
+const { cleanName, cleanNation, cleanLogin, PW_RE, hashPw, checkPw, seasonId, limiter, log } = require('./util');
 
 const MAX_SAVE = 512 * 1024;   // 저장 데이터 최대 512KB
 const CREATE_PER_MIN = Number(process.env.MWZ_CREATE_PER_MIN) || 6;   // IP당 계정 생성 (테스트에서 늘림)
-const lim = { api: limiter(120, 60), create: limiter(CREATE_PER_MIN, CREATE_PER_MIN), recover: limiter(10, 5), save: limiter(30, 10) };
+const lim = { api: limiter(120, 60), create: limiter(CREATE_PER_MIN, CREATE_PER_MIN), recover: limiter(10, 5), save: limiter(30, 10), check: limiter(30, 15), login: limiter(10, 6) };   // login: IP당 비밀번호 시도
 
 class HttpError extends Error { constructor(status, code, msg) { super(msg || code); this.status = status; this.code = code; } }
 function readJson(req, max) {
@@ -27,7 +27,12 @@ function statsOf(data) {
   const regions = (rec.slots || []).reduce((m, s) => Math.max(m, s && s.owner && s.nation ? Object.values(s.owner).filter(o => o === s.nation).length + (s.cleared || []).length * 10 : 0), 0);
   return { xp: clampInt(rec.xp, 1e7), bestScore: clampInt(rec.stats && rec.stats.bestScore, 1e7), regions: clampInt(regions, 1000) };
 }
-const pub = a => ({ id: a.id, name: a.name, nation: a.nation, created: a.created });
+const pub = a => ({ id: a.id, name: a.name, nation: a.nation, created: a.created, login: a.login || null });
+function needLogin(b) {   // 회원가입 · 아이디 붙이기 공통 입력 검사
+  const login = cleanLogin(b.login); if (!login) throw new HttpError(400, 'bad_login', '아이디는 6~20자 영문 소문자 + 숫자 조합입니다');
+  if (typeof b.password !== 'string' || !PW_RE.test(b.password)) throw new HttpError(400, 'bad_password', '비밀번호는 영문 · 숫자 · 특수문자 조합 6자리 이상입니다');
+  return login;
+}
 
 function makeApi(db, ctx) {
   const routes = {
@@ -46,6 +51,34 @@ function makeApi(db, ctx) {
       return { ...pub(r.account), token: r.token };
     },
     'POST /api/account/code': (req, ip, acc) => ({ code: db.newCode(acc.id) }),
+    // ---- 회원: 아이디 · 비밀번호 (게임 화면의 로그인 · 회원가입)
+    'GET /api/signup/check': (req, ip, acc, url) => {
+      if (!lim.check(ip)) throw new HttpError(429, 'rate_limited', '잠시 뒤에 다시 확인하세요');
+      const login = cleanLogin(url.searchParams.get('login'));
+      return { valid: !!login, available: !!login && !db.byLogin(login) };
+    },
+    'POST /api/signup': async (req, ip) => {
+      if (!lim.create(ip)) throw new HttpError(429, 'rate_limited', '계정은 잠시 뒤에 다시 만들 수 있습니다');
+      const b = await readJson(req, 4096), login = needLogin(b), name = cleanName(b.name); if (!name) throw new HttpError(400, 'bad_name', '지휘관 이름이 필요합니다');
+      const r = db.signup(name, cleanNation(b.nation), login, await hashPw(b.password));
+      if (!r) throw new HttpError(409, 'login_taken', '이미 사용 중인 아이디입니다');
+      log('회원가입', { id: r.id });
+      return [201, { id: r.id, token: r.token, code: r.code, name, nation: cleanNation(b.nation), login }];
+    },
+    'POST /api/login': async (req, ip) => {
+      if (!lim.login(ip)) throw new HttpError(429, 'rate_limited', '시도가 너무 많습니다. 잠시 뒤에 다시 하세요');
+      const b = await readJson(req, 1024), a = db.byLogin(cleanLogin(b.login) || '');
+      const ok = await checkPw(typeof b.password === 'string' ? b.password : '', a ? a.pw_hash : 's1$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA');   // 없는 아이디도 같은 시간이 걸리게
+      if (!a || !ok) throw new HttpError(401, 'bad_login', '아이디 또는 비밀번호가 올바르지 않습니다');
+      return { ...pub(a), token: db.newSession(a.id) };
+    },
+    'POST /api/logout': (req, ip, acc) => { db.logout(bearer(req)); return { ok: true }; },
+    'POST /api/me/login': async (req, ip, acc) => {   // 복구 코드로 만든 계정에 아이디 · 비밀번호 붙이기
+      if (acc.login) throw new HttpError(409, 'has_login', '이미 아이디가 있는 계정입니다');
+      const b = await readJson(req, 1024), login = needLogin(b);
+      if (!db.setLogin(acc.id, login, await hashPw(b.password))) throw new HttpError(409, 'login_taken', '이미 사용 중인 아이디입니다');
+      return { ok: true, login };
+    },
     'GET /api/me': (req, ip, acc) => { const r = db.rating(acc.id); return { ...pub(acc), xp: acc.xp, rating: { season: r.season, rating: r.rating, peak: r.peak, w: r.w, l: r.l, d: r.d } }; },
     'PATCH /api/me': async (req, ip, acc) => {
       const b = await readJson(req, 1024), name = b.name == null ? acc.name : cleanName(b.name); if (!name) throw new HttpError(400, 'bad_name');
@@ -70,7 +103,7 @@ function makeApi(db, ctx) {
       return { type, season, rows };
     },
   };
-  const NEED_AUTH = new Set(['POST /api/account/code', 'GET /api/me', 'PATCH /api/me', 'DELETE /api/me', 'GET /api/save', 'PUT /api/save']);
+  const NEED_AUTH = new Set(['POST /api/account/code', 'GET /api/me', 'PATCH /api/me', 'DELETE /api/me', 'GET /api/save', 'PUT /api/save', 'POST /api/logout', 'POST /api/me/login']);
 
   return async function handle(req, res, url, ip) {
     const key = `${req.method} ${url.pathname}`, json = (status, body) => { res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' }); res.end(JSON.stringify(body)); };

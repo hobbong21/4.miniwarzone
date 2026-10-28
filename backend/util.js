@@ -16,6 +16,18 @@ function cleanName(s) {
   return n.length ? n : null;
 }
 const cleanNation = s => /^[A-Z]{2,6}$/.test(String(s || '')) ? String(s) : 'ROK';
+// 회원 아이디 · 비밀번호 규칙 (게임 화면과 같음)
+const LOGIN_RE = /^(?=.*[a-z])(?=.*\d)[a-z\d]{6,20}$/;   // 6~20자 영문 소문자 + 숫자 조합
+const PW_RE = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[!@#$%^&*]).{6,64}$/;   // 영문 · 숫자 · 특수문자 6~64자
+const cleanLogin = s => LOGIN_RE.test(String(s ?? '')) ? String(s) : null;
+// 비밀번호: scrypt(솔트 16바이트) → "s1$솔트$해시". 비교는 시간이 일정한 timingSafeEqual
+const scrypt = (pw, salt) => new Promise((ok, bad) => crypto.scrypt(String(pw), salt, 32, { N: 16384, r: 8, p: 1 }, (e, k) => e ? bad(e) : ok(k)));
+async function hashPw(pw) { const salt = crypto.randomBytes(16); return `s1$${salt.toString('base64url')}$${(await scrypt(pw, salt)).toString('base64url')}`; }
+async function checkPw(pw, stored) {
+  const [v, s, h] = String(stored || '').split('$'); if (v !== 's1' || !s || !h) return false;
+  const a = await scrypt(pw, Buffer.from(s, 'base64url')), b = Buffer.from(h, 'base64url');
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
 const seasonId = (d = new Date()) => `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
 
 // 토큰 버킷 요청 제한: key(IP+종류)마다 rate개/분, 순간 최대 burst
@@ -30,4 +42,4 @@ function limiter(ratePerMin, burst = ratePerMin) {
     b.n -= 1; return true;
   };
 }
-module.exports = { log, sha256, token, recoveryCode, normCode, cleanName, cleanNation, seasonId, limiter };
+module.exports = { log, sha256, token, recoveryCode, normCode, cleanName, cleanNation, cleanLogin, PW_RE, hashPw, checkPw, seasonId, limiter };

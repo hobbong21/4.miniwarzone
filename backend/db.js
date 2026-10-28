@@ -31,6 +31,11 @@ function open(file) {
       id TEXT PRIMARY KEY, season TEXT NOT NULL, host_id TEXT, guest_id TEXT, map TEXT NOT NULL, rated INTEGER NOT NULL,
       started INTEGER NOT NULL, ended INTEGER, result TEXT, host_delta INTEGER, guest_delta INTEGER);
   `);
+  // 회원 아이디 · 비밀번호 (예전 DB에는 열을 추가). 비밀번호는 scrypt 해시만
+  const cols = db.prepare('PRAGMA table_info(accounts)').all().map(c => c.name);
+  if (!cols.includes('login')) db.exec('ALTER TABLE accounts ADD COLUMN login TEXT');
+  if (!cols.includes('pw_hash')) db.exec('ALTER TABLE accounts ADD COLUMN pw_hash TEXT');
+  db.exec('CREATE UNIQUE INDEX IF NOT EXISTS accounts_login ON accounts(login)');
   const q = sql => db.prepare(sql);
   const now = () => Date.now();
   const S = {
@@ -44,6 +49,9 @@ function open(file) {
     setProfile: q('UPDATE accounts SET name = ?, nation = ? WHERE id = ?'),
     setStats: q('UPDATE accounts SET xp = ?, best_score = ?, regions = ? WHERE id = ?'),
     delAcc: q('DELETE FROM accounts WHERE id = ?'),
+    byLogin: q('SELECT * FROM accounts WHERE login = ?'),
+    setLogin: q('UPDATE accounts SET login = ?, pw_hash = ? WHERE id = ?'),
+    delSess: q('DELETE FROM sessions WHERE token_hash = ?'),
     anonMatchH: q('UPDATE matches SET host_id = NULL WHERE host_id = ?'), anonMatchG: q('UPDATE matches SET guest_id = NULL WHERE guest_id = ?'),
     getSave: q('SELECT rev, data, updated FROM saves WHERE account_id = ?'),
     putSave: q('INSERT INTO saves (account_id, rev, data, updated) VALUES (?, ?, ?, ?) ON CONFLICT(account_id) DO UPDATE SET rev = excluded.rev, data = excluded.data, updated = excluded.updated'),
@@ -60,7 +68,7 @@ function open(file) {
     lbRegions: q('SELECT name, nation, regions AS value FROM accounts WHERE regions > 0 ORDER BY regions DESC, created LIMIT ?'),
     counts: q('SELECT (SELECT COUNT(*) FROM accounts) AS accounts, (SELECT COUNT(*) FROM matches) AS matches'),
   };
-  const tx = fn => (...a) => { db.exec('BEGIN IMMEDIATE'); try { const r = fn(...a); db.exec('COMMIT'); return r; } catch (e) { db.exec('ROLLBACK'); throw e; } };
+  const tx = fn => Object.assign((...a) => { db.exec('BEGIN IMMEDIATE'); try { const r = fn(...a); db.exec('COMMIT'); return r; } catch (e) { db.exec('ROLLBACK'); throw e; } }, { raw: fn });   // raw: 이미 열린 트랜잭션 안에서 부를 때
 
   const api = {
     raw: db,
@@ -84,6 +92,18 @@ function open(file) {
       return { account: a, token: t };
     }),
     newCode(id) { const code = recoveryCode(); S.setCode.run(sha256(normCode(code)), id); return code; },
+    // 회원가입: 계정 + 아이디 · 비밀번호 해시를 한 번에 (아이디가 이미 있으면 null)
+    signup: tx((name, nation, login, pwHash) => {
+      if (S.byLogin.get(login)) return null;
+      const r = api.createAccount.raw(name, nation); S.setLogin.run(login, pwHash, r.id); return r;
+    }),
+    byLogin: login => S.byLogin.get(login) || null,
+    setLogin(id, login, pwHash) {   // 복구 코드로 만든 예전 계정에 아이디 · 비밀번호 붙이기 (아이디가 이미 있으면 false)
+      const o = S.byLogin.get(login); if (o && o.id !== id) return false;
+      S.setLogin.run(login, pwHash, id); return true;
+    },
+    newSession(id) { const t = token(), n = now(); S.insSess.run(sha256(t), id, n, n); S.touchAcc.run(n, id); return t; },
+    logout(t) { if (t && t.length <= 100) S.delSess.run(sha256(t)); },
     setProfile: (id, name, nation) => S.setProfile.run(name, nation, id),
     deleteAccount: tx(id => { S.anonMatchH.run(id); S.anonMatchG.run(id); S.delAcc.run(id); }),
     getSave(id) { return S.getSave.get(id) || null; },

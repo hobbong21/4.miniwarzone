@@ -37,12 +37,40 @@ test('상태 확인 · 공개 파일 제한 · 보안 헤더', async () => {
   const r = await fetch(base + '/'); assert.equal(r.status, 200); assert.match(r.headers.get('content-security-policy'), /default-src 'self'/); assert.equal(r.headers.get('x-content-type-options'), 'nosniff');
 });
 
-test('회원가입 · 로그인 페이지 제공 (형식) · 테스트 · 문서는 차단', async () => {
-  for (const [p, type] of [['/member/', 'text/html'], ['/member/login.html', 'text/html'], ['/member/signup.html', 'text/html'], ['/member/style.css', 'text/css'], ['/member/auth.js', 'text/javascript']]) {
-    const r = await fetch(base + p); assert.equal(r.status, 200, p); assert.match(r.headers.get('content-type'), new RegExp('^' + type), p);
+test('회원: 중복확인 · 가입 · 로그인 · 저장 공유 · 로그아웃 · 아이디 붙이기', async () => {
+  assert.deepEqual((await req('GET', '/api/signup/check?login=Bad!')).body, { valid: false, available: false });
+  assert.deepEqual((await req('GET', '/api/signup/check?login=member01')).body, { valid: true, available: true });
+  assert.equal((await req('POST', '/api/signup', { login: 'member01', password: 'short', name: '철수', nation: 'ROK' })).status, 400);
+  assert.equal((await req('POST', '/api/signup', { login: '한글아이디', password: 'abc123!', name: '철수' })).status, 400);
+  const s = await req('POST', '/api/signup', { login: 'member01', password: 'abc123!x', name: '철수', nation: 'DEU' });
+  assert.equal(s.status, 201); assert.equal(s.body.login, 'member01'); assert.ok(s.body.token && s.body.code);
+  assert.equal((await req('POST', '/api/signup', { login: 'member01', password: 'abc123!x', name: '영희' })).status, 409);
+  assert.deepEqual((await req('GET', '/api/signup/check?login=member01')).body, { valid: true, available: false });
+  const row = srv.db.raw.prepare('SELECT pw_hash FROM accounts WHERE login = ?').get('member01');
+  assert.match(row.pw_hash, /^s1\$/); assert.ok(!row.pw_hash.includes('abc123'));   // 비밀번호는 해시만
+  assert.equal((await req('PUT', '/api/save', { rev: 0, data: { rec: { gold: 77 } } }, s.body.token)).status, 200);
+  assert.equal((await req('POST', '/api/login', { login: 'member01', password: 'wrong1!' })).status, 401);
+  assert.equal((await req('POST', '/api/login', { login: 'nobody99', password: 'abc123!x' })).status, 401);
+  const l = await req('POST', '/api/login', { login: 'member01', password: 'abc123!x' });   // 다른 기기에서 로그인 → 같은 저장
+  assert.equal(l.status, 200); assert.equal(l.body.name, '철수'); assert.equal(l.body.nation, 'DEU'); assert.equal(l.body.pw_hash, undefined);
+  assert.equal((await req('GET', '/api/save', undefined, l.body.token)).body.data.rec.gold, 77);
+  assert.equal((await req('GET', '/api/me', undefined, l.body.token)).body.login, 'member01');
+  assert.equal((await req('POST', '/api/logout', undefined, l.body.token)).status, 200);
+  assert.equal((await req('GET', '/api/me', undefined, l.body.token)).status, 401);   // 로그아웃한 토큰은 끝
+  assert.equal((await req('GET', '/api/me', undefined, s.body.token)).status, 200);   // 다른 기기 세션은 그대로
+  const old = await account('예전지휘관');   // 복구 코드 계정 → 아이디 붙이기
+  assert.equal((await req('POST', '/api/me/login', { login: 'member01', password: 'abc123!x' }, old.token)).status, 409);
+  assert.equal((await req('POST', '/api/me/login', { login: 'oldacc01', password: 'abc123!x' }, old.token)).status, 200);
+  assert.equal((await req('POST', '/api/me/login', { login: 'oldacc02', password: 'abc123!x' }, old.token)).status, 409);
+  assert.equal((await req('POST', '/api/login', { login: 'oldacc01', password: 'abc123!x' })).body.name, '예전지휘관');
+});
+
+test('예전 회원 주소는 게임 안 탭으로 넘김 · 나머지는 차단', async () => {
+  for (const [p, tab] of [['/member/', 'login'], ['/member/login.html', 'login'], ['/member/signup.html', 'signup']]) {
+    const r = await fetch(base + p); assert.equal(r.status, 200, p); assert.match(r.headers.get('content-type'), /^text\/html/, p);
+    assert.match(await r.text(), new RegExp(`url=\\.\\./\\?auth=${tab}`), p);
   }
-  assert.match(await (await fetch(base + '/member/signup.html')).text(), /<title>회원가입<\/title>/);
-  for (const p of ['/member/test/e2e.mjs', '/member/README.md', '/member', '/member/../server.js']) assert.equal((await fetch(base + p)).status, 404, p);
+  for (const p of ['/member/README.md', '/member/auth.js', '/member', '/member/../server.js']) assert.equal((await fetch(base + p)).status, 404, p);
 });
 
 test('계정 · 클라우드 저장 · 충돌 · 복구 코드 · 삭제', async () => {

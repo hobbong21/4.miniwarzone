@@ -28,13 +28,13 @@ npm test             # 백엔드 통합 테스트 (node --test)
 | `ALLOWED_ORIGINS` | (같은 주소만) | 다른 도메인에서 API·WebSocket 접속을 허용할 출처 목록 (쉼표로 구분) |
 | `NODE_ENV` | | `production`이면 index.html을 메모리에 캐시 |
 
-## 회원가입 · 로그인 페이지 (`member/`)
+## 회원가입 · 로그인 · 로그아웃 (게임 안)
 
-- 서버 실행 후 `http://localhost:8080/member/signup.html` · `/member/login.html` (파일을 직접 열어도 동작)
-- 아주 심플한 정적 페이지: 아이디 중복검색 · 형식 검사, 비밀번호 규칙 · 확인, 로그인 · 로그아웃
-- 회원 정보는 **브라우저 localStorage에만** 저장(데모). 비밀번호 · 힌트 답변은 SHA-256 해시. 보안 연결이 아닌 주소(`http://서버IP`)에서는 내장 SHA-256 사용
-- 게임 계정(클라우드 연결 · 복구 코드)과는 별개
-- 테스트: `npm run test:member` · 실행 중인 서버로: `BASE=http://127.0.0.1:8080/member npm run test:member` · 비보안 주소 흉내: `LAN=1`
+- 게임 첫 화면의 탭: **🔑 로그인 · 📝 회원가입 · 🎖️ 게스트**. 프로필의 **🚪 로그아웃**
+- 회원: 아이디 · 비밀번호 계정이 서버 DB에 저장되고(비밀번호는 솔트를 넣은 scrypt 해시), 가입하면 클라우드 저장이 자동으로 켜져 어느 기기에서든 로그인해 이어 함
+- 게스트: 이 브라우저에만 저장 (서버 없이 파일로 열면 게스트만). 나중에 [프로필 → 설정 → 📝 회원가입]으로 기록을 그대로 옮김
+- 예전 주소 `/member/signup.html` · `/member/login.html`은 `/?auth=signup` · `/?auth=login`으로 넘김
+- 테스트: `npm run test:auth` (임시 DB로 서버를 띄우고 헤드리스 Chrome으로 가입 → 로그아웃 → 로그인 → 다른 기기 → 게스트 전환까지 23개 항목)
 
 ## 배포 (Docker)
 
@@ -65,8 +65,8 @@ docker run -d -p 8080:8080 -v miniwarzone-data:/data --name miniwarzone ghcr.io/
 | `backend/ws.js` | WebSocket · 로비 · 매칭 · 친구 방 코드 · 재접속 · 결과 합의 · 하트비트 |
 | `backend/rating.js` | Elo 레이팅(K=32) · 시즌 이월 |
 | `test/server.test.js` | 통합 테스트 (`npm test`) |
-| `member/` | 회원가입 · 로그인 페이지 (`/member/signup.html` · `/member/login.html`) — `member/README.md` |
-| `member/test/e2e.mjs` | 회원 페이지 브라우저 테스트 (`npm run test:member`) |
+| `member/` | 예전 회원가입 · 로그인 주소 → 게임 안 탭으로 넘김 |
+| `test/auth.e2e.mjs` | 게임 안 회원가입 · 로그인 · 로그아웃 브라우저 테스트 (`npm run test:auth`) |
 
 ### 계정 방식
 
@@ -78,7 +78,12 @@ docker run -d -p 8080:8080 -v miniwarzone-data:/data --name miniwarzone ghcr.io/
 | 메서드 · 경로 | 인증 | 설명 |
 |---|---|---|
 | `GET /api/health` | | 상태 · 버전 · 시즌 · 접속자 수 |
-| `POST /api/account` `{name, nation}` | | 계정 생성 → `{id, token, code}` (코드는 이때 한 번만) |
+| `GET /api/signup/check?login=` | | 아이디 형식 · 사용 가능 여부 `{valid, available}` |
+| `POST /api/signup` `{login, password, name, nation}` | | 회원가입 → `{id, token, code, login}` (409 = 아이디 사용 중) |
+| `POST /api/login` `{login, password}` | | 로그인 → 새 토큰 + 계정 정보 (401 = 아이디 또는 비밀번호 틀림) |
+| `POST /api/logout` | 토큰 | 이 토큰만 끝냄 (다른 기기는 그대로) |
+| `POST /api/me/login` `{login, password}` | 토큰 | 복구 코드 계정에 아이디 · 비밀번호 붙이기 |
+| `POST /api/account` `{name, nation}` | | (예전 방식) 아이디 없는 계정 생성 → `{id, token, code}` |
 | `POST /api/account/recover` `{code}` | | 복구 코드로 새 세션 토큰 발급 |
 | `POST /api/account/code` | ✅ | 새 복구 코드 (예전 코드 무효) |
 | `GET /api/me` · `PATCH /api/me` · `DELETE /api/me` | ✅ | 내 정보 · 이름/국가 변경 · 계정 삭제(저장·레이팅 삭제, 대전 기록 익명화) |

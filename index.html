@@ -2847,7 +2847,10 @@ function insigniaOld(u, lx, z, ang, r = 2.6) {   // (예전) 흰 별
   ctx.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, q = i % 2 ? r * 0.42 : r; ctx.lineTo(x + Math.cos(a) * q, y + Math.sin(a) * q * SQ); }
   ctx.closePath(); ctx.fillStyle = 'rgba(245,245,235,.8)'; ctx.fill();
 }
-function shadow(x, y, rx, ry, a = 0.17) { ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); ctx.fillStyle = `rgba(80,60,30,${a})`; ctx.fill(); }
+function shadow(x, y, rx, ry, a = 0.17) {   // 넓고 옅은 그림자 + 바로 아래 좁고 진한 접지 그림자
+  ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); ctx.fillStyle = `rgba(80,60,30,${a})`; ctx.fill();
+  ctx.beginPath(); ctx.ellipse(x, y + ry * 0.08, rx * 0.7, ry * 0.6, 0, 0, Math.PI * 2); ctx.fillStyle = `rgba(55,40,20,${a * 0.75})`; ctx.fill();
+}
 // 바닥 모양 fn을 z0부터 h만큼 쌓아 올린 입체 (옆면 + 윗면 + 외곽선)
 function extrude(fn, x, y, z0, h, ang, top, side, ln) {
   const st = []; for (let k = 0; k < h; k += 1.2) st.push(z0 + k); st.push(z0 + h);
@@ -2855,31 +2858,48 @@ function extrude(fn, x, y, z0, h, ang, top, side, ln) {
   for (const z of st) { pathAt(fn, x, y, z, ang); ctx.stroke(); }
   ctx.fillStyle = side;
   for (const z of st) { pathAt(fn, x, y, z, ang); ctx.fill(); }
-  pathAt(fn, x, y, z0 + h, ang); ctx.fillStyle = top; ctx.fill(); ctx.lineWidth = 0.8; ctx.stroke();
+  pathAt(fn, x, y, z0 + h, ang); ctx.fillStyle = top; ctx.fill();
+  let gl = SHEEN.get(ctx);   // 윗면 왼쪽 위에서 비치는 은은한 광택: 캔버스마다 한 번 만든 그라데이션을 윗면 위치로 옮겨 칠함
+  if (!gl) { gl = ctx.createLinearGradient(-10, -8, 6, 6); gl.addColorStop(0, 'rgba(255,255,240,.2)'); gl.addColorStop(0.55, 'rgba(255,255,240,0)'); gl.addColorStop(1, 'rgba(0,0,0,.06)'); SHEEN.set(ctx, gl); }
+  ctx.save(); ctx.translate(x, y - z0 - h); ctx.fillStyle = gl; ctx.fill(); ctx.restore();   // 경로는 이미 정해져 있으므로 옮겨지는 건 그라데이션뿐
+  ctx.lineWidth = 0.8; ctx.stroke();
 }
+const SHEEN = new WeakMap();
 function shine(fn, x, y, z, ang) { pathAt(fn, x, y, z, ang); ctx.fillStyle = 'rgba(255,255,255,.22)'; ctx.fill(); }
-// 얼굴: 큰 눈 + 반짝임 + 볼터치. mood: ok / hurt(><) / sleep(건설 중)
-function face(cx, cy, ang, s, mood) {
+// 얼굴: 큰 눈 + 반짝임 두 개 + 볼터치. mood: ok / front(정면) / hurt(><, 땀방울) / sleep(건설 중)
+// 차량 · 건물처럼 큰 얼굴(s ≥ 1.3)은 눈썹도 그림: 평소엔 결의에 찬 눈썹, 피격 땐 걱정 눈썹
+function face(cx, cy, ang, s, mood, brow = s >= 1.3) {
   const fs = Math.sin(ang), fc = Math.cos(ang);
   if (fs < -0.55 && mood !== 'front') return;   // 뒤돌아 있으면 안 보임
+  face.last = [cx, cy, ang, s, mood, brow];   // 특수무기가 장비를 덧그린 뒤 얼굴을 다시 그릴 때 씀
   const sep = s * 1.25 * (0.55 + 0.45 * Math.abs(fs)), ox = mood === 'front' ? 0 : fc * s * 0.55;
+  ctx.lineCap = 'round';
   for (const k of [-1, 1]) {
     const ex = cx + ox + k * sep, ey = cy;
-    ctx.lineCap = 'round';
     if (mood === 'hurt') {
       ctx.beginPath(); ctx.moveTo(ex - k * s * 0.55, ey - s * 0.55); ctx.lineTo(ex + k * s * 0.4, ey); ctx.lineTo(ex - k * s * 0.55, ey + s * 0.55);
-      ctx.strokeStyle = INKC; ctx.lineWidth = s * 0.38; ctx.stroke();
+      ctx.strokeStyle = INKC; ctx.lineWidth = s * 0.42; ctx.stroke();
     } else if (mood === 'sleep') {
       ctx.beginPath(); ctx.arc(ex, ey - s * 0.2, s * 0.5, 0.15 * Math.PI, 0.85 * Math.PI); ctx.strokeStyle = INKC; ctx.lineWidth = s * 0.32; ctx.stroke();
     } else {
-      ctx.beginPath(); ctx.ellipse(ex, ey, s * 0.56, s * 0.72, 0, 0, 7); ctx.fillStyle = '#fbfbf5'; ctx.fill();
-      ctx.strokeStyle = INKC; ctx.lineWidth = s * 0.16; ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(ex, ey, s * 0.6, s * 0.78, 0, 0, 7); ctx.fillStyle = '#fdfdf6'; ctx.fill();
+      ctx.strokeStyle = INKC; ctx.lineWidth = s * 0.18; ctx.stroke();
       const px = mood === 'front' ? 0 : fc * s * 0.17;
-      circ(ex + px, ey + s * 0.12, s * 0.43); ctx.fillStyle = INKC; ctx.fill();
-      circ(ex + px - s * 0.16, ey - s * 0.1, s * 0.16); ctx.fillStyle = '#fff'; ctx.fill();
+      ctx.beginPath(); ctx.ellipse(ex + px, ey + s * 0.13, s * 0.42, s * 0.52, 0, 0, 7); ctx.fillStyle = INKC; ctx.fill();   // 세로로 긴 눈동자
+      circ(ex + px - s * 0.15, ey - s * 0.12, s * 0.18); ctx.fillStyle = '#fff'; ctx.fill();   // 큰 반짝임
+      circ(ex + px + s * 0.16, ey + s * 0.34, s * 0.08); ctx.fill();   // 작은 반짝임
+    }
+    if (brow && mood !== 'sleep') {   // 평소: 안쪽이 내려간 결의 눈썹 · 피격: 안쪽이 올라간 걱정 눈썹
+      const up = mood === 'hurt' ? 1 : -1, by = ey - s * 1.05;
+      line([ex + k * s * 0.62, by - up * s * 0.2], [ex - k * s * 0.3, by + up * s * 0.2], s * 0.24, INKC);
     }
   }
-  ctx.fillStyle = 'rgba(220,120,110,.22)';
+  if (mood === 'hurt' && s >= 1) {   // 땀방울
+    const dx = cx + ox + sep + s * 1.05, dy = cy - s * 0.9;
+    ctx.beginPath(); ctx.moveTo(dx, dy - s * 0.55); ctx.quadraticCurveTo(dx + s * 0.42, dy + s * 0.05, dx, dy + s * 0.3); ctx.quadraticCurveTo(dx - s * 0.42, dy + s * 0.05, dx, dy - s * 0.55);
+    ctx.fillStyle = '#9fdcff'; ctx.fill(); ctx.strokeStyle = '#3a6a90'; ctx.lineWidth = s * 0.1; ctx.stroke();
+  }
+  ctx.fillStyle = mood === 'hurt' ? 'rgba(220,120,110,.12)' : 'rgba(225,115,105,.3)';
   for (const k of [-1, 1]) { ctx.beginPath(); ctx.ellipse(cx + ox + k * (sep + s * 0.55), cy + s * 0.85, s * 0.45, s * 0.26, 0, 0, 7); ctx.fill(); }
 }
 const moodOf = u => !u.built ? 'sleep' : u.hp < u.T.hp * 0.3 || u.hitT > 0 ? 'hurt' : 'ok';
@@ -3003,7 +3023,7 @@ const DRAW = {
     if (Math.sin(u.tur) < 0) gun();
     extrude(() => rrp(-7.5, -6.5, 13, 13, 2), u.x, u.y, 6.5, 5.5, u.tur, C.main, C.mid, C.dark); insignia(u, -8.5, 6.5, u.ang);
     if (Math.sin(u.tur) >= 0) gun();
-    const f = P(u, 1, 0, 12, u.tur); face(f[0], f[1] - 0.6, u.tur, 1.7, mood);
+    const f = P(u, 1, 0, 12, u.tur); face(f[0], f[1] - 0.6, u.tur, 2.04, mood);
   },
   u_mlrs(u, C, mood) {   // 다연장 로켓: 트럭 + 로켓 상자
     shadow(u.x, u.y + 1, 13, 7);
@@ -3012,7 +3032,7 @@ const DRAW = {
     extrude(() => rrp(-9.5, -5.5, 12, 11, 1.5), u.x, u.y, 6, 6, u.ang, C.mid, C.dark, C.dark);
     for (let i = 0; i < 6; i++) { const p = P(u, 2.5, -3.5 + (i % 3) * 3.5, 7.5 + (i < 3 ? 0 : 3), u.ang); circ(p[0], p[1], 1); ctx.fillStyle = '#2a2a24'; ctx.fill(); }
     extrude(() => rrp(4, -5, 7, 10, 3), u.x, u.y, 6, 4, u.ang, C.main, C.mid, C.dark); insignia(u, -3, 12, u.ang, 2);
-    const f = P(u, 8, 0, 10, u.ang); face(f[0], f[1], u.ang, 1.5, mood); if (u.flash > 0) { const p = P(u, 3, 0, 12, u.ang); flashAt(p[0], p[1], 6); }
+    const f = P(u, 8, 0, 10, u.ang); face(f[0], f[1], u.ang, 1.8, mood); if (u.flash > 0) { const p = P(u, 3, 0, 12, u.ang); flashAt(p[0], p[1], 6); }
   },
   u_commando(u, C, mood) {   // 특수부대: 검은 베레모 꼬마 4명
     const pos = u.T.squad.slice(0, membersAlive(u)).map(([lx, ly], i) => { const p = P(u, lx, ly, 0, u.ang); return { x: p[0], y: p[1], i }; }).sort((a, b) => a.y - b.y);
@@ -3032,7 +3052,7 @@ const DRAW = {
     extrude(() => rrp(-11, -7, 22, 14, 4), u.x, u.y, 2, 8, u.ang, W2.main, W2.mid, W2.dark);
     pathAt(() => { ctx.rect(-5, -1.3, 8, 2.6); ctx.rect(-2.3, -4, 2.6, 8); }, u.x, u.y, 10, u.ang); ctx.fillStyle = '#c8352c'; ctx.fill();
     line(P(u, -9, -6, 10, u.ang), P(u, -9, 6, 10, u.ang), 1.8, C.mid);
-    const f = P(u, 9, 0, 7, u.ang); face(f[0], f[1], u.ang, 1.6, mood);
+    const f = P(u, 9, 0, 7, u.ang); face(f[0], f[1], u.ang, 1.92, mood);
     if (Math.sin(G.time * 6) > 0) { const lp = P(u, 4, 0, 11, u.ang); circ(lp[0], lp[1] - 1, 1.3); ctx.fillStyle = '#5aa0e8'; ctx.fill(); }
   },
   truck(u, C, mood) {   // 보급 트럭: 짐칸에 보급 상자, 지붕에 노란 깃발
@@ -3041,7 +3061,7 @@ const DRAW = {
     extrude(() => rrp(-12, -7.5, 17, 15, 2.5), u.x, u.y, 2, 5, u.ang, '#8a7a55', '#6d5f41', '#3d3423');
     for (const [lx, ly] of [[-8, -3.5], [-8, 3.5], [-2.5, 0]]) extrude(() => rrp(-3, -3, 6, 6, 1), P(u, lx, ly, 0, u.ang)[0], P(u, lx, ly, 0, u.ang)[1] + 0, 7, 4.5, u.ang, '#d9b46a', '#b08d4c', '#5a4628');
     extrude(() => rrp(5, -6.5, 8.5, 13, 3), u.x, u.y, 2, 9, u.ang, C.main, C.mid, C.dark);
-    const f = P(u, 12, 0, 7, u.ang); face(f[0], f[1], u.ang, 1.5, mood);
+    const f = P(u, 12, 0, 7, u.ang); face(f[0], f[1], u.ang, 1.8, mood);
     const fp = P(u, 7, 0, 11, u.ang); line([fp[0], fp[1]], [fp[0], fp[1] - 9], 1, '#3d3423');
     ctx.beginPath(); ctx.moveTo(fp[0], fp[1] - 9); ctx.lineTo(fp[0] + 6 + Math.sin(G.time * 8), fp[1] - 7.5); ctx.lineTo(fp[0], fp[1] - 6); ctx.fillStyle = '#ffd25a'; ctx.fill();
   },
@@ -3052,7 +3072,7 @@ const DRAW = {
     for (const sd of [-1, 1]) line(P(u, -8, 0, alt + 1, u.ang), P(u, -12, sd * 4, alt + 4, u.ang), 1.4, C.dark);
     const pr = P(u, -11, 0, alt + 1, u.ang), pa = G.time * 40;
     line([pr[0] + Math.cos(pa) * 3.5, pr[1] + Math.sin(pa) * 1.5], [pr[0] - Math.cos(pa) * 3.5, pr[1] - Math.sin(pa) * 1.5], 1.2, '#3a3a34');
-    const f = P(u, 7, 0, alt + 2, u.ang); face(f[0], f[1], u.ang, 1.2, mood);
+    const f = P(u, 7, 0, alt + 2, u.ang); face(f[0], f[1], u.ang, 1.44, mood);
     if (u.flash > 0) { const b = P(u, 2, 0, alt - 2, u.ang); flashAt(b[0], b[1] + 3, 3); }
   },
   jet(u, C, mood) {   // 전투기: 삼각 날개 · 꼬리날개 · 조종석. 비행 중엔 높이 떠서 애프터버너, 대기 중엔 날개 밑 폭탄
@@ -3066,7 +3086,7 @@ const DRAW = {
     line(P(u, -8, 0, alt + 3.5, u.ang), P(u, -11.5, 0, alt + 10, u.ang), 2.4, C.dark);
     pathAt(() => ctx.ellipse(5, 0, 3.4, 1.6, 0, 0, 7), u.x, u.y, alt + 4.6, u.ang); ctx.fillStyle = '#9fd0ea'; ctx.fill();
     insignia(u, -4, alt + 3, u.ang, 1.8);
-    const f = P(u, 10.5, 0, alt + 3.5, u.ang); face(f[0], f[1], u.ang, 1.15, mood);
+    const f = P(u, 10.5, 0, alt + 3.5, u.ang); face(f[0], f[1], u.ang, 1.38, mood);
     if (fly) { const b = P(u, -14.5, 0, alt + 3, u.ang), fl = 2.6 + Math.random() * 1.6; ctx.globalCompositeOperation = 'lighter'; circ(b[0], b[1], fl); ctx.fillStyle = 'rgba(255,160,60,.85)'; ctx.fill(); circ(b[0], b[1], fl * 0.5); ctx.fillStyle = 'rgba(255,240,200,.95)'; ctx.fill(); ctx.globalCompositeOperation = 'source-over'; }
     if (u.jstate === 'parked' && u.rearmT > 0) { ctx.font = '700 8px -apple-system, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#ffe9a0'; ctx.fillText(`🔧${Math.ceil(u.rearmT)}`, u.x, u.y - 12); }
   },
@@ -3087,7 +3107,7 @@ const DRAW = {
     const rb = P(u, -4, 0, 11, u.tur), rs = G.time * 4 + u.id;   // 레이더 접시
     line(rb, [rb[0], rb[1] - 6], 1.2, C.dark);
     ctx.beginPath(); ctx.ellipse(rb[0], rb[1] - 7, 4.5 * Math.abs(Math.cos(rs)) + 0.8, 2.2, 0, 0, 7); ctx.fillStyle = C.light; ctx.fill(); ctx.strokeStyle = C.dark; ctx.lineWidth = 0.9; ctx.stroke();
-    const f = P(u, 2, 0, 11, u.tur); face(f[0], f[1] - 0.6, u.tur, 1.6, mood);
+    const f = P(u, 2, 0, 11, u.tur); face(f[0], f[1] - 0.6, u.tur, 1.92, mood);
   },
   bunker(u, C, mood) {   // 벙커: 콘크리트 돔 + 사격 구멍 + 기관총
     shadow(u.x, u.y + 3, 20, 12, 0.16);
@@ -3183,7 +3203,7 @@ const DRAW = {
     extrude(TURRET[styleOf(u).turret], u.x, u.y, 6.5, 4.5, u.tur, C.main, C.mid, C.dark);
     shine(() => ctx.ellipse(-2, -2.5, 2.5, 1.1, 0, 0, 7), u.x, u.y, 11, u.tur);
     if (Math.sin(u.tur) >= 0) barrel();
-    const f = P(u, 2, 0, 11, u.tur); face(f[0], f[1] - 0.6, u.tur, 1.75, mood);
+    const f = P(u, 2, 0, 11, u.tur); face(f[0], f[1] - 0.6, u.tur, 2.1, mood);
   },
   art(u, C, mood) {   // 포 1문 + 뒤에 포병(공병 모양 꼬마) 최대 3명
     const crew = [[-15, -6], [-17, 0], [-15, 6]].slice(0, membersAlive(u) - 1).map(([lx, ly], i) => { const p = P(u, lx, ly, 0, u.ang); return { x: p[0], y: p[1], i }; });
@@ -3203,7 +3223,7 @@ const DRAW = {
     camo(u, () => rrp(-9.5, -6.3, 15, 12.6, 4.8), 7, u.ang, C);
     insignia(u, -6.5, 7, u.ang, 2);
     if (Math.sin(u.ang) >= 0) barrel();
-    const f = P(u, 0, 0, 7.5, u.ang); face(f[0], f[1] - 1, u.ang, 1.6, mood);
+    const f = P(u, 0, 0, 7.5, u.ang); face(f[0], f[1] - 1, u.ang, 1.92, mood);
   },
   heli(u, C, mood) {
     const alt = heliAlt(u), fs = Math.sin(u.ang);
@@ -3219,7 +3239,7 @@ const DRAW = {
     pathAt(() => ctx.ellipse(3.6, 0, 4.2, 4.6, 0, 0, 7), u.x, u.y, alt + 6, u.ang); ctx.fillStyle = '#eaf6ff'; ctx.fill(); ctx.strokeStyle = C.dark; ctx.lineWidth = 0.9; ctx.stroke();
     shine(() => ctx.ellipse(-3, -2.8, 3, 1.2, 0, 0, 7), u.x, u.y, alt + 6, u.ang);
     if (fs < 0) tail();
-    const f = P(u, 4.2, 0, alt + 6, u.ang); face(f[0], f[1] - 0.3, u.ang, 1.6, mood);
+    const f = P(u, 4.2, 0, alt + 6, u.ang); face(f[0], f[1] - 0.3, u.ang, 1.92, mood);
     if (u.flash > 0) { const m = P(u, 9, 0, alt + 2, u.ang); flashAt(m[0], m[1], 3.5); }
     const hub = P(u, 0, 0, alt + 10, 0);
     line(P(u, 0, 0, alt + 6, 0), hub, 1.6, C.dark);
@@ -4559,7 +4579,7 @@ function heroPortrait(nat) {
     if (hair === 'curly') for (let k = 0; k < 9; k++) { const a = Math.PI * (1.02 + k * 0.12); E(X + Math.cos(a) * (R + 1), Y + Math.sin(a) * (R + 1), 7, 7, hc); }
     if (hair === 'wig') for (const s of [-1, 1]) for (let k = 0; k < 2; k++) E(X + s * (R - 2), Y + 2 + k * 9, 6, 4.5, hc, '#9a968c', 1.2);
     // 눈 · 볼 (게임 캐릭터와 같은 얼굴)
-    face(X, Y + 4, Math.PI / 2, 6.4, 'front');
+    face(X, Y + 4, Math.PI / 2, 6.4, 'front', false);   // 위인 초상은 눈썹 없이 (수염 · 모자 장식과 겹침 방지)
     g.beginPath(); g.arc(X, Y + 14, 4.5, 0.15 * Math.PI, 0.85 * Math.PI); g.strokeStyle = ink; g.lineWidth = 2; g.lineCap = 'round'; g.stroke();   // 입
     for (const s of [-1, 1]) { g.beginPath(); g.moveTo(X + s * 6, Y - 6); g.lineTo(X + s * 14, Y - 8 + (fac === 'f' ? 1 : 0)); g.strokeStyle = fac === 'f' ? ink : hc === '#d8d4cc' || hc === '#ecebe6' || hc === '#e8e6e0' ? '#8a867c' : hc; g.lineWidth = 2.4; g.stroke(); }   // 눈썹
     // 수염
@@ -6049,7 +6069,11 @@ for (const [n, [base, name, over, trait, desc]] of Object.entries(SPECIAL)) {   
     const air = TYPES[id].move === 'air';
     if (!air) { const pz = 0.5 + Math.sin(G.time * 3 + u.id) * 0.25; ctx.beginPath(); ctx.ellipse(u.x, u.y + 2, u.T.r + 9, (u.T.r + 9) * SQ, 0, 0, 7); ctx.strokeStyle = `rgba(255,210,90,${pz})`; ctx.lineWidth = 2; ctx.stroke(); }
     ctx.save(); ctx.translate(u.x, u.y); ctx.scale(1.15, 1.15); ctx.translate(-u.x, -u.y);
-    try { DRAW[TYPES[id].base](u, C, mood); specialArt(u, C, n, mood); specialDeco(u, C, n); } finally { ctx.restore(); }
+    try {
+      face.last = null; DRAW[TYPES[id].base](u, C, mood); const fl = face.last;
+      specialArt(u, C, n, mood); specialDeco(u, C, n);
+      if (fl && fl[3] >= 1.3) face(...fl);   // 나라별 장비가 차량 얼굴을 덮으면 얼굴을 맨 위에 다시 그림
+    } finally { ctx.restore(); }
   };
 }
 for (const k in TYPES) if (TYPES[k].unique || TYPES[k].base) TYPES[k].maxd = Math.max(1, ...Object.values(TYPES[k].dmg));

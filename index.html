@@ -569,6 +569,20 @@
   #over button.big { background: linear-gradient(#ff8a3c, #ff5a1f); border-color: #ffc89a; color: #fff; font-size: 16px; font-weight: 800; animation: ctaP 2.2s ease-in-out 1s infinite; }
   #over button.sec { background: rgba(32,48,108,.9); border-color: #7fb0ff; } #over button.ghost { background: rgba(14,22,60,.6); border-color: #6a7cc8; color: #c9d3ff; }
   #over .actbar { justify-content: flex-end; } #over .actbar #toTitle { margin-right: auto; }
+  #over .stwrap { margin-top: 10px; padding: 10px 12px; background: rgba(10,16,44,.55); border: 1px solid #2c3a80; text-align: left; }
+  #over .sthead { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } #over .sttabs { display: flex; gap: 4px; margin-left: auto; flex-wrap: wrap; }
+  #over .sttabs button { display: inline-block; width: auto; margin: 0; padding: 3px 10px; font-size: 12px; } #over .sttabs button.on { background: #2b3f8c; border-color: #4fd8ff; color: #fff; }
+  #over .stleg { display: flex; gap: 12px; align-items: center; font-size: 12px; margin: 6px 0 2px; flex-wrap: wrap; } #over .stleg small { margin-left: auto; }
+  #over .stleg i, #stTip i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+  #over .stleg i.d, #stTip i.d { height: 0; border-top: 3px dashed; background: none; border-radius: 0; }
+  #over .stbox { position: relative; } #stCv { display: block; width: 100%; height: 190px; touch-action: pan-y; cursor: crosshair; }
+  #stTip { display: none; position: absolute; top: 6px; padding: 6px 9px; font-size: 12px; line-height: 1.6; white-space: nowrap; pointer-events: none; background: rgba(8,12,34,.95); border: 1px solid #4a5cb0; color: #e8ecff; }
+  #over .sttbl { margin-top: 6px; font-size: 12px; } #over .sttbl summary { cursor: pointer; color: #9fb0e8; } #over .sttbl table { margin-top: 4px; font-size: 12px; }
+  #vets .vsec { margin: 14px 0 6px; display: flex; flex-direction: column; gap: 2px; } #vets .vsec b { font-size: 16px; }
+  #vets .vgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); gap: 8px; }
+  #vets .vcard { display: flex; gap: 8px; align-items: center; padding: 6px 10px 6px 4px; background: rgba(30,42,96,.75); border-left: 3px solid #ffd25a; }
+  #vets .vcard img { width: 72px; height: 48px; flex: none; } #vets .vcard div { display: flex; flex-direction: column; gap: 1px; } #vets .vcard small { color: #9fb0e8; }
+  #vets .vcard.dead { border-left-color: #8a93b8; background: rgba(20,26,60,.75); } #vets .vcard.dead img { filter: grayscale(1) brightness(.85); }
   #prod .opc { flex-direction: row; gap: 4px; width: auto; min-width: 74px; padding: 4px 9px 4px 7px; border-radius: 10px; font-size: 12px; line-height: 1.3; white-space: nowrap; }
   #prod .opc .oi { font-size: 15px; } #prod .opc b { font-weight: 700; } #prod .opc kbd { position: static; order: -1; font-size: 10px; padding: 0 4px; }
   #prod .opc:hover { transform: translateY(-1px); }
@@ -801,7 +815,7 @@
     <div id="thAlert"></div>
     <div id="thRegion" class="card2" style="margin-top:8px"></div>
     <div id="thLog"></div>
-    <div class="thb"><button id="thPolicy">🏛️ 국가 정책</button><button id="thSlots">💾 저장 슬롯</button><button id="thWorld">🌏 세계 지도</button><button class="back">↩ 메뉴로 이동</button><button id="thReset" class="danger">🔄 처음부터</button></div>
+    <div class="thb"><button id="thPolicy">🏛️ 국가 정책</button><button id="thVets">🎖️ 정예 · 추모관</button><button id="thSlots">💾 저장 슬롯</button><button id="thWorld">🌏 세계 지도</button><button class="back">↩ 메뉴로 이동</button><button id="thReset" class="danger">🔄 처음부터</button></div>
   </div>
 </div></div>
 <div id="pvp" class="ov scr"><div class="box" style="width:min(820px,95vw);text-align:left;max-height:88vh;overflow:auto">
@@ -813,6 +827,8 @@
   <div class="cards" id="brCards"></div><div class="actbar"><button id="brBack">↩ 작전도</button><small class="dim">카드를 누르거나 <kbd class="hk">1</kbd><kbd class="hk">2</kbd><kbd class="hk">3</kbd> 키로 출격</small></div></div></div>
 <div id="policy" class="ov scr"><div class="box" style="width:min(900px,96vw);text-align:left"><span class="hide" id="polHide" style="float:right;cursor:pointer;color:#c9b97e;font-weight:600">닫기 ✕</span>
   <h1 style="font-size:24px">🏛️ 국가 정책</h1><div id="polBody"></div></div></div>
+<div id="vets" class="ov scr"><div class="box" style="width:min(720px,95vw);text-align:left;max-height:88vh;overflow:auto"><span class="hide" id="vetHide" style="float:right;cursor:pointer;color:#c9b97e;font-weight:600">닫기 ✕</span>
+  <h1 style="font-size:24px">🎖️ 정예 분대 · 추모관</h1><div id="vetBody"></div></div></div>
 <div id="dex" class="ov scr"><div class="box" style="width:min(820px,94vw);max-height:88vh;overflow:auto;text-align:left">
   <h1 style="font-size:26px">📖 도감</h1><div class="stickbar"><div class="pf-tabbar dextabs"><button data-dt="weapon" class="on">🔫 병기</button><button data-dt="nation">🌏 국가</button></div><div class="fchips" id="dexChips"></div></div><div id="dexList" class="dexgrid"></div><div id="natDex" class="natdex" style="display:none"></div>
   <div class="actbar"><button class="back">↩ 메뉴로 이동</button></div>
@@ -1624,7 +1640,7 @@ function updateEconomy(dt) {
     for (const b of G.units) {
       if (!b.alive || b.owner !== pl.id || !b.built || !b.T.inc) continue;
       const k = (pl.ctrl === 'ai' ? DIFFS[G.diff].ai : 1) * incomeMul(pl) * (pl.buffs && pl.buffs.cut > 0 ? 0 : 1) * (pl.id === ME && G.pol && G.pol.has('eco1') ? 1.15 : 1);
-      pl.money += b.T.inc.m * dt * k; pl.iron += b.T.inc.i * dt * k;
+      pl.money += b.T.inc.m * dt * k; pl.iron += b.T.inc.i * dt * k; pl.earned = (pl.earned || 0) + (b.T.inc.m + b.T.inc.i) * dt * k;
     }
   }
   for (const b of G.units) {
@@ -2527,7 +2543,7 @@ function applyLoadout() {   // 상점에서 산 보너스를 이번 전투에 �
   saveRec(rec);
   if (used.length) toast(`보너스 사용: ${used.join(', ')}`);
 }
-function startBattle() { hideScreens(); G.time = 0; G.started = true; applyLoadout(); musicPlay('battle'); showMissionFlash(); }
+function startBattle() { hideScreens(); G.time = 0; G.stats = []; G.started = true; applyLoadout(); musicPlay('battle'); showMissionFlash(); }
 $('again').onclick = () => { newGame({ ...G.cfg, seed: undefined }); startBattle(); };
 $('toTitle').onclick = () => { newGame(); showScreen('station'); };
 function updateTitleGold() { if ($('station').style.display === 'flex') renderStation(); }
@@ -4060,8 +4076,8 @@ document.addEventListener('click', e => { audioInit(); if (e.target.closest('but
 document.addEventListener('keydown', () => audioInit(), true);
 
 // ================= 화면 전환: 로그인 → 스테이션 → 출격/캠페인 → 전투 → 결과 =================
-const SCREENS = ['login', 'station', 'slots', 'profile', 'setup', 'world', 'theater', 'brief', 'policy', 'pvp', 'dex', 'settings', 'shop', 'records', 'over', 'pausem', 'help'];
-const MENU_SCREENS = ['login', 'station', 'slots', 'profile', 'setup', 'world', 'theater', 'brief', 'policy', 'pvp', 'dex', 'settings', 'shop', 'records'];
+const SCREENS = ['login', 'station', 'slots', 'profile', 'setup', 'world', 'theater', 'brief', 'policy', 'vets', 'pvp', 'dex', 'settings', 'shop', 'records', 'over', 'pausem', 'help'];
+const MENU_SCREENS = ['login', 'station', 'slots', 'profile', 'setup', 'world', 'theater', 'brief', 'policy', 'vets', 'pvp', 'dex', 'settings', 'shop', 'records'];
 function hideScreens() { for (const id of SCREENS) $(id).style.display = 'none'; }
 // ---- 화면 전환 플래시: 메뉴 화면이 바뀔 때 장갑판이 사선으로 쓸고 지나가며 다음 화면 이름을 찍음 (0.6초, 입력은 막지 않음)
 const WIPE_NAME = { station: '🏠 지휘 본부', slots: '💾 지휘 슬롯', world: '🌏 세계 지도', theater: '🗺️ 작전도', pvp: '⚔️ PVP 모드', setup: '🎓 튜토리얼', profile: '👤 지휘관 프로필',
@@ -4225,7 +4241,7 @@ window.addEventListener('keydown', e => {
   if (G.started && !G.over) return;   // 전투 중에는 전투 단축키
   const open = [...document.querySelectorAll('.ov.scr')].filter(el => el.style.display === 'flex'), scr = open[open.length - 1]; if (!scr) return;   // 맨 위(나중에 열린) 화면 기준
   if (e.code === 'Escape') {
-    const back = [...scr.querySelectorAll('.back, #brBack, #shopHide, #setClose, #polHide, #slotBack, #legalClose, .pftabs button.x')].find(visEl);
+    const back = [...scr.querySelectorAll('.back, #brBack, #shopHide, #setClose, #polHide, #vetHide, #slotBack, #legalClose, .pftabs button.x')].find(visEl);
     if (back) { e.preventDefault(); back.click(); } return;
   }
   if (enter) {
@@ -4830,6 +4846,8 @@ $('thWorld').onclick = () => showScreen('world');
 $('thSlots').onclick = () => { slotSel = null; showScreen('slots'); };
 $('thPolicy').onclick = () => renderPolicy();
 $('polHide').onclick = () => { $('policy').style.display = 'none'; renderTheater(); };
+$('thVets').onclick = () => renderVets();
+$('vetHide').onclick = () => { $('vets').style.display = 'none'; renderTheater(); };
 $('thReset').onclick = () => { if (!confirm('스토리를 처음부터 다시 시작할까요? (진행이 사라집니다)')) return; const r = loadRec(); r.story = null; saveRec(r); TH_MAP = null; showScreen('world'); };
 function startRegionBattle(id, kind) {   // 브리핑: 작전 목표 + 보너스 카드 3장 중 1장 선택
   const R = findRegion(id), st = loadRec().story, obj = kind === 'defend' ? 'survive' : R.obj, O = OBJ[obj];
@@ -5321,7 +5339,7 @@ function hostCmd(c) {   // 게스트가 보낸 명령을 호스트의 시뮬레�
 function makeSnap() {
   const r1 = v => Math.round(v * 10) / 10, r2 = v => Math.round(v * 100) / 100;
   return { k: 'snap', time: r1(G.time), uk: G.ukills,
-    pl: G.players.map(p => ({ money: p.money | 0, iron: p.iron | 0, kills: p.kills, losses: p.losses, skillCD: p.skillCD, buffs: p.buffs, nation: p.nation, opCD: p.opCD, coTarget: p.coTarget, adDown: !!p.adDown, apDown: !!p.apDown })),
+    pl: G.players.map(p => ({ money: p.money | 0, iron: p.iron | 0, earned: p.earned | 0, kills: p.kills, losses: p.losses, skillCD: p.skillCD, buffs: p.buffs, nation: p.nation, opCD: p.opCD, coTarget: p.coTarget, adDown: !!p.adDown, apDown: !!p.apDown })),
     pts: G.points.map(p => [p.owner, Math.round(p.prog), p.contested ? 1 : 0]), cr: G.crates.map(c => [c.x | 0, c.y | 0, Math.round(c.fall * 10) / 10]),
     st: G.strikes.map(q => [q.x | 0, q.y | 0, q.r]), br: G.barrages.map(b => [b.x | 0, b.y | 0, r1(b.t0), b.team]), sd: G.sudden ? 1 : 0,
     md: { s: G.modeScore, k: G.kothT, b: G.baseProg, c: G.ctfScore, n: G.crateCount, f: (G.flags || []).map(f => [f.x | 0, f.y | 0, f.carrier ? f.carrier.id : 0, f.atHome ? 1 : 0]) },
@@ -5674,7 +5692,8 @@ function saveVets(rec) {   // 살아남은 이름 있는 유닛 → 정예 분�
   const alive = G.units.filter(u => u.alive && u.owner === ME && u.vname).sort((a, b) => (b.kills || 0) - (a.kills || 0));
   const lost = G.fallen.filter(u => u.owner === ME && u.vname);
   st.vets = alive.slice(0, 5).map(u => ({ name: u.vname, type: u.type, kills: u.kills || 0 }));
-  st.memorial = [...(st.memorial || []), ...lost.map(u => ({ name: u.vname, type: u.type, kills: u.kills || 0, turn: st.turn }))].slice(-30);
+  const where = G.story && findRegion(G.story.region);
+  st.memorial = [...(st.memorial || []), ...lost.map(u => ({ name: u.vname, type: u.type, kills: u.kills || 0, turn: st.turn, where: where ? where.name : '', date: Date.now() }))].slice(-30);
   return (st.vets.length ? `<br>🎖️ 정예 분대: ${st.vets.map(v => `${v.name}(${TYPES[v.type].name} Lv.${lvOf(v)})`).join(', ')}` : '') +
     (lost.length ? `<br>🕯️ 전사: ${lost.map(u => u.vname).join(', ')}` : '');
 }
@@ -6581,6 +6600,88 @@ function hlPlay() {   // 결과 화면의 명장면을 4프레임/초로 반복 
   }, 240);
 }
 
+// ---- 전투 후 통계 그래프: 5초마다 팀별 병력 가치 · 누적 수입 · 격파 수를 기록 → 결과 화면 꺾은선 그래프
+const ST_DT = 5, ST_COL = ['#5aab36', '#cc3e24'];   // 아군 · 적군 (남색 결과 화면에서 명도 · 색약 구분 검증, 적군은 점선으로 한 번 더 구분)
+const ST_KINDS = [['a', '💪 병력', '살아 있는 부대 가치 (생산비 × 남은 체력)'], ['r', '💰 자원 수입', '건물에서 들어온 돈 + 철광 누적'], ['k', '💥 격파', '누적 격파 수']];
+const stTime = t => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
+const stShort = v => v >= 10000 ? (v / 1000).toFixed(0) + 'k' : v >= 1000 ? (v / 1000).toFixed(1) + 'k' : String(Math.round(v));
+function statSample(force) {
+  const L = G.stats || (G.stats = []), last = L[L.length - 1];
+  if (!force && last && G.time - last.t < ST_DT) return;
+  if (force && last && G.time - last.t < 0.5) L.pop();   // 끝 기록은 마지막 순간으로 덮어씀
+  const a = [0, 0], r = [0, 0];
+  for (const u of G.units) if (u.alive && !u.T.building && u.T.cost) a[u.team] += (u.T.cost.m + u.T.cost.i) * Math.min(1, Math.max(0, u.hp / u.T.hp));
+  for (const p of G.players) r[p.team] += p.earned || 0;
+  L.push({ t: G.time, a: a.map(Math.round), r: r.map(Math.round), k: [G.ukills[0] || 0, G.ukills[1] || 0] });
+}
+function statResultHTML() {
+  const L = G.stats || []; if (L.length < 3 || G.tutorial) return '';
+  const my = me().team; G.statShow = { L, my, kind: 'a' };
+  const rows = L.filter((p, i) => i === L.length - 1 || (i && Math.floor(p.t / 60) > Math.floor(L[i - 1].t / 60)));   // 표: 1분마다 + 마지막
+  return `<div class="stwrap"><div class="sthead"><b>📈 전투 흐름</b><span class="sttabs">${ST_KINDS.map(([k, n], i) => `<button data-st="${k}" class="${i ? '' : 'on'}">${n}</button>`).join('')}</span></div>
+    <div class="stleg"><span><i style="background:${ST_COL[0]}"></i>아군</span><span><i class="d" style="border-color:${ST_COL[1]}"></i>적군</span><small id="stDesc">${ST_KINDS[0][2]}</small></div>
+    <div class="stbox"><canvas id="stCv"></canvas><div id="stTip"></div></div>
+    <details class="sttbl"><summary>표로 보기</summary><table class="wg"><tr><th>시간</th>${ST_KINDS.map(([, n]) => `<th>${n}<br><small>아군 / 적군</small></th>`).join('')}</tr>` +
+    rows.map(p => `<tr><td>${stTime(p.t)}</td>${ST_KINDS.map(([k]) => `<td>${p[k][my].toLocaleString()} / ${p[k][1 - my].toLocaleString()}</td>`).join('')}</tr>`).join('') + `</table></details></div>`;
+}
+function statDraw(hi) {
+  const S = G.statShow, cv = $('stCv'); if (!S || !cv || !cv.clientWidth) return;
+  const W = cv.clientWidth, H = cv.clientHeight, dpr = window.devicePixelRatio || 1;
+  if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+  const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+  const { L, my, kind } = S, pad = { l: 40, r: 84, t: 10, b: 22 }, T = Math.max(1, L[L.length - 1].t);
+  let max = Math.max(1, ...L.map(p => Math.max(p[kind][0], p[kind][1])));
+  { const q = max / 4, e = Math.pow(10, Math.floor(Math.log10(q))), m = q / e; const st = (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * e; max = 4 * (kind === 'k' ? Math.max(1, Math.ceil(st)) : st); }   // 눈금 간격이 1·2·2.5·5 단위가 되도록 (격파는 정수)
+  const X = t => pad.l + t / T * (W - pad.l - pad.r), Y = v => H - pad.b - v / max * (H - pad.t - pad.b);
+  const dot = (x, y, c) => { g.beginPath(); g.arc(x, y, 4.5, 0, 6.3); g.fillStyle = c; g.fill(); g.lineWidth = 2; g.strokeStyle = '#141c46'; g.stroke(); };
+  g.font = '11px system-ui, sans-serif'; g.fillStyle = '#9fb0e8'; g.strokeStyle = 'rgba(127,150,230,.16)'; g.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) { const y = Math.round(Y(max * i / 4)) + 0.5; g.beginPath(); g.moveTo(pad.l, y); g.lineTo(W - pad.r, y); g.stroke(); g.textAlign = 'right'; g.textBaseline = 'middle'; g.fillText(stShort(max * i / 4), pad.l - 6, y); }
+  const step = T > 900 ? 180 : T > 480 ? 120 : 60; g.textAlign = 'center'; g.textBaseline = 'top';
+  for (let t = 0; t <= T + 0.1; t += step) g.fillText(stTime(t), X(t), H - pad.b + 6);
+  g.lineWidth = 2; g.lineJoin = g.lineCap = 'round';
+  for (const side of [1, 0]) {   // 적군(점선) 먼저, 아군을 위에
+    const team = side ? 1 - my : my; g.strokeStyle = ST_COL[side]; g.setLineDash(side ? [6, 4] : []); g.beginPath();
+    L.forEach((p, i) => { const x = X(p.t), y = Y(p[kind][team]); i ? g.lineTo(x, y) : g.moveTo(x, y); }); g.stroke();
+  }
+  g.setLineDash([]);
+  const end = L[L.length - 1], ex = X(end.t); let ly = [Y(end[kind][my]), Y(end[kind][1 - my])];
+  if (Math.abs(ly[0] - ly[1]) < 14) { const m = (ly[0] + ly[1]) / 2, d = end[kind][my] >= end[kind][1 - my] ? -7 : 7; ly = [m + d, m - d]; }   // 끝 라벨 겹침 방지
+  [0, 1].forEach(side => { const team = side ? 1 - my : my; dot(ex, Y(end[kind][team]), ST_COL[side]); g.fillStyle = '#e8ecff'; g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillText(`${tt(side ? '적군' : '아군')} ${stShort(end[kind][team])}`, ex + 9, ly[side]); });
+  if (hi != null && L[hi]) { const p = L[hi], x = Math.round(X(p.t)) + 0.5; g.strokeStyle = 'rgba(232,236,255,.45)'; g.lineWidth = 1; g.beginPath(); g.moveTo(x, pad.t); g.lineTo(x, H - pad.b); g.stroke(); [0, 1].forEach(side => dot(x, Y(p[kind][side ? 1 - my : my]), ST_COL[side])); }
+  S.X = X; S.W = W; S.hi = hi;
+}
+function statBind() {
+  const cv = $('stCv'), S = G.statShow, tip = $('stTip'); if (!cv || !S) return;
+  const move = e => {
+    const r = cv.getBoundingClientRect(), mx = e.clientX - r.left; if (!S.X) return;
+    let hi = 0; S.L.forEach((p, i) => { if (Math.abs(S.X(p.t) - mx) < Math.abs(S.X(S.L[hi].t) - mx)) hi = i; });
+    const p = S.L[hi], K = ST_KINDS.find(k => k[0] === S.kind); statDraw(hi);
+    tip.innerHTML = `<b>${stTime(p.t)}</b> · ${K[1]}<br><i style="background:${ST_COL[0]}"></i>아군 <b>${p[S.kind][S.my].toLocaleString()}</b><br><i class="d" style="border-color:${ST_COL[1]}"></i>적군 <b>${p[S.kind][1 - S.my].toLocaleString()}</b>`;
+    tip.style.display = 'block'; const x = S.X(p.t); tip.style.left = (x + 14 + tip.offsetWidth > S.W ? x - 14 - tip.offsetWidth : x + 14) + 'px';
+  };
+  cv.onpointermove = cv.onpointerdown = move;
+  cv.onpointerleave = () => { tip.style.display = 'none'; statDraw(); };
+  for (const b of $('over').querySelectorAll('[data-st]')) b.onclick = () => {
+    S.kind = b.dataset.st; for (const c of $('over').querySelectorAll('[data-st]')) c.classList.toggle('on', c === b);
+    $('stDesc').textContent = ST_KINDS.find(k => k[0] === S.kind)[2]; tip.style.display = 'none'; sfx('click'); statDraw();
+  };
+  if (window.ResizeObserver) new ResizeObserver(() => statDraw(S.hi)).observe(cv);   // 결과 화면이 열릴 때(크기가 생길 때) · 창 크기가 바뀔 때 다시 그림
+  statDraw();
+}
+// ---- 작전도: 지금 함께 다니는 정예 분대 + 전사한 정예 추모관
+function renderVets() {
+  const st = loadRec().story; if (!st) return;
+  const nat = st.nation, vets = st.vets || [], mem = (st.memorial || []).slice().reverse(), memK = mem.reduce((a, v) => a + (v.kills || 0), 0);
+  const card = (v, dead) => `<div class="vcard${dead ? ' dead' : ''}"><img src="${unitIcon(v.type, nat)}" alt=""><div><b>${dead ? '🕯️' : '🎖️'} ${v.name}</b>
+    <small>${TYPES[v.type] ? TYPES[v.type].name : ''} · Lv.${lvOf(v)} · 격파 ${v.kills || 0}</small>${dead ? `<small>${v.turn ? `<span>${v.turn}턴</span> · ` : ''}${v.where ? `<span>${v.where}</span> · ` : ''}<span>전사</span></small>` : ''}</div></div>`;
+  $('vetBody').innerHTML = `<div class="vsec"><b>🎖️ 정예 분대 ${vets.length}/5</b><small class="dim">스토리 전투에서 2레벨이 되어 이름을 얻은 부대 중 격파 수 상위 5기가 다음 전투에 레벨 그대로 함께 출격합니다</small></div>
+    ${vets.length ? `<div class="vgrid">${vets.map(v => card(v)).join('')}</div>` : '<p class="dim">아직 정예 분대가 없습니다. 스토리 전투에서 부대를 격파 2회(2레벨)까지 살려 두세요.</p>'}
+    <div class="vsec"><b>🕯️ 추모관</b><small class="dim">전사한 정예 ${mem.length}기 · 함께 거둔 격파 ${memK}</small></div>
+    ${mem.length ? `<div class="vgrid">${mem.map(v => card(v, true)).join('')}</div>` : '<p class="dim">아직 전사한 정예가 없습니다. 모두 무사히 돌아왔어요.</p>'}
+    <div class="actbar"><button id="vetBack" class="ghost">↩ 작전도</button></div>`;
+  $('vetBack').onclick = () => $('vetHide').click();
+  $('vets').style.display = 'flex';
+}
 // ================= 전투기 · 본부 방공망 =================
 const AD_R = 380, AD_DPS = 140;   // 방공망 반경 · 초당 피해 (전투기 체력 200 → 약 1.4초면 격추)
 // 공항: 본부 뒤쪽에 활주로 + 관제탑. 전투기는 활주로 옆에 나란히 대기
@@ -6846,6 +6947,14 @@ const LANGS = { ko: '한국어', en: 'English', zh: '中文', ja: '日本語' };
 const I18N = [
   // [한국어, English, 中文, 日本語]
   ['미니워존', 'Mini War Zone', '迷你战区', 'ミニウォーゾーン'], ['등고선 위의 작은 전쟁', 'A tiny war on the contours', '等高线上的小战争', '等高線の上の小さな戦争'],
+  ['전투 흐름', 'Battle Flow', '战斗走势', '戦闘の流れ'], ['병력', 'Army', '兵力', '兵力'], ['자원 수입', 'Income', '资源收入', '資源収入'], ['적군', 'Enemy', '敌军', '敵軍'], ['표로 보기', 'Show as table', '以表格查看', '表で見る'],
+  ['아군 / 적군', 'Ally / Enemy', '我军 / 敌军', '味方 / 敵'], ['살아 있는 부대 가치 (생산비 × 남은 체력)', 'Value of living units (cost × HP left)', '存活部队价值（生产费 × 剩余体力）', '生存部隊の価値（生産費 × 残り体力）'],
+  ['건물에서 들어온 돈 + 철광 누적', 'Cumulative money + iron from buildings', '建筑累计收入（资金 + 铁矿）', '建物からの資金 + 鉄鉱の累計'], ['누적 격파 수', 'Cumulative kills', '累计击毁数', '累計撃破数'],
+  ['정예 · 추모관', 'Veterans · Memorial', '精英 · 纪念馆', '精鋭 · 追悼館'], ['정예 분대 · 추모관', 'Veteran Squad · Memorial', '精英分队 · 纪念馆', '精鋭分隊 · 追悼館'], ['정예 분대', 'Veteran Squad', '精英分队', '精鋭分隊'], ['추모관', 'Memorial', '纪念馆', '追悼館'], ['전사', 'Fallen', '阵亡', '戦死'],
+  ['전사한 정예', 'Fallen veterans', '阵亡精英', '戦死した精鋭'], ['함께 거둔 격파', 'kills together', '共同击毁', '共に挙げた撃破'],
+  ['스토리 전투에서 2레벨이 되어 이름을 얻은 부대 중 격파 수 상위 5기가 다음 전투에 레벨 그대로 함께 출격합니다', 'Named units that reached Lv.2 in story battles — the top 5 by kills join your next battle at their current level', '剧情战斗中达到2级并获得名字的部队，击毁数前5名将保持等级参加下一场战斗', 'ストーリー戦闘で Lv.2 になり名前を得た部隊のうち、撃破数上位5機がレベルそのままで次の戦闘に出撃します'],
+  ['아직 정예 분대가 없습니다. 스토리 전투에서 부대를 격파 2회(2레벨)까지 살려 두세요.', 'No veterans yet. Keep a unit alive until it gets 2 kills (Lv.2) in a story battle.', '还没有精英分队。在剧情战斗中让部队存活到击毁2次（2级）。', 'まだ精鋭分隊はいません。ストーリー戦闘で部隊を撃破2回（Lv.2）まで生き残らせましょう。'],
+  ['아직 전사한 정예가 없습니다. 모두 무사히 돌아왔어요.', 'No fallen veterans. Everyone made it home.', '还没有阵亡的精英。大家都平安归来。', 'まだ戦死した精鋭はいません。全員無事に帰還しました。'],
   ['전체', 'All', '全部', 'すべて'], ['부대 색', 'Unit Colors', '部队颜色', '部隊カラー'], ['전투 보너스', 'Battle Bonuses', '战斗加成', '戦闘ボーナス'], ['모자', 'Hats', '帽子', '帽子'],
   ['구매 확인', 'Confirm', '确认购买', '購入確認'], ['구매 완료', 'Purchased', '购买完成', '購入完了'], ['기본 병종', 'Basic Units', '基本兵种', '基本兵種'], ['국가 특수무기', 'National Specials', '国家特殊武器', '国家特殊兵器'], ['본부 · 구조물', 'HQ · Structures', '总部 · 建筑', '本部 · 構造物'],
   ['세계 정복 시작', 'Start Conquest', '开始征服世界', '世界征服を開始'], ['이어하기', 'Continue', '继续', 'つづきから'], ['스토리 모드', 'Story Mode', '故事模式', 'ストーリーモード'],
@@ -7052,6 +7161,7 @@ function endGame(win, why) {
   G.over = true; bannerT = 0; contactT = 0; $('banner').style.display = $('contact').style.display = 'none';
   if (G.net === 'host') { const s = makeSnap(); relay(s); relay({ k: 'over', win: win === null ? null : !win, why: WHY_SWAP[why] || why }); }
   if (G.net) { wsSend({ t: 'result', matchId: NET.match && NET.match.id, win }); wsSend({ t: 'done' }); } G.hqWin = win && why.startsWith('적 본부');
+  statSample(true);
   const pl = me(), t = Math.floor(G.time), sc = scoreBattle(!!win);
   const gold = Math.floor(sc.total / 10);
   G.reward = { gold, storyGold: 0, xp: 0, promo: null, rating: null, tut: 0, score: sc.total, kills: G.ukills[pl.team] || 0, time: t };
@@ -7076,8 +7186,8 @@ function endGame(win, why) {
     <table class="wg"><tr><th>종목</th><th>기록</th><th>점수</th></tr>${rows}<tr><td><b>합계</b></td><td></td><td><b>${sc.total.toLocaleString()}</b></td></tr></table>
     <div>🪙 보상 <b>${gold.toLocaleString()} 골드</b> <small>(누적 ${rec.gold.toLocaleString()})</small></div>` +
     (roster.length ? `<div class="mvp"><b>공로 부대</b> (격파 기여도에 따라 골드 분배)<br>` + roster.map((u, i) =>
-      `${i === 0 ? '🏅' : '·'} ${u.T.name} Lv.${lvOf(u)} — 격파 ${u.kills} · ${Math.round(u.kills / sumK * 100)}% · ${Math.floor(gold * u.kills / sumK)}골드${u.alive ? '' : ' (전사)'}`).join('<br>') + '</div>' : '') + hlResultHTML();
-  setTimeout(hlPlay, 30);
+      `${i === 0 ? '🏅' : '·'} ${u.T.name} Lv.${lvOf(u)} — 격파 ${u.kills} · ${Math.round(u.kills / sumK * 100)}% · ${Math.floor(gold * u.kills / sumK)}골드${u.alive ? '' : ' (전사)'}`).join('<br>') + '</div>' : '') + statResultHTML() + hlResultHTML();
+  setTimeout(hlPlay, 30); setTimeout(statBind, 0);
   $('toTheater').style.display = 'none'; $('again').style.display = G.net ? 'none' : 'inline-block';
   if (G.story) $('overP').innerHTML += storyResult(win);
   { const sto = !!G.story; $('toTitle').className = sto || !G.net ? 'ghost' : 'big'; $('again').className = sto ? 'sec' : 'big'; if (G.net) $('toTitle').className = 'big';   // 주 행동 하나: 스토리 → 작전도 · 연습 → 다시 · PVP → 메뉴
@@ -7154,7 +7264,7 @@ function cerButtons() {   // 승부 후 선택: 기본은 지도(작전도)로 /
 }
 function cerAction(a) {
   sfx('click'); $('ceremony').style.display = 'none'; screenWipe.force = a !== 'detail' && a !== 'again';
-  if (a === 'detail') { $('over').style.display = 'flex'; return; }
+  if (a === 'detail') { $('over').style.display = 'flex'; statDraw(); return; }
   $('over').style.display = 'none';
   if (a === 'map') { newGame(); TH_MAP = null; showScreen('theater'); return; }
   if (a === 'menu') { newGame(); showScreen('station'); return; }
@@ -7261,6 +7371,7 @@ function frame(now) {
     if (G.slowMoT > 0) G.slowMoT -= dt;
     if (G.net === 'host') { NET.snapT -= dt; if (NET.snapT <= 0) { NET.snapT = 0.05; relay(makeSnap()); } }
   }
+  if (G.started && !G.over && !G.tutorial) statSample();
   const menuOn = !G.started && MENU_SCREENS.some(id => $(id).style.display === 'flex');
   titleCv.style.display = menuOn ? 'block' : 'none';
   if (menuOn) { drawTitleArt($('login').style.display === 'flex' || $('station').style.display === 'flex'); if ($('slots').style.display === 'flex') drawSlotArt(); }

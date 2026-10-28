@@ -28,6 +28,14 @@ npm test             # 백엔드 통합 테스트 (node --test)
 | `ALLOWED_ORIGINS` | (같은 주소만) | 다른 도메인에서 API·WebSocket 접속을 허용할 출처 목록 (쉼표로 구분) |
 | `NODE_ENV` | | `production`이면 index.html을 메모리에 캐시 |
 
+## 회원가입 · 로그인 페이지 (`member/`)
+
+- 서버 실행 후 `http://localhost:8080/member/signup.html` · `/member/login.html` (파일을 직접 열어도 동작)
+- 아주 심플한 정적 페이지: 아이디 중복검색 · 형식 검사, 비밀번호 규칙 · 확인, 로그인 · 로그아웃
+- 회원 정보는 **브라우저 localStorage에만** 저장(데모). 비밀번호 · 힌트 답변은 SHA-256 해시. 보안 연결이 아닌 주소(`http://서버IP`)에서는 내장 SHA-256 사용
+- 게임 계정(클라우드 연결 · 복구 코드)과는 별개
+- 테스트: `npm run test:member` · 실행 중인 서버로: `BASE=http://127.0.0.1:8080/member npm run test:member` · 비보안 주소 흉내: `LAN=1`
+
 ## 배포 (Docker)
 
 ```bash
@@ -51,12 +59,14 @@ docker run -d -p 8080:8080 -v miniwarzone-data:/data --name miniwarzone ghcr.io/
 
 | 파일 | 역할 |
 |---|---|
-| `server.js` | HTTP 서버 · 공개 파일 허용 목록(index.html만) · 보안 헤더(CSP 등) · 출처 검사 · 종료 처리 |
+| `server.js` | HTTP 서버 · 공개 파일 허용 목록(index.html · member/ 페이지 4개) · 보안 헤더(CSP 등) · 출처 검사 · 종료 처리 |
 | `backend/db.js` | SQLite 스키마와 쿼리 (계정 · 세션 · 저장 · 레이팅 · 대전 기록) |
 | `backend/api.js` | REST API · 입력 검증 · 크기 제한 · IP별 요청 제한 |
 | `backend/ws.js` | WebSocket · 로비 · 매칭 · 친구 방 코드 · 재접속 · 결과 합의 · 하트비트 |
 | `backend/rating.js` | Elo 레이팅(K=32) · 시즌 이월 |
-| `test/server.test.js` | 통합 테스트 |
+| `test/server.test.js` | 통합 테스트 (`npm test`) |
+| `member/` | 회원가입 · 로그인 페이지 (`/member/signup.html` · `/member/login.html`) — `member/README.md` |
+| `member/test/e2e.mjs` | 회원 페이지 브라우저 테스트 (`npm run test:member`) |
 
 ### 계정 방식
 

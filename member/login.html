@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>로그인</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <nav class="side">
+    <h2>로그인</h2>
+    <a href="signup.html">회원가입</a>
+    <a href="login.html" class="on">로그인</a>
+  </nav>
+
+  <main class="main">
+    <h1>로그인<small>아이디와 비밀번호를 입력하세요.</small></h1>
+
+    <form id="login" class="login" novalidate>
+      <div id="loginBox">
+        <input type="text" id="lid" placeholder="아이디" autocomplete="username">
+        <input type="password" id="lpw" placeholder="비밀번호" autocomplete="current-password">
+        <button class="submit">로그인</button>
+      </div>
+      <p class="msg" id="lmsg"></p>
+      <button type="button" class="submit out" id="logout" hidden>로그아웃</button>
+      <p class="links"><a href="signup.html">회원가입</a></p>
+    </form>
+  </main>
+</div>
+<script src="auth.js"></script>
+</body>
+</html>

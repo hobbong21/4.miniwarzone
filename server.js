@@ -19,7 +19,10 @@ const { makeWs } = require('./backend/ws');
 const VERSION = '2026.10.2';
 const ROOT = __dirname;
 // 공개하는 파일만 명시 (기획서 · 백업 · 서버 코드 · DB는 절대 내보내지 않음)
-const PUBLIC = { '/': 'index.html', '/index.html': 'index.html' };
+const PUBLIC = { '/': 'index.html', '/index.html': 'index.html',
+  '/member/': 'member/login.html', '/member/login.html': 'member/login.html', '/member/signup.html': 'member/signup.html',   // 회원가입 · 로그인 페이지
+  '/member/style.css': 'member/style.css', '/member/auth.js': 'member/auth.js' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8' };
 const SECURITY_HEADERS = {
   'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', 'X-Frame-Options': 'SAMEORIGIN',
   'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' ws: wss:; media-src 'self' data: blob:; object-src 'none'; base-uri 'none'; frame-ancestors 'self'",
@@ -53,7 +56,7 @@ function createServer(opts = {}) {
     }
     const resolved = path.join(ROOT, name);
     const send = data => {
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-cache' });
+      res.writeHead(200, { 'Content-Type': TYPES[path.extname(name)], 'Cache-Control': 'no-cache' });
       res.end(req.method === 'HEAD' ? undefined : data);
     };
     if (cache.has(resolved) && !opts.noCache) return send(cache.get(resolved));

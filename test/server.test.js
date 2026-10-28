@@ -37,6 +37,14 @@ test('상태 확인 · 공개 파일 제한 · 보안 헤더', async () => {
   const r = await fetch(base + '/'); assert.equal(r.status, 200); assert.match(r.headers.get('content-security-policy'), /default-src 'self'/); assert.equal(r.headers.get('x-content-type-options'), 'nosniff');
 });
 
+test('회원가입 · 로그인 페이지 제공 (형식) · 테스트 · 문서는 차단', async () => {
+  for (const [p, type] of [['/member/', 'text/html'], ['/member/login.html', 'text/html'], ['/member/signup.html', 'text/html'], ['/member/style.css', 'text/css'], ['/member/auth.js', 'text/javascript']]) {
+    const r = await fetch(base + p); assert.equal(r.status, 200, p); assert.match(r.headers.get('content-type'), new RegExp('^' + type), p);
+  }
+  assert.match(await (await fetch(base + '/member/signup.html')).text(), /<title>회원가입<\/title>/);
+  for (const p of ['/member/test/e2e.mjs', '/member/README.md', '/member', '/member/../server.js']) assert.equal((await fetch(base + p)).status, 404, p);
+});
+
 test('계정 · 클라우드 저장 · 충돌 · 복구 코드 · 삭제', async () => {
   const a = await account('  한국<b>지휘관이름이너무길다  ');
   assert.equal(a.name, '한국b지휘관이름이너무길'); assert.match(a.code, /^[A-Z2-9]{4}-[A-Z2-9]{4}-[A-Z2-9]{4}$/);

@@ -2,3 +2,8 @@
 # 버전 백업 사본 (git 기록으로 대체)
 index_v*.html
 node_modules/
+# 서버 데이터베이스 (이용자 정보 · 절대 커밋 금지)
+data/
+*.db
+*.db-wal
+*.db-shm

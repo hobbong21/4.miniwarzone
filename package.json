@@ -1,0 +1,15 @@
+{
+  "name": "miniwarzone",
+  "version": "2026.10.2",
+  "description": "미니워존 — 브라우저 2.5D 전략 게임 (게임 + 백엔드: 계정 · 클라우드 저장 · 순위표 · PVP)",
+  "author": "휴먼에이드 (HumanAid)",
+  "private": true,
+  "license": "UNLICENSED",
+  "main": "server.js",
+  "engines": { "node": ">=22.5" },
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test"
+  }
+}

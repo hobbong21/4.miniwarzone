@@ -295,7 +295,15 @@
   @keyframes ptp { to { box-shadow: 0 0 14px rgba(255,210,90,.6); } }
   .ov .pt-node button { display: inline-block; width: auto; margin: 5px 0 0; padding: 2px 14px; font-size: 12px; background: linear-gradient(#ff8a3c, #ff5a1f); border-color: #ffc89a; color: #fff; }
   #polBody { overflow-x: auto; }
-  .dextabs { margin: 4px 0 12px; } .nd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; }
+  .stickbar { position: sticky; top: -24px; z-index: 3; margin: 0 -32px 10px; padding: 8px 32px 10px; background: rgba(16,24,58,.97); border-bottom: 1px solid #3f52a8; box-shadow: 0 6px 12px -8px rgba(0,0,0,.6); }
+  .stickbar .pf-tabbar { margin-top: 6px; } .fchips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+  .ov.scr .fchips button { display: inline-block; width: auto; margin: 0; padding: 3px 11px; font-size: 12px; border-radius: 12px; background: rgba(14,22,60,.6); border-color: #4a5aa8; color: #c9d3ff; }
+  .ov.scr .fchips button.on { background: #2f5fbf; border-color: #7fe3ff; color: #fff; }
+  .ov.scr button.confirm { background: #b8860b; border-color: #ffd38a; color: #fff; animation: cfPulse .8s ease-in-out infinite alternate; }
+  @keyframes cfPulse { from { box-shadow: 0 0 0 0 rgba(255,211,138,0); } to { box-shadow: 0 0 0 3px rgba(255,211,138,.45); } }
+  .shopsec[hidden] { display: none; }
+  @media (max-width: 600px) { .stickbar { top: -16px; margin: 0 -14px 10px; padding: 8px 14px 10px; } }
+  .dextabs { margin: 4px 0 0; } .nd-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 10px; }
   .nd-card { padding: 10px 12px; border-radius: 10px; background: rgba(30,42,96,.85); border: 1.5px solid #4a5cb0; } .nd-h { display: flex; align-items: center; gap: 8px; }
   .nd-h span { font-size: 26px; } .nd-h b { font-size: 18px; color: #fff; } .nd-h small { margin-left: auto; color: #9fb0e8; }
   .ov .card button, .ov .item button, .ov .card .btn { width: auto; max-width: 100%; box-sizing: border-box; }
@@ -524,6 +532,18 @@
   .ov #legal .actbar { justify-content: flex-start; }
   #legal { z-index: 50; background: rgba(6,10,30,.74); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
   .ov .pf-tabbar button.x { background: rgba(14,22,60,.6); border-color: #6a7cc8; color: #c9d3ff; } .ov .pf-tabbar button.x:hover { border-color: #4fd8ff; color: #fff; }
+  /* 클라우드 */
+  .cloudbox { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; } .ov .cloudbox button { width: auto; margin: 0; } .cl-st { width: 100%; font-size: 13px; color: #c9d3ff; }
+  .ccode { margin: 8px 0; padding: 12px; font: 900 28px/1.2 ui-monospace, Menlo, monospace; letter-spacing: 4px; text-align: center; color: #ffd25a; background: #0b1130; border: 2px dashed #ffd25a; user-select: all; }
+  #cloudDlg { z-index: 60; background: rgba(6,10,30,.78); } #cloudDlg .box { background: linear-gradient(rgba(24,33,76,.98), rgba(13,19,48,.98)); border: 2px solid #4fd8ff; border-radius: 0; color: #e8ecff; text-align: left; }
+  #cloudDlg button { background: #20306c; border: 1.5px solid #5a6cc0; color: #eef2ff; border-radius: 4px; } #cloudDlg button.big { background: linear-gradient(#ff8a3c, #ff5a1f); border-color: #ffc89a; } #cloudDlg button.sec { border-color: #7fb0ff; }
+  .recov { margin-top: 8px; font-size: 13px; color: #9fb0e8; } .recov summary { cursor: pointer; } .recov summary:hover { color: #7fe3ff; }
+  /* PVP: 모드 카드 · 친구 방 · 순위표 */
+  .pvp-top { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } @media (max-width: 600px) { .pvp-top { grid-template-columns: 1fr; } }
+  .rm-row { display: flex; gap: 6px; margin-top: 6px; } .ov .rm-row button { width: auto; margin: 0; } .rm-row input { width: 100px; text-transform: uppercase; letter-spacing: 2px; }
+  table.lb { width: 100%; } table.lb tr.me td { background: rgba(255,106,42,.2); color: #ffe0b0; font-weight: 800; } .lbtabs { margin: 6px 0; }
+  #legalNote { position: absolute; left: 50%; top: 2vh; transform: translateX(-50%); z-index: 5; display: flex; gap: 8px; align-items: center; padding: 8px 12px; font-size: 13px; border-color: #ffb04a; }
+  .ov #legalNote button { width: auto; margin: 0; padding: 4px 12px; }
   /* 작전도 지역 말풍선 */
   #thTip { position: fixed; z-index: 80; display: none; pointer-events: none; min-width: 200px; max-width: 280px; padding: 9px 12px 10px; color: #e8ecff; font-size: 12px; line-height: 1.55;
     background: linear-gradient(rgba(24,33,76,.97), rgba(12,18,46,.97)); border: 1.5px solid #4fd8ff; box-shadow: 0 10px 28px rgba(0,0,0,.5); clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); }
@@ -549,6 +569,20 @@
   #over button.big { background: linear-gradient(#ff8a3c, #ff5a1f); border-color: #ffc89a; color: #fff; font-size: 16px; font-weight: 800; animation: ctaP 2.2s ease-in-out 1s infinite; }
   #over button.sec { background: rgba(32,48,108,.9); border-color: #7fb0ff; } #over button.ghost { background: rgba(14,22,60,.6); border-color: #6a7cc8; color: #c9d3ff; }
   #over .actbar { justify-content: flex-end; } #over .actbar #toTitle { margin-right: auto; }
+  #over .stwrap { margin-top: 10px; padding: 10px 12px; background: rgba(10,16,44,.55); border: 1px solid #2c3a80; text-align: left; }
+  #over .sthead { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } #over .sttabs { display: flex; gap: 4px; margin-left: auto; flex-wrap: wrap; }
+  #over .sttabs button { display: inline-block; width: auto; margin: 0; padding: 3px 10px; font-size: 12px; } #over .sttabs button.on { background: #2b3f8c; border-color: #4fd8ff; color: #fff; }
+  #over .stleg { display: flex; gap: 12px; align-items: center; font-size: 12px; margin: 6px 0 2px; flex-wrap: wrap; } #over .stleg small { margin-left: auto; }
+  #over .stleg i, #stTip i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+  #over .stleg i.d, #stTip i.d { height: 0; border-top: 3px dashed; background: none; border-radius: 0; }
+  #over .stbox { position: relative; } #stCv { display: block; width: 100%; height: 190px; touch-action: pan-y; cursor: crosshair; }
+  #stTip { display: none; position: absolute; top: 6px; padding: 6px 9px; font-size: 12px; line-height: 1.6; white-space: nowrap; pointer-events: none; background: rgba(8,12,34,.95); border: 1px solid #4a5cb0; color: #e8ecff; }
+  #over .sttbl { margin-top: 6px; font-size: 12px; } #over .sttbl summary { cursor: pointer; color: #9fb0e8; } #over .sttbl table { margin-top: 4px; font-size: 12px; }
+  #vets .vsec { margin: 14px 0 6px; display: flex; flex-direction: column; gap: 2px; } #vets .vsec b { font-size: 16px; }
+  #vets .vgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr)); gap: 8px; }
+  #vets .vcard { display: flex; gap: 8px; align-items: center; padding: 6px 10px 6px 4px; background: rgba(30,42,96,.75); border-left: 3px solid #ffd25a; }
+  #vets .vcard img { width: 72px; height: 48px; flex: none; } #vets .vcard div { display: flex; flex-direction: column; gap: 1px; } #vets .vcard small { color: #9fb0e8; }
+  #vets .vcard.dead { border-left-color: #8a93b8; background: rgba(20,26,60,.75); } #vets .vcard.dead img { filter: grayscale(1) brightness(.85); }
   #prod .opc { flex-direction: row; gap: 4px; width: auto; min-width: 74px; padding: 4px 9px 4px 7px; border-radius: 10px; font-size: 12px; line-height: 1.3; white-space: nowrap; }
   #prod .opc .oi { font-size: 15px; } #prod .opc b { font-weight: 700; } #prod .opc kbd { position: static; order: -1; font-size: 10px; padding: 0 4px; }
   #prod .opc:hover { transform: translateY(-1px); }
@@ -704,6 +738,7 @@
     <div id="lgMsg" class="msg"></div>
     <label class="agree"><input type="checkbox" id="lgAgree"> <span>(필수) <a href="#" data-legal="terms">이용약관</a>과 <a href="#" data-legal="privacy">개인정보 처리방침</a>에 동의합니다</span></label>
     <button id="lgGo" class="mbtn go" data-primary>등록하고 시작 ▶</button>
+    <details class="recov" id="lgRecov"><summary>🔑 다른 기기에서 하던 기록 불러오기 (복구 코드)</summary><div class="form" style="display:flex;gap:6px;margin-top:6px"><input id="lgCode" maxlength="16" placeholder="XXXX-XXXX-XXXX" style="flex:1"><button id="lgRecover" class="sec" style="width:auto;margin:0">불러오기</button></div></details>
     <small class="dim">처음 한 번만 등록합니다 · 기록은 이 브라우저에만 저장 · 스토리는 저장 슬롯마다 나라를 따로 고를 수 있어요</small>
   </div>
   <div class="ver">MINI WAR ZONE · v2026.10 · © 2026 휴먼에이드 HumanAid · <a href="#" data-legal="terms">이용약관</a> · <a href="#" data-legal="privacy">개인정보 처리방침</a></div>
@@ -780,7 +815,7 @@
     <div id="thAlert"></div>
     <div id="thRegion" class="card2" style="margin-top:8px"></div>
     <div id="thLog"></div>
-    <div class="thb"><button id="thPolicy">🏛️ 국가 정책</button><button id="thSlots">💾 저장 슬롯</button><button id="thWorld">🌏 세계 지도</button><button class="back">↩ 메뉴로 이동</button><button id="thReset" class="danger">🔄 처음부터</button></div>
+    <div class="thb"><button id="thPolicy">🏛️ 국가 정책</button><button id="thVets">🎖️ 정예 · 추모관</button><button id="thSlots">💾 저장 슬롯</button><button id="thWorld">🌏 세계 지도</button><button class="back">↩ 메뉴로 이동</button><button id="thReset" class="danger">🔄 처음부터</button></div>
   </div>
 </div></div>
 <div id="pvp" class="ov scr"><div class="box" style="width:min(820px,95vw);text-align:left;max-height:88vh;overflow:auto">
@@ -792,8 +827,10 @@
   <div class="cards" id="brCards"></div><div class="actbar"><button id="brBack">↩ 작전도</button><small class="dim">카드를 누르거나 <kbd class="hk">1</kbd><kbd class="hk">2</kbd><kbd class="hk">3</kbd> 키로 출격</small></div></div></div>
 <div id="policy" class="ov scr"><div class="box" style="width:min(900px,96vw);text-align:left"><span class="hide" id="polHide" style="float:right;cursor:pointer;color:#c9b97e;font-weight:600">닫기 ✕</span>
   <h1 style="font-size:24px">🏛️ 국가 정책</h1><div id="polBody"></div></div></div>
+<div id="vets" class="ov scr"><div class="box" style="width:min(720px,95vw);text-align:left;max-height:88vh;overflow:auto"><span class="hide" id="vetHide" style="float:right;cursor:pointer;color:#c9b97e;font-weight:600">닫기 ✕</span>
+  <h1 style="font-size:24px">🎖️ 정예 분대 · 추모관</h1><div id="vetBody"></div></div></div>
 <div id="dex" class="ov scr"><div class="box" style="width:min(820px,94vw);max-height:88vh;overflow:auto;text-align:left">
-  <h1 style="font-size:26px">📖 도감</h1><div class="pf-tabbar dextabs"><button data-dt="weapon" class="on">🔫 병기</button><button data-dt="nation">🌏 국가</button></div><div id="dexList" class="dexgrid"></div><div id="natDex" class="natdex" style="display:none"></div>
+  <h1 style="font-size:26px">📖 도감</h1><div class="stickbar"><div class="pf-tabbar dextabs"><button data-dt="weapon" class="on">🔫 병기</button><button data-dt="nation">🌏 국가</button></div><div class="fchips" id="dexChips"></div></div><div id="dexList" class="dexgrid"></div><div id="natDex" class="natdex" style="display:none"></div>
   <div class="actbar"><button class="back">↩ 메뉴로 이동</button></div>
 </div></div>
 <div id="settings" class="ov scr"><div class="box pf" style="text-align:left">
@@ -803,6 +840,7 @@
   <div class="opt"><span>배경음</span><div data-set="music"><button data-v="1">켜기</button><button data-v="0">끄기</button></div></div>
   <div class="opt"><span>언어</span><div id="setLang"><button data-lang="ko">한국어</button><button data-lang="en">English</button><button data-lang="zh">中文</button><button data-lang="ja">日本語</button></div></div>
   <div class="opt"><span>가장자리 스크롤</span><div data-set="edge"><button data-v="1">켜기</button><button data-v="0">끄기</button></div></div>
+  <div class="opt"><span>☁️ 클라우드</span><div id="cloudBox" class="cloudbox"></div></div>
   <div class="opt"><span>약관 · 정보</span><div><button data-legal="terms">📜 이용약관</button><button data-legal="privacy">🔒 개인정보 처리방침</button></div></div>
   <div class="opt"><span>내 기록</span><div><button id="wipeData" class="danger">🗑️ 내 기록 모두 지우기</button></div></div>
   <div class="devcredit">🎮 개발 · 휴먼에이드 (HumanAid) · v2026.10</div>
@@ -816,9 +854,10 @@
 <div id="over" class="ov"><div class="box"><div class="ov-tag">📊 BATTLE REPORT · 전투 결과</div><h1 id="overT"></h1><div id="overP"></div>
   <div class="actbar"><button id="toTitle">🏠 메뉴로 이동</button><button id="again" class="sec">🔁 같은 설정으로 다시</button><button id="toTheater" class="big" style="display:none">🗺️ 작전도로</button></div></div></div>
 <div id="shop" class="ov scr"><div class="box" style="text-align:left;width:min(720px,92vw);max-height:86vh;overflow:auto"><span class="hide" id="shopHide" style="float:right;cursor:pointer;color:#c9b97e;font-weight:600">닫기 ✕</span>
-  <h1 style="font-size:24px">🛒 상점</h1><div id="shopBody"></div></div></div>
+  <h1 style="font-size:24px">🛒 상점</h1><div class="stickbar" id="shopBar"></div><div id="shopBody"></div></div></div>
 <div id="records" class="ov scr"><div class="box pf" style="text-align:left;max-height:92vh;overflow:auto"><div class="pftabs"></div><span class="hide" id="recHide" style="display:none">닫기 ✕</span>
   <h1 style="font-size:24px">🏆 워게임 기록실</h1><div id="recBody"></div></div></div>
+<div id="cloudDlg" class="ov"></div>
 <div id="thTip"></div>
 <div id="touchBar"></div>
 <div id="legal" class="ov scr"><div class="box" style="width:min(760px,95vw);text-align:left;max-height:90vh;overflow:auto"><div id="legalBody"></div>
@@ -1601,7 +1640,7 @@ function updateEconomy(dt) {
     for (const b of G.units) {
       if (!b.alive || b.owner !== pl.id || !b.built || !b.T.inc) continue;
       const k = (pl.ctrl === 'ai' ? DIFFS[G.diff].ai : 1) * incomeMul(pl) * (pl.buffs && pl.buffs.cut > 0 ? 0 : 1) * (pl.id === ME && G.pol && G.pol.has('eco1') ? 1.15 : 1);
-      pl.money += b.T.inc.m * dt * k; pl.iron += b.T.inc.i * dt * k;
+      pl.money += b.T.inc.m * dt * k; pl.iron += b.T.inc.i * dt * k; pl.earned = (pl.earned || 0) + (b.T.inc.m + b.T.inc.i) * dt * k;
     }
   }
   for (const b of G.units) {
@@ -2504,28 +2543,37 @@ function applyLoadout() {   // 상점에서 산 보너스를 이번 전투에 �
   saveRec(rec);
   if (used.length) toast(`보너스 사용: ${used.join(', ')}`);
 }
-function startBattle() { hideScreens(); G.time = 0; G.started = true; applyLoadout(); musicPlay('battle'); showMissionFlash(); }
+function startBattle() { hideScreens(); G.time = 0; G.stats = []; G.started = true; applyLoadout(); musicPlay('battle'); showMissionFlash(); }
 $('again').onclick = () => { newGame({ ...G.cfg, seed: undefined }); startBattle(); };
 $('toTitle').onclick = () => { newGame(); showScreen('station'); };
 function updateTitleGold() { if ($('station').style.display === 'flex') renderStation(); }
-function renderShop() {
+// 상점: 위 고정 막대(골드 · 탭) + 구매는 두 번 눌러 확인 (첫 클릭 → "✔ 구매 확인", 4초 안에 다시 누르면 구매)
+const SHOP_TABS = [['all', '전체'], ['skin', '🎨 부대 색'], ['item', '🎁 전투 보너스'], ['hat', '🎩 모자']];
+let shopTab = 'all', shopPending = null, shopPendT = 0;
+const buyBtn = (act, k, price, gold, label) => shopPending && shopPending.act === act && shopPending.k === k
+  ? `<button class="confirm" data-act="${act}" data-k="${k}">✔ 구매 확인 🪙${price.toLocaleString()}</button>`
+  : `<button data-act="${act}" data-k="${k}" ${gold < price ? 'disabled' : ''}>${label}</button>`;
+function renderShop(keep) {
+  if (!keep) shopPending = null;
   const rec = loadRec();
   const skins = Object.entries(SKINS).map(([k, S]) => {
     const own = rec.skins.includes(k), on = rec.skin === k;
     const btn = on ? '<b style="color:#a8d07a">착용 중</b>' : own ? `<button data-act="equip" data-k="${k}">착용</button>`
-      : `<button data-act="skin" data-k="${k}" ${rec.gold < S.price ? 'disabled' : ''}>🪙 ${S.price.toLocaleString()}</button>`;
+      : buyBtn('skin', k, S.price, rec.gold, `🪙 ${S.price.toLocaleString()}`);
     return `<div class="card ${on ? 'on' : ''}"><canvas data-skin="${k}"></canvas><b>${S.name}</b>${S.sparkle ? ' ✨' : ''}<br>${btn}</div>`;
   }).join('');
   const items = Object.entries(ITEMS).map(([k, I]) => `<div class="item"><div class="d"><b>${I.name}</b> <small>보유 ${rec.inv[k] || 0}개</small><br><small>${I.desc}</small></div>
     <label><input type="checkbox" data-use="${k}" ${rec.use[k] ? 'checked' : ''}> 다음 전투에 사용</label>
-    <button data-act="item" data-k="${k}" ${rec.gold < I.price ? 'disabled' : ''}>🪙 ${I.price} 구매</button></div>`).join('');
-  $('shopBody').innerHTML = `<div>🪙 보유 골드 <b>${rec.gold.toLocaleString()}</b> <small style="color:#a7ad92">— 워게임 점수의 1/10이 골드로 쌓입니다</small></div>
-    <h3>부대 색 (스킨)</h3><div class="skins">${skins}</div>
-    <h3>전투 시작 보너스 <small style="color:#a7ad92">(체크한 보너스를 1개씩 소모)</small></h3>${items}
-    <h3>🎩 유닛 꾸미기 (모자) <small style="color:#a7ad92">— 내 유닛 모두에게 씌워집니다 (PVP 제외)</small></h3><div class="skins">${Object.entries(HATS).map(([k, H]) => {
+    ${buyBtn('item', k, I.price, rec.gold, `🪙 ${I.price} 구매`)}</div>`).join('');
+  $('shopBar').innerHTML = `<div>🪙 보유 골드 <b>${rec.gold.toLocaleString()}</b> <small style="color:#a7ad92">— 워게임 점수의 1/10이 골드로 쌓입니다</small></div>
+    <div class="pf-tabbar">${SHOP_TABS.map(([k, n]) => `<button data-st="${k}" class="${shopTab === k ? 'on' : ''}">${n}</button>`).join('')}</div>`;
+  const sec = k => shopTab !== 'all' && shopTab !== k ? 'hidden' : '';
+  $('shopBody').innerHTML = `<div class="shopsec" ${sec('skin')}><h3>부대 색 (스킨)</h3><div class="skins">${skins}</div></div>
+    <div class="shopsec" ${sec('item')}><h3>전투 시작 보너스 <small style="color:#a7ad92">(체크한 보너스를 1개씩 소모)</small></h3>${items}</div>
+    <div class="shopsec" ${sec('hat')}><h3>🎩 유닛 꾸미기 (모자) <small style="color:#a7ad92">— 내 유닛 모두에게 씌워집니다 (PVP 제외)</small></h3><div class="skins">${Object.entries(HATS).map(([k, H]) => {
       const own = rec.hats.includes(k), on = rec.hat === k;
-      const btn = on ? '<b style="color:#a8d07a">착용 중</b>' : own ? `<button data-act="hat" data-k="${k}">착용</button>` : `<button data-act="buyhat" data-k="${k}" ${rec.gold < H.price ? 'disabled' : ''}>🪙 ${H.price}</button>`;
-      return `<div class="card ${on ? 'on' : ''}"><canvas data-hat="${k}"></canvas><b>${H.name}</b><br>${btn}</div>`; }).join('')}</div>`;
+      const btn = on ? '<b style="color:#a8d07a">착용 중</b>' : own ? `<button data-act="hat" data-k="${k}">착용</button>` : buyBtn('buyhat', k, H.price, rec.gold, `🪙 ${H.price}`);
+      return `<div class="card ${on ? 'on' : ''}"><canvas data-hat="${k}"></canvas><b>${H.name}</b><br>${btn}</div>`; }).join('')}</div></div>`;
   for (const c of document.querySelectorAll('canvas[data-hat]')) {   // 모자 미리보기
     c.width = 150 * DPR; c.height = 70 * DPR; c.style.width = '150px'; c.style.height = '70px';
     const g = c.getContext('2d'), col = SKINS[rec.skin].col, save = ctx; ctx = g;
@@ -2544,9 +2592,16 @@ function renderShop() {
     ctx = save;
   }
 }
+$('shopBar').onclick = e => { const b = e.target.closest('button[data-st]'); if (!b) return; shopTab = b.dataset.st; sfx('click'); renderShop(true); $('shopBar').parentNode.scrollTop = 0; };
 $('shopBody').onclick = e => {
   const b = e.target.closest('button[data-act]'); if (!b) return;
-  const rec = loadRec(), k = b.dataset.k;
+  const rec = loadRec(), k = b.dataset.k, act = b.dataset.act;
+  if (act === 'skin' || act === 'buyhat' || act === 'item') {   // 구매는 두 번째 클릭에서만
+    if (!shopPending || shopPending.act !== act || shopPending.k !== k) { shopPending = { act, k }; shopPendT = performance.now(); sfx('click'); return renderShop(true); }
+    shopPending = null;
+    const I = (act === 'skin' ? SKINS : act === 'buyhat' ? HATS : ITEMS)[k];
+    if (rec.gold >= I.price) toast(`🛒 ${I.name} 구매 완료 · 남은 골드 🪙${(rec.gold - I.price).toLocaleString()}`);
+  }
   if (b.dataset.act === 'skin' && rec.gold >= SKINS[k].price) { rec.gold -= SKINS[k].price; rec.skins.push(k); rec.skin = k; }
   if (b.dataset.act === 'equip') rec.skin = k;
   if (b.dataset.act === 'buyhat' && rec.gold >= HATS[k].price) { rec.gold -= HATS[k].price; rec.hats.push(k); rec.hat = k; }
@@ -2557,6 +2612,7 @@ $('shopBody').onclick = e => {
   if (b.dataset.act !== 'item') { G.players[ME].col = SKINS[rec.skin].col; G.players[ME].sparkle = !!SKINS[rec.skin].sparkle; }
   renderShop(); updateTitleGold();
 };
+setInterval(() => { if (shopPending && performance.now() - shopPendT > 4000 && $('shop').style.display === 'flex') renderShop(); }, 500);   // 4초 지나면 확인 취소
 $('shopBody').onchange = e => { const k = e.target.dataset.use; if (!k) return; const rec = loadRec(); rec.use[k] = e.target.checked; saveRec(rec); };
 $('shopHide').onclick = () => { $('shop').style.display = 'none'; };
 $('shop').onclick = e => { if (e.target.id === 'shop') $('shop').style.display = 'none'; };
@@ -2791,7 +2847,10 @@ function insigniaOld(u, lx, z, ang, r = 2.6) {   // (예전) 흰 별
   ctx.beginPath(); for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, q = i % 2 ? r * 0.42 : r; ctx.lineTo(x + Math.cos(a) * q, y + Math.sin(a) * q * SQ); }
   ctx.closePath(); ctx.fillStyle = 'rgba(245,245,235,.8)'; ctx.fill();
 }
-function shadow(x, y, rx, ry, a = 0.17) { ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); ctx.fillStyle = `rgba(80,60,30,${a})`; ctx.fill(); }
+function shadow(x, y, rx, ry, a = 0.17) {   // 넓고 옅은 그림자 + 바로 아래 좁고 진한 접지 그림자
+  ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); ctx.fillStyle = `rgba(80,60,30,${a})`; ctx.fill();
+  ctx.beginPath(); ctx.ellipse(x, y + ry * 0.08, rx * 0.7, ry * 0.6, 0, 0, Math.PI * 2); ctx.fillStyle = `rgba(55,40,20,${a * 0.75})`; ctx.fill();
+}
 // 바닥 모양 fn을 z0부터 h만큼 쌓아 올린 입체 (옆면 + 윗면 + 외곽선)
 function extrude(fn, x, y, z0, h, ang, top, side, ln) {
   const st = []; for (let k = 0; k < h; k += 1.2) st.push(z0 + k); st.push(z0 + h);
@@ -2799,31 +2858,48 @@ function extrude(fn, x, y, z0, h, ang, top, side, ln) {
   for (const z of st) { pathAt(fn, x, y, z, ang); ctx.stroke(); }
   ctx.fillStyle = side;
   for (const z of st) { pathAt(fn, x, y, z, ang); ctx.fill(); }
-  pathAt(fn, x, y, z0 + h, ang); ctx.fillStyle = top; ctx.fill(); ctx.lineWidth = 0.8; ctx.stroke();
+  pathAt(fn, x, y, z0 + h, ang); ctx.fillStyle = top; ctx.fill();
+  let gl = SHEEN.get(ctx);   // 윗면 왼쪽 위에서 비치는 은은한 광택: 캔버스마다 한 번 만든 그라데이션을 윗면 위치로 옮겨 칠함
+  if (!gl) { gl = ctx.createLinearGradient(-10, -8, 6, 6); gl.addColorStop(0, 'rgba(255,255,240,.2)'); gl.addColorStop(0.55, 'rgba(255,255,240,0)'); gl.addColorStop(1, 'rgba(0,0,0,.06)'); SHEEN.set(ctx, gl); }
+  ctx.save(); ctx.translate(x, y - z0 - h); ctx.fillStyle = gl; ctx.fill(); ctx.restore();   // 경로는 이미 정해져 있으므로 옮겨지는 건 그라데이션뿐
+  ctx.lineWidth = 0.8; ctx.stroke();
 }
+const SHEEN = new WeakMap();
 function shine(fn, x, y, z, ang) { pathAt(fn, x, y, z, ang); ctx.fillStyle = 'rgba(255,255,255,.22)'; ctx.fill(); }
-// 얼굴: 큰 눈 + 반짝임 + 볼터치. mood: ok / hurt(><) / sleep(건설 중)
-function face(cx, cy, ang, s, mood) {
+// 얼굴: 큰 눈 + 반짝임 두 개 + 볼터치. mood: ok / front(정면) / hurt(><, 땀방울) / sleep(건설 중)
+// 차량 · 건물처럼 큰 얼굴(s ≥ 1.3)은 눈썹도 그림: 평소엔 결의에 찬 눈썹, 피격 땐 걱정 눈썹
+function face(cx, cy, ang, s, mood, brow = s >= 1.3) {
   const fs = Math.sin(ang), fc = Math.cos(ang);
   if (fs < -0.55 && mood !== 'front') return;   // 뒤돌아 있으면 안 보임
+  face.last = [cx, cy, ang, s, mood, brow];   // 특수무기가 장비를 덧그린 뒤 얼굴을 다시 그릴 때 씀
   const sep = s * 1.25 * (0.55 + 0.45 * Math.abs(fs)), ox = mood === 'front' ? 0 : fc * s * 0.55;
+  ctx.lineCap = 'round';
   for (const k of [-1, 1]) {
     const ex = cx + ox + k * sep, ey = cy;
-    ctx.lineCap = 'round';
     if (mood === 'hurt') {
       ctx.beginPath(); ctx.moveTo(ex - k * s * 0.55, ey - s * 0.55); ctx.lineTo(ex + k * s * 0.4, ey); ctx.lineTo(ex - k * s * 0.55, ey + s * 0.55);
-      ctx.strokeStyle = INKC; ctx.lineWidth = s * 0.38; ctx.stroke();
+      ctx.strokeStyle = INKC; ctx.lineWidth = s * 0.42; ctx.stroke();
     } else if (mood === 'sleep') {
       ctx.beginPath(); ctx.arc(ex, ey - s * 0.2, s * 0.5, 0.15 * Math.PI, 0.85 * Math.PI); ctx.strokeStyle = INKC; ctx.lineWidth = s * 0.32; ctx.stroke();
     } else {
-      ctx.beginPath(); ctx.ellipse(ex, ey, s * 0.56, s * 0.72, 0, 0, 7); ctx.fillStyle = '#fbfbf5'; ctx.fill();
-      ctx.strokeStyle = INKC; ctx.lineWidth = s * 0.16; ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(ex, ey, s * 0.6, s * 0.78, 0, 0, 7); ctx.fillStyle = '#fdfdf6'; ctx.fill();
+      ctx.strokeStyle = INKC; ctx.lineWidth = s * 0.18; ctx.stroke();
       const px = mood === 'front' ? 0 : fc * s * 0.17;
-      circ(ex + px, ey + s * 0.12, s * 0.43); ctx.fillStyle = INKC; ctx.fill();
-      circ(ex + px - s * 0.16, ey - s * 0.1, s * 0.16); ctx.fillStyle = '#fff'; ctx.fill();
+      ctx.beginPath(); ctx.ellipse(ex + px, ey + s * 0.13, s * 0.42, s * 0.52, 0, 0, 7); ctx.fillStyle = INKC; ctx.fill();   // 세로로 긴 눈동자
+      circ(ex + px - s * 0.15, ey - s * 0.12, s * 0.18); ctx.fillStyle = '#fff'; ctx.fill();   // 큰 반짝임
+      circ(ex + px + s * 0.16, ey + s * 0.34, s * 0.08); ctx.fill();   // 작은 반짝임
+    }
+    if (brow && mood !== 'sleep') {   // 평소: 안쪽이 내려간 결의 눈썹 · 피격: 안쪽이 올라간 걱정 눈썹
+      const up = mood === 'hurt' ? 1 : -1, by = ey - s * 1.05;
+      line([ex + k * s * 0.62, by - up * s * 0.2], [ex - k * s * 0.3, by + up * s * 0.2], s * 0.24, INKC);
     }
   }
-  ctx.fillStyle = 'rgba(220,120,110,.22)';
+  if (mood === 'hurt' && s >= 1) {   // 땀방울
+    const dx = cx + ox + sep + s * 1.05, dy = cy - s * 0.9;
+    ctx.beginPath(); ctx.moveTo(dx, dy - s * 0.55); ctx.quadraticCurveTo(dx + s * 0.42, dy + s * 0.05, dx, dy + s * 0.3); ctx.quadraticCurveTo(dx - s * 0.42, dy + s * 0.05, dx, dy - s * 0.55);
+    ctx.fillStyle = '#9fdcff'; ctx.fill(); ctx.strokeStyle = '#3a6a90'; ctx.lineWidth = s * 0.1; ctx.stroke();
+  }
+  ctx.fillStyle = mood === 'hurt' ? 'rgba(220,120,110,.12)' : 'rgba(225,115,105,.3)';
   for (const k of [-1, 1]) { ctx.beginPath(); ctx.ellipse(cx + ox + k * (sep + s * 0.55), cy + s * 0.85, s * 0.45, s * 0.26, 0, 0, 7); ctx.fill(); }
 }
 const moodOf = u => !u.built ? 'sleep' : u.hp < u.T.hp * 0.3 || u.hitT > 0 ? 'hurt' : 'ok';
@@ -2947,7 +3023,7 @@ const DRAW = {
     if (Math.sin(u.tur) < 0) gun();
     extrude(() => rrp(-7.5, -6.5, 13, 13, 2), u.x, u.y, 6.5, 5.5, u.tur, C.main, C.mid, C.dark); insignia(u, -8.5, 6.5, u.ang);
     if (Math.sin(u.tur) >= 0) gun();
-    const f = P(u, 1, 0, 12, u.tur); face(f[0], f[1] - 0.6, u.tur, 1.7, mood);
+    const f = P(u, 1, 0, 12, u.tur); face(f[0], f[1] - 0.6, u.tur, 2.04, mood);
   },
   u_mlrs(u, C, mood) {   // 다연장 로켓: 트럭 + 로켓 상자
     shadow(u.x, u.y + 1, 13, 7);
@@ -2956,7 +3032,7 @@ const DRAW = {
     extrude(() => rrp(-9.5, -5.5, 12, 11, 1.5), u.x, u.y, 6, 6, u.ang, C.mid, C.dark, C.dark);
     for (let i = 0; i < 6; i++) { const p = P(u, 2.5, -3.5 + (i % 3) * 3.5, 7.5 + (i < 3 ? 0 : 3), u.ang); circ(p[0], p[1], 1); ctx.fillStyle = '#2a2a24'; ctx.fill(); }
     extrude(() => rrp(4, -5, 7, 10, 3), u.x, u.y, 6, 4, u.ang, C.main, C.mid, C.dark); insignia(u, -3, 12, u.ang, 2);
-    const f = P(u, 8, 0, 10, u.ang); face(f[0], f[1], u.ang, 1.5, mood); if (u.flash > 0) { const p = P(u, 3, 0, 12, u.ang); flashAt(p[0], p[1], 6); }
+    const f = P(u, 8, 0, 10, u.ang); face(f[0], f[1], u.ang, 1.8, mood); if (u.flash > 0) { const p = P(u, 3, 0, 12, u.ang); flashAt(p[0], p[1], 6); }
   },
   u_commando(u, C, mood) {   // 특수부대: 검은 베레모 꼬마 4명
     const pos = u.T.squad.slice(0, membersAlive(u)).map(([lx, ly], i) => { const p = P(u, lx, ly, 0, u.ang); return { x: p[0], y: p[1], i }; }).sort((a, b) => a.y - b.y);
@@ -2976,7 +3052,7 @@ const DRAW = {
     extrude(() => rrp(-11, -7, 22, 14, 4), u.x, u.y, 2, 8, u.ang, W2.main, W2.mid, W2.dark);
     pathAt(() => { ctx.rect(-5, -1.3, 8, 2.6); ctx.rect(-2.3, -4, 2.6, 8); }, u.x, u.y, 10, u.ang); ctx.fillStyle = '#c8352c'; ctx.fill();
     line(P(u, -9, -6, 10, u.ang), P(u, -9, 6, 10, u.ang), 1.8, C.mid);
-    const f = P(u, 9, 0, 7, u.ang); face(f[0], f[1], u.ang, 1.6, mood);
+    const f = P(u, 9, 0, 7, u.ang); face(f[0], f[1], u.ang, 1.92, mood);
     if (Math.sin(G.time * 6) > 0) { const lp = P(u, 4, 0, 11, u.ang); circ(lp[0], lp[1] - 1, 1.3); ctx.fillStyle = '#5aa0e8'; ctx.fill(); }
   },
   truck(u, C, mood) {   // 보급 트럭: 짐칸에 보급 상자, 지붕에 노란 깃발
@@ -2985,7 +3061,7 @@ const DRAW = {
     extrude(() => rrp(-12, -7.5, 17, 15, 2.5), u.x, u.y, 2, 5, u.ang, '#8a7a55', '#6d5f41', '#3d3423');
     for (const [lx, ly] of [[-8, -3.5], [-8, 3.5], [-2.5, 0]]) extrude(() => rrp(-3, -3, 6, 6, 1), P(u, lx, ly, 0, u.ang)[0], P(u, lx, ly, 0, u.ang)[1] + 0, 7, 4.5, u.ang, '#d9b46a', '#b08d4c', '#5a4628');
     extrude(() => rrp(5, -6.5, 8.5, 13, 3), u.x, u.y, 2, 9, u.ang, C.main, C.mid, C.dark);
-    const f = P(u, 12, 0, 7, u.ang); face(f[0], f[1], u.ang, 1.5, mood);
+    const f = P(u, 12, 0, 7, u.ang); face(f[0], f[1], u.ang, 1.8, mood);
     const fp = P(u, 7, 0, 11, u.ang); line([fp[0], fp[1]], [fp[0], fp[1] - 9], 1, '#3d3423');
     ctx.beginPath(); ctx.moveTo(fp[0], fp[1] - 9); ctx.lineTo(fp[0] + 6 + Math.sin(G.time * 8), fp[1] - 7.5); ctx.lineTo(fp[0], fp[1] - 6); ctx.fillStyle = '#ffd25a'; ctx.fill();
   },
@@ -2996,7 +3072,7 @@ const DRAW = {
     for (const sd of [-1, 1]) line(P(u, -8, 0, alt + 1, u.ang), P(u, -12, sd * 4, alt + 4, u.ang), 1.4, C.dark);
     const pr = P(u, -11, 0, alt + 1, u.ang), pa = G.time * 40;
     line([pr[0] + Math.cos(pa) * 3.5, pr[1] + Math.sin(pa) * 1.5], [pr[0] - Math.cos(pa) * 3.5, pr[1] - Math.sin(pa) * 1.5], 1.2, '#3a3a34');
-    const f = P(u, 7, 0, alt + 2, u.ang); face(f[0], f[1], u.ang, 1.2, mood);
+    const f = P(u, 7, 0, alt + 2, u.ang); face(f[0], f[1], u.ang, 1.44, mood);
     if (u.flash > 0) { const b = P(u, 2, 0, alt - 2, u.ang); flashAt(b[0], b[1] + 3, 3); }
   },
   jet(u, C, mood) {   // 전투기: 삼각 날개 · 꼬리날개 · 조종석. 비행 중엔 높이 떠서 애프터버너, 대기 중엔 날개 밑 폭탄
@@ -3010,7 +3086,7 @@ const DRAW = {
     line(P(u, -8, 0, alt + 3.5, u.ang), P(u, -11.5, 0, alt + 10, u.ang), 2.4, C.dark);
     pathAt(() => ctx.ellipse(5, 0, 3.4, 1.6, 0, 0, 7), u.x, u.y, alt + 4.6, u.ang); ctx.fillStyle = '#9fd0ea'; ctx.fill();
     insignia(u, -4, alt + 3, u.ang, 1.8);
-    const f = P(u, 10.5, 0, alt + 3.5, u.ang); face(f[0], f[1], u.ang, 1.15, mood);
+    const f = P(u, 10.5, 0, alt + 3.5, u.ang); face(f[0], f[1], u.ang, 1.38, mood);
     if (fly) { const b = P(u, -14.5, 0, alt + 3, u.ang), fl = 2.6 + Math.random() * 1.6; ctx.globalCompositeOperation = 'lighter'; circ(b[0], b[1], fl); ctx.fillStyle = 'rgba(255,160,60,.85)'; ctx.fill(); circ(b[0], b[1], fl * 0.5); ctx.fillStyle = 'rgba(255,240,200,.95)'; ctx.fill(); ctx.globalCompositeOperation = 'source-over'; }
     if (u.jstate === 'parked' && u.rearmT > 0) { ctx.font = '700 8px -apple-system, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#ffe9a0'; ctx.fillText(`🔧${Math.ceil(u.rearmT)}`, u.x, u.y - 12); }
   },
@@ -3031,7 +3107,7 @@ const DRAW = {
     const rb = P(u, -4, 0, 11, u.tur), rs = G.time * 4 + u.id;   // 레이더 접시
     line(rb, [rb[0], rb[1] - 6], 1.2, C.dark);
     ctx.beginPath(); ctx.ellipse(rb[0], rb[1] - 7, 4.5 * Math.abs(Math.cos(rs)) + 0.8, 2.2, 0, 0, 7); ctx.fillStyle = C.light; ctx.fill(); ctx.strokeStyle = C.dark; ctx.lineWidth = 0.9; ctx.stroke();
-    const f = P(u, 2, 0, 11, u.tur); face(f[0], f[1] - 0.6, u.tur, 1.6, mood);
+    const f = P(u, 2, 0, 11, u.tur); face(f[0], f[1] - 0.6, u.tur, 1.92, mood);
   },
   bunker(u, C, mood) {   // 벙커: 콘크리트 돔 + 사격 구멍 + 기관총
     shadow(u.x, u.y + 3, 20, 12, 0.16);
@@ -3127,7 +3203,7 @@ const DRAW = {
     extrude(TURRET[styleOf(u).turret], u.x, u.y, 6.5, 4.5, u.tur, C.main, C.mid, C.dark);
     shine(() => ctx.ellipse(-2, -2.5, 2.5, 1.1, 0, 0, 7), u.x, u.y, 11, u.tur);
     if (Math.sin(u.tur) >= 0) barrel();
-    const f = P(u, 2, 0, 11, u.tur); face(f[0], f[1] - 0.6, u.tur, 1.75, mood);
+    const f = P(u, 2, 0, 11, u.tur); face(f[0], f[1] - 0.6, u.tur, 2.1, mood);
   },
   art(u, C, mood) {   // 포 1문 + 뒤에 포병(공병 모양 꼬마) 최대 3명
     const crew = [[-15, -6], [-17, 0], [-15, 6]].slice(0, membersAlive(u) - 1).map(([lx, ly], i) => { const p = P(u, lx, ly, 0, u.ang); return { x: p[0], y: p[1], i }; });
@@ -3147,7 +3223,7 @@ const DRAW = {
     camo(u, () => rrp(-9.5, -6.3, 15, 12.6, 4.8), 7, u.ang, C);
     insignia(u, -6.5, 7, u.ang, 2);
     if (Math.sin(u.ang) >= 0) barrel();
-    const f = P(u, 0, 0, 7.5, u.ang); face(f[0], f[1] - 1, u.ang, 1.6, mood);
+    const f = P(u, 0, 0, 7.5, u.ang); face(f[0], f[1] - 1, u.ang, 1.92, mood);
   },
   heli(u, C, mood) {
     const alt = heliAlt(u), fs = Math.sin(u.ang);
@@ -3163,7 +3239,7 @@ const DRAW = {
     pathAt(() => ctx.ellipse(3.6, 0, 4.2, 4.6, 0, 0, 7), u.x, u.y, alt + 6, u.ang); ctx.fillStyle = '#eaf6ff'; ctx.fill(); ctx.strokeStyle = C.dark; ctx.lineWidth = 0.9; ctx.stroke();
     shine(() => ctx.ellipse(-3, -2.8, 3, 1.2, 0, 0, 7), u.x, u.y, alt + 6, u.ang);
     if (fs < 0) tail();
-    const f = P(u, 4.2, 0, alt + 6, u.ang); face(f[0], f[1] - 0.3, u.ang, 1.6, mood);
+    const f = P(u, 4.2, 0, alt + 6, u.ang); face(f[0], f[1] - 0.3, u.ang, 1.92, mood);
     if (u.flash > 0) { const m = P(u, 9, 0, alt + 2, u.ang); flashAt(m[0], m[1], 3.5); }
     const hub = P(u, 0, 0, alt + 10, 0);
     line(P(u, 0, 0, alt + 6, 0), hub, 1.6, C.dark);
@@ -3383,6 +3459,46 @@ function drawEntity(u) {
   }
   ctx.restore();
 }
+
+// ---- 지형 가림: 앞쪽(화면 아래)의 높은 계단·헥스가 그 뒤 낮은 곳의 유닛을 가림
+// 지형 이미지는 한 장으로 미리 그려 두므로, 화면 칸마다 "보이는 땅의 지면 y와 높이"를 기록해 두고
+// 유닛은 따로 된 레이어에 그리고, 한 유닛을 그린 직후 그 유닛보다 앞에 있고 더 높은 땅이 덮는 부분을 레이어에서 지움
+// (먼저 그린 뒤쪽 유닛도 같은 땅에 가려지므로 함께 지워져도 맞음 · 사거리 원 같은 바닥 표시는 그대로 남음 · 등고선 · 헥스 공용)
+const OCC = 2;   // 가림 지도 칸 크기(px)
+function buildOcclusion() {
+  const W = Math.ceil(WW / OCC), H = Math.ceil((WH + ZM) / OCC);
+  const fy = new Int16Array(W * H).fill(-1), fz = new Uint8Array(W * H);   // 칸마다 보이는 땅의 지면 y · 높이×2
+  for (let i = 0; i < W; i++) {
+    const x = Math.min(WW - 0.5, i * OCC + OCC / 2);
+    for (let y = 0; y < WH; y++) {   // 뒤(위)에서 앞(아래)으로: 앞의 땅이 나중에 덮어씀
+      const z = Zs(x, y); if (!z) continue;   // 평지(높이 0)는 아무것도 가리지 않음
+      const a = Math.max(0, Math.floor((y - z + ZM) / OCC)), b = Math.min(H - 1, Math.floor((y + ZM) / OCC)), zz = Math.round(z * 2);
+      for (let j = a; j <= b; j++) { fy[j * W + i] = y; fz[j * W + i] = zz; }
+    }
+  }
+  return { W, H, fy, fz };
+}
+function occludeUnit(u) {
+  const O = G.OCC; if (!O || u.T.move === 'air') return;
+  const dz = dzOf(u), r = u.T.r + 12, zMin = (dz + 1) * 2, yMin = u.y + 3;
+  // 생명 막대·이름표(몸 위쪽)는 가리지 않음
+  const i0 = Math.max(0, Math.floor((u.x - r) / OCC)), i1 = Math.min(O.W - 1, Math.floor((u.x + r) / OCC));
+  const j0 = Math.max(0, Math.floor((u.y - dz - u.T.top - 2 + ZM) / OCC)), j1 = Math.min(O.H - 1, Math.floor((u.y - dz + r * SQ + ZM) / OCC));
+  let any = false;
+  ctx.beginPath();
+  for (let j = j0; j <= j1; j++) {   // 가로로 이어진 칸은 사각형 하나로 묶음
+    let run = -1;
+    for (let i = i0; i <= i1 + 1; i++) {
+      const k = j * O.W + i, hit = i <= i1 && O.fy[k] > yMin && O.fz[k] > zMin;
+      if (hit && run < 0) run = i;
+      else if (!hit && run >= 0) { ctx.rect(run * OCC, j * OCC - ZM, (i - run) * OCC, OCC); run = -1; any = true; }
+    }
+  }
+  if (!any) return;
+  ctx.save(); ctx.globalCompositeOperation = 'destination-out'; ctx.globalAlpha = 0.8; ctx.fill(); ctx.restore();   // 살짝 비쳐 보여서 가려진 내 부대도 찾을 수 있음
+}
+const unitLayer = { c: document.createElement('canvas') };
+unitLayer.g = unitLayer.c.getContext('2d');
 
 // ================= 렌더링 =================
 function drawOrders() {
@@ -3694,7 +3810,13 @@ function drawWorldLayer(z, ox, oy) {
   const list = [];
   for (const u of G.units) if (u.alive && u.seen[myTeam] && u.T.move !== 'air' && !u.T.flat) list.push({ y: u.y, u });
   list.sort((a, b) => a.y - b.y);
-  for (const it of list) drawEntity(it.u);
+  if (G.OCC) {   // 지형 가림: 유닛 레이어에 그려서 가려진 부분을 지운 뒤 합침
+    const main = ctx, L = unitLayer, cw = main.canvas.width, chh = main.canvas.height;
+    if (L.c.width !== cw || L.c.height !== chh) { L.c.width = cw; L.c.height = chh; } else { L.g.setTransform(1, 0, 0, 1, 0, 0); L.g.clearRect(0, 0, cw, chh); }
+    L.g.setTransform(main.getTransform()); L.g.imageSmoothingEnabled = true; ctx = L.g;
+    try { for (const it of list) { drawEntity(it.u); occludeUnit(it.u); } } finally { ctx = main; }
+    main.save(); main.setTransform(1, 0, 0, 1, 0, 0); main.drawImage(L.c, 0, 0); main.restore();
+  } else for (const it of list) drawEntity(it.u);
   for (const u of G.units) if (u.alive && u.seen[myTeam] && u.T.move === 'air') drawEntity(u);
   drawFX2();
   if (!CAPTURE) { drawGhost(); drawOrders(); }
@@ -3974,8 +4096,8 @@ document.addEventListener('click', e => { audioInit(); if (e.target.closest('but
 document.addEventListener('keydown', () => audioInit(), true);
 
 // ================= 화면 전환: 로그인 → 스테이션 → 출격/캠페인 → 전투 → 결과 =================
-const SCREENS = ['login', 'station', 'slots', 'profile', 'setup', 'world', 'theater', 'brief', 'policy', 'pvp', 'dex', 'settings', 'shop', 'records', 'over', 'pausem', 'help'];
-const MENU_SCREENS = ['login', 'station', 'slots', 'profile', 'setup', 'world', 'theater', 'brief', 'policy', 'pvp', 'dex', 'settings', 'shop', 'records'];
+const SCREENS = ['login', 'station', 'slots', 'profile', 'setup', 'world', 'theater', 'brief', 'policy', 'vets', 'pvp', 'dex', 'settings', 'shop', 'records', 'over', 'pausem', 'help'];
+const MENU_SCREENS = ['login', 'station', 'slots', 'profile', 'setup', 'world', 'theater', 'brief', 'policy', 'vets', 'pvp', 'dex', 'settings', 'shop', 'records'];
 function hideScreens() { for (const id of SCREENS) $(id).style.display = 'none'; }
 // ---- 화면 전환 플래시: 메뉴 화면이 바뀔 때 장갑판이 사선으로 쓸고 지나가며 다음 화면 이름을 찍음 (0.6초, 입력은 막지 않음)
 const WIPE_NAME = { station: '🏠 지휘 본부', slots: '💾 지휘 슬롯', world: '🌏 세계 지도', theater: '🗺️ 작전도', pvp: '⚔️ PVP 모드', setup: '🎓 튜토리얼', profile: '👤 지휘관 프로필',
@@ -3994,7 +4116,9 @@ function showScreen(id) {
     const first = !showScreen.introDone; showScreen.introDone = true; taStart(first);   // 처음 들어올 때만 인트로 (문구 → 메뉴 등장)
     $('station').classList.toggle('intro', first); if (first) setTimeout(() => $('station').classList.remove('intro'), 3600);
   }
-  if (id === 'login') taStart(false);
+  if (id === 'login') { taStart(false); $('lgRecov').style.display = serverOn() ? '' : 'none'; }
+  if (id === 'station' && cloudMeta()) cloudSync();
+  if (id === 'station') legalNotice();
   if (id === 'setup') renderSetup();
   if (id === 'world') renderWorldInfo();
   if (id === 'slots') renderSlots();
@@ -4044,6 +4168,7 @@ $('lgGo').onclick = () => {   // 지휘관은 한 명: 처음 한 번만 등록
   enterAs(name);
 };
 $('lgName').onkeydown = e => { if (e.key === 'Enter') $('lgGo').click(); };
+$('lgRecover').onclick = () => cloudRecover($('lgCode').value); $('lgCode').onkeydown = e => { if (e.key === 'Enter') { e.stopPropagation(); cloudRecover($('lgCode').value); } };
 // --- 계급: 누적 워게임 점수로 진급
 // ---- 계정 계급 (한국군 체계): 스토리 모드 승리로 경험치(XP)를 쌓아 훈련병 → 4성 장군(대장)까지 진급
 // 진급 속도: 예전보다 2.5배 느리게 (대장 = 62,500 XP · 세계 정복 한 바퀴 ≈ 소령 정도)
@@ -4136,7 +4261,7 @@ window.addEventListener('keydown', e => {
   if (G.started && !G.over) return;   // 전투 중에는 전투 단축키
   const open = [...document.querySelectorAll('.ov.scr')].filter(el => el.style.display === 'flex'), scr = open[open.length - 1]; if (!scr) return;   // 맨 위(나중에 열린) 화면 기준
   if (e.code === 'Escape') {
-    const back = [...scr.querySelectorAll('.back, #brBack, #shopHide, #setClose, #polHide, #slotBack, #legalClose, .pftabs button.x')].find(visEl);
+    const back = [...scr.querySelectorAll('.back, #brBack, #shopHide, #setClose, #polHide, #vetHide, #slotBack, #legalClose, .pftabs button.x')].find(visEl);
     if (back) { e.preventDefault(); back.click(); } return;
   }
   if (enter) {
@@ -4454,7 +4579,7 @@ function heroPortrait(nat) {
     if (hair === 'curly') for (let k = 0; k < 9; k++) { const a = Math.PI * (1.02 + k * 0.12); E(X + Math.cos(a) * (R + 1), Y + Math.sin(a) * (R + 1), 7, 7, hc); }
     if (hair === 'wig') for (const s of [-1, 1]) for (let k = 0; k < 2; k++) E(X + s * (R - 2), Y + 2 + k * 9, 6, 4.5, hc, '#9a968c', 1.2);
     // 눈 · 볼 (게임 캐릭터와 같은 얼굴)
-    face(X, Y + 4, Math.PI / 2, 6.4, 'front');
+    face(X, Y + 4, Math.PI / 2, 6.4, 'front', false);   // 위인 초상은 눈썹 없이 (수염 · 모자 장식과 겹침 방지)
     g.beginPath(); g.arc(X, Y + 14, 4.5, 0.15 * Math.PI, 0.85 * Math.PI); g.strokeStyle = ink; g.lineWidth = 2; g.lineCap = 'round'; g.stroke();   // 입
     for (const s of [-1, 1]) { g.beginPath(); g.moveTo(X + s * 6, Y - 6); g.lineTo(X + s * 14, Y - 8 + (fac === 'f' ? 1 : 0)); g.strokeStyle = fac === 'f' ? ink : hc === '#d8d4cc' || hc === '#ecebe6' || hc === '#e8e6e0' ? '#8a867c' : hc; g.lineWidth = 2.4; g.stroke(); }   // 눈썹
     // 수염
@@ -4741,6 +4866,8 @@ $('thWorld').onclick = () => showScreen('world');
 $('thSlots').onclick = () => { slotSel = null; showScreen('slots'); };
 $('thPolicy').onclick = () => renderPolicy();
 $('polHide').onclick = () => { $('policy').style.display = 'none'; renderTheater(); };
+$('thVets').onclick = () => renderVets();
+$('vetHide').onclick = () => { $('vets').style.display = 'none'; renderTheater(); };
 $('thReset').onclick = () => { if (!confirm('스토리를 처음부터 다시 시작할까요? (진행이 사라집니다)')) return; const r = loadRec(); r.story = null; saveRec(r); TH_MAP = null; showScreen('world'); };
 function startRegionBattle(id, kind) {   // 브리핑: 작전 목표 + 보너스 카드 3장 중 1장 선택
   const R = findRegion(id), st = loadRec().story, obj = kind === 'defend' ? 'survive' : R.obj, O = OBJ[obj];
@@ -4834,10 +4961,16 @@ const dexList = () => [
 ];
 const dexStat = (label, v, max) => `<div class="stat"><span style="width:38px">${label}</span><div class="bar"><i style="width:${Math.min(100, v / max * 100)}%"></i></div><span>${v}</span></div>`;
 let dexTab = 'weapon';
+const dexFilt = { weapon: 'all', nation: 'all' }, DEX_CHIPS = {
+  weapon: [['all', '전체'], ['base', '⚔️ 기본 병종'], ['unique', '⭐ 국가 특수무기'], ['bldg', '🏗️ 본부 · 구조물']],
+  nation: [['all', '전체'], ['korea', '한반도'], ['asia', '아시아'], ['europe', '유럽'], ['americas', '아메리카'], ['africa', '아프리카'], ['oceania', '오세아니아']],
+};
+const dexCat = t => TYPES[t].unique ? 'unique' : TYPES[t].building ? 'bldg' : 'base';
+$('dexChips').onclick = e => { const b = e.target.closest('button[data-df]'); if (!b) return; dexFilt[dexTab] = b.dataset.df; sfx('click'); renderDex(); $('dexChips').closest('.box').scrollTop = 0; };
 for (const b of document.querySelectorAll('.dextabs button')) b.onclick = () => { dexTab = b.dataset.dt; sfx('click'); renderDex(); };
 function renderNatDex() {   // 국가 도감: 전장별로 나라 카드 (군대 특징 · 장점 · 특수무기 · 지휘관 스킬 · 정복 지역 수)
   const groups = [['korea', '한반도'], ['asia', '아시아'], ['europe', '유럽'], ['americas', '아메리카'], ['africa', '아프리카'], ['oceania', '오세아니아']];
-  $('natDex').innerHTML = groups.map(([th, label]) => `<div class="pf-h">${THEATERS[th].icon} ${label}</div><div class="nd-grid">` +
+  $('natDex').innerHTML = groups.filter(([th]) => dexFilt.nation === 'all' || dexFilt.nation === th).map(([th, label]) => `<div class="pf-h">${THEATERS[th].icon} ${label}</div><div class="nd-grid">` +
     Object.entries(NATIONS).filter(([, N]) => N.home === th).map(([k, N]) => {
       const regs = Object.values(THEATERS).flatMap(T => T.regions).filter(r => r.nation === k), cap = regs.find(r => r.capital);
       return `<div class="nd-card"><div class="nd-h"><span>${N.flag}</span><b>${N.name}</b>${cap ? `<small>수도 ${cap.name} · 지역 ${regs.length}</small>` : ''}</div>${natIntro(k)}</div>`;
@@ -4846,8 +4979,9 @@ function renderNatDex() {   // 국가 도감: 전장별로 나라 카드 (군대
 function renderDex() {
   for (const b of document.querySelectorAll('.dextabs button')) b.classList.toggle('on', b.dataset.dt === dexTab);
   $('dexList').style.display = dexTab === 'weapon' ? '' : 'none'; $('natDex').style.display = dexTab === 'nation' ? '' : 'none';
+  $('dexChips').innerHTML = DEX_CHIPS[dexTab].map(([k, n]) => `<button data-df="${k}" class="${dexFilt[dexTab] === k ? 'on' : ''}">${n}</button>`).join('');
   if (dexTab === 'nation') { renderNatDex(); return; }
-  $('dexList').innerHTML = dexList().map(([t, d]) => {
+  $('dexList').innerHTML = dexList().filter(([t]) => dexFilt.weapon === 'all' || dexCat(t) === dexFilt.weapon).map(([t, d]) => {
     const T = TYPES[t], best = Math.max(...Object.values(T.dmg));
     return `<div class="card"><canvas data-dex="${t}"></canvas><b>${T.name}</b>${T.building ? '' : ` <small style="color:#c9b97e">편제 ${orgName(T)}</small>`}${T.cost ? ` <small>💰${T.cost.m}${T.cost.i ? ' ⛏️' + T.cost.i : ''}</small>` : ''}
       ${dexStat('체력', T.hp, T.building ? 1600 : 600)}${T.speed ? dexStat('속도', T.speed, 80) : ''}${T.range ? dexStat('사거리', T.range, 440) : ''}${best ? dexStat('화력', best, 110) : ''}
@@ -4870,6 +5004,7 @@ function animateDex() {
 }
 // --- 설정
 function renderSettings() {   // (소속 국가·게임 속도·지형 표시는 정리하고, 언어 선택 추가)
+  renderCloudBox();
   for (const b of $('setLang').querySelectorAll('button')) {
     b.classList.toggle('sel', (SETTINGS.lang || 'ko') === b.dataset.lang);
     b.onclick = () => { SETTINGS.lang = b.dataset.lang; const rec = loadRec(); rec.settings = SETTINGS; saveRec(rec); setLang(SETTINGS.lang); renderSettings(); };
@@ -4881,36 +5016,37 @@ function renderSettings() {   // (소속 국가·게임 속도·지형 표시는
       SETTINGS[k] = +b.dataset.v; const rec = loadRec(); rec.settings = SETTINGS; saveRec(rec); renderSettings();
       if (k === 'hex' && G.hexMode !== !!SETTINGS.hex) {   // 지형 표시 방식 바꾸면 지형 이미지를 다시 그림
         G.hexMode = !!SETTINGS.hex; for (const rd of G.roads) for (const q of rd) q.z = Zs(q.x, q.y);
-        G.contour = buildTerrainImage(); G.mini = buildMini(G.contour, MM.w, MM.h);
+        G.contour = buildTerrainImage(); G.OCC = buildOcclusion(); G.mini = buildMini(G.contour, MM.w, MM.h);
       }
     };
   }
 }
 // ---- 개발사 · 이용약관 · 개인정보 처리방침
 const DEV = { ko: '휴먼에이드', en: 'HumanAid', contact: '' };   // contact: 문의 이메일 (정해지면 입력)
-const LEGAL_VER = '2026-10-23';
+const LEGAL_VER = '2026-10-23.2', LEGAL_DATE = '2026-10-23';   // 2판: 클라우드 저장 · 서버 순위표 · 순위전 추가
 const LEGAL = {
   terms: ['📜 이용약관', [
     ['제1조 (목적)', `이 약관은 ${DEV.ko}(이하 "개발사")가 제공하는 브라우저 전략 게임 「미니워존」(이하 "게임")의 이용 조건과 절차, 개발사와 이용자의 권리·의무를 정합니다.`],
     ['제2조 (약관의 효력과 변경)', '이 약관은 지휘관 등록 화면에서 동의한 때부터 효력이 생깁니다. 개발사는 관련 법령을 지키는 범위에서 약관을 바꿀 수 있으며, 바꾼 내용과 시행일을 게임 안에서 미리 알립니다. 바뀐 약관에 동의하지 않으면 이용을 멈추고 기록을 지울 수 있습니다.'],
     ['제3조 (서비스 내용)', '게임은 무료로 제공되는 웹 브라우저 게임이며 스토리 모드, 튜토리얼·자유 전투, PVP 대전, 도감, 상점(게임 안 재화 전용) 등을 포함합니다. 개발사는 더 나은 서비스를 위해 내용을 바꾸거나 일부를 멈출 수 있습니다.'],
-    ['제4조 (지휘관 등록과 기록)', '이용자는 지휘관 이름과 소속 국가를 정해 등록합니다. 전투 기록·골드·계급·저장 슬롯 등 모든 기록은 이용자의 브라우저 안에만 저장됩니다. 브라우저의 사이트 데이터를 지우거나 다른 기기·브라우저를 쓰면 기록이 이어지지 않으며, 개발사는 이를 복구할 수 없습니다.'],
+    ['제4조 (지휘관 등록과 기록)', '이용자는 지휘관 이름과 소속 국가를 정해 등록합니다. 기록은 기본적으로 이용자의 브라우저 안에만 저장되며, 브라우저의 사이트 데이터를 지우면 사라집니다.'],
+    ['제4조의2 (클라우드 저장)', '이용자가 [설정 → ☁️ 클라우드 연결]을 고르면 기록이 서버에도 저장되어 다른 기기에서 이어 할 수 있습니다. 연결할 때 받는 복구 코드는 계정의 열쇠이므로 이용자가 안전하게 보관해야 하며, 잃어버리면 다른 기기에서 기록을 불러올 수 없고 남에게 알려 주면 그 사람이 기록에 접근할 수 있습니다. 이용자는 언제든 클라우드 계정을 지울 수 있습니다.'],
     ['제5조 (게임 안 재화)', '골드·경험치·계급·꾸미기 아이템은 게임 안에서만 쓰이는 가상의 값으로 현금 가치가 없고, 현금이나 다른 재화로 바꾸거나 사고팔 수 없습니다. 현재 게임에는 유료 결제가 없습니다.'],
     ['제6조 (이용자의 의무)', '이용자는 ① 다른 사람을 불쾌하게 하거나 남을 사칭하는 지휘관 이름을 쓰지 않고, ② 게임이나 PVP 서버를 해킹·변조하거나 정상적인 운영을 방해하지 않으며, ③ PVP에서 상대 이용자를 존중해야 합니다.'],
-    ['제7조 (PVP 대전)', 'PVP는 이용자 또는 운영자가 직접 실행하는 게임 서버를 통해 연결됩니다. 대전을 위해 지휘관 이름·소속 국가·전투 명령이 서버를 거쳐 상대에게 실시간으로 전달됩니다. 서버를 실행하는 사람은 서버를 안전하게 관리할 책임이 있습니다.'],
+    ['제7조 (PVP 대전과 순위)', 'PVP는 게임 서버를 통해 연결되며, 대전을 위해 지휘관 이름·소속 국가·전투 명령이 서버를 거쳐 상대에게 실시간으로 전달됩니다. 클라우드에 연결한 두 이용자의 빠른 대전은 순위전으로 서버 레이팅에 반영되고, 친구 방 코드 대전은 반영되지 않습니다. 결과는 양쪽 보고가 같을 때만 반영되며, 대전 도중 나가거나 연결이 끊긴 뒤 30초 안에 돌아오지 않으면 패배로 처리됩니다. 순위표에는 지휘관 이름·소속 국가·점수가 공개됩니다. 부정한 방법으로 순위를 올리면 순위에서 빼거나 계정을 지울 수 있습니다.'],
     ['제8조 (저작권과 표현)', `게임의 그림·소리·글·프로그램의 권리는 ${DEV.ko}에 있습니다. 게임에 나오는 국가·지명·역사 인물은 재미와 교육을 위한 가상의 표현이며, 특정 국가·민족·정치적 입장을 지지하거나 비하하려는 뜻이 없습니다.`],
     ['제9조 (책임의 한계)', '게임은 무료로 "있는 그대로" 제공됩니다. 개발사는 고의나 중대한 과실이 없는 한 브라우저 데이터 삭제·기기 고장·네트워크 문제 등으로 생긴 기록 손실에 책임지지 않습니다.'],
     ['제10조 (준거법)', '이 약관은 대한민국 법을 따르며, 분쟁이 생기면 관련 법령이 정한 법원에서 해결합니다.'],
   ]],
   privacy: ['🔒 개인정보 처리방침', [
-    ['1. 기본 원칙', `${DEV.ko}는 「미니워존」을 개인정보를 최소한으로 다루도록 만들었습니다. 게임의 모든 기록은 이용자 브라우저의 저장공간(localStorage)에만 보관되며, 개발사 서버로 보내지 않습니다.`],
-    ['2. 다루는 정보', '지휘관 이름, 소속 국가, 좌우명(선택), 전투 기록·골드·경험치·계급·저장 슬롯·설정. 실명·이메일·전화번호·주소·위치·기기 식별자는 수집하지 않습니다.'],
-    ['3. 이용 목적', '게임 진행 저장, 계급·훈장·기록실 표시, 설정 유지, PVP 대전 상대에게 이름과 국가 표시.'],
-    ['4. 보관 기간과 삭제', '이용자가 지울 때까지 이용자의 브라우저에만 남습니다. [설정 → 내 기록 모두 지우기] 또는 브라우저의 사이트 데이터 삭제로 언제든 완전히 지울 수 있습니다. 지운 기록은 되살릴 수 없습니다.'],
-    ['5. PVP 대전 시 전달되는 정보', 'PVP에 접속하면 지휘관 이름과 소속 국가가 게임 서버를 거쳐 대기실과 상대 이용자에게 보입니다. 전투 중에는 게임 진행에 필요한 명령·상태만 오갑니다. 기본 게임 서버(server.js)는 이 정보를 메모리에서만 다루고 파일로 저장하지 않으며, 실행 화면에 매칭 기록(이름)만 잠깐 표시합니다.'],
-    ['6. 제3자 제공·위탁·추적 도구', '개인정보를 다른 회사에 제공하거나 맡기지 않습니다. 광고·분석·추적 도구와 쿠키를 쓰지 않으며, 외부 사이트에서 글꼴·스크립트를 불러오지 않습니다.'],
+    ['1. 기본 원칙', `${DEV.ko}는 「미니워존」을 개인정보를 최소한으로 다루도록 만들었습니다. 기록은 기본적으로 이용자 브라우저의 저장공간(localStorage)에만 보관합니다. 이용자가 클라우드 저장을 켜거나 PVP를 할 때만 아래 정보가 게임 서버에 저장·전달됩니다.`],
+    ['2. 다루는 정보', '① 브라우저: 지휘관 이름, 소속 국가, 좌우명(선택), 전투 기록·골드·경험치·계급·저장 슬롯·설정, 약관 동의 시각. ② 클라우드 연결 시 서버: 계정 번호, 지휘관 이름, 소속 국가, 위 게임 기록 사본, 최근 접속 시각, 복구 코드와 접속 토큰의 해시값(원문은 저장하지 않음). ③ PVP 순위전: 시즌별 레이팅·전적, 대전 기록(대전 번호·전장·결과·시각). 실명·이메일·전화번호·주소·위치·기기 식별자는 수집하지 않습니다.'],
+    ['3. 이용 목적', '게임 진행 저장과 다른 기기에서 이어 하기, 계급·훈장·기록실 표시, PVP 매칭과 레이팅 계산, 서버 순위표 표시(지휘관 이름·소속 국가·점수가 다른 이용자에게 공개), 부정 이용 방지.'],
+    ['4. 보관 기간과 삭제', '브라우저 기록은 [설정 → 내 기록 모두 지우기]나 사이트 데이터 삭제로 지울 수 있습니다. 서버 기록은 클라우드 계정을 지울 때까지 보관하며, [설정 → 🗑️ 클라우드 계정 삭제]를 누르면 계정·저장 기록·레이팅·접속 정보가 바로 지워지고 대전 기록은 계정과의 연결을 끊어 누구인지 알 수 없게 바꿉니다. 지운 기록은 되살릴 수 없습니다.'],
+    ['5. PVP 대전 시 전달되는 정보', 'PVP에 접속하면 지휘관 이름과 소속 국가가 게임 서버를 거쳐 대기실과 상대 이용자에게 보입니다. 전투 중에는 게임 진행에 필요한 명령·상태만 오가며 저장하지 않습니다. 접속 IP 주소는 요청 제한(무차별 대입 방지)을 위해 접속하는 동안 서버 메모리에서만 쓰고 저장하지 않습니다. 서버 실행 기록(로그)에는 계정 번호·지휘관 이름·대전 정보가 남을 수 있으나 IP 주소·토큰·복구 코드는 남기지 않습니다.'],
+    ['6. 제3자 제공·위탁·추적 도구', '개인정보를 다른 회사에 팔거나 제공하지 않습니다. 서버를 외부 호스팅 업체에 두게 되면 그 업체 이름과 맡기는 일을 이 방침에 밝힙니다. 광고·분석·추적 도구와 쿠키를 쓰지 않으며, 외부 사이트에서 글꼴·스크립트를 불러오지 않습니다.'],
     ['7. 어린이 이용자', '서버에 개인정보를 모으지 않지만, 만 14세 미만 어린이는 보호자와 함께 지휘관 이름에 실명 등 개인정보를 쓰지 않도록 안내해 주세요.'],
-    ['8. 이용자의 권리', '이용자는 [지휘관 프로필]에서 저장된 정보를 보고, 이름·좌우명을 고치고, [설정]에서 모든 기록을 지울 수 있습니다.'],
+    ['8. 이용자의 권리', '이용자는 [지휘관 프로필]에서 저장된 정보를 보고 이름·좌우명을 고칠 수 있으며(클라우드에도 반영), [설정]에서 브라우저 기록과 클라우드 계정을 언제든 지울 수 있습니다.'],
     ['9. 개인정보 보호 책임', `책임자: ${DEV.ko}${DEV.contact ? ` · 문의: ${DEV.contact}` : ''}. 방침이 바뀌면 시행 전에 게임 안에서 알립니다.`],
   ]],
 };
@@ -4920,15 +5056,22 @@ function showLegal(tab) {
   if (!legalFrom) legalFrom = [...document.querySelectorAll('.ov.scr')].find(e => e.style.display === 'flex' && e.id !== 'legal');
   const [title, items] = LEGAL[legalTab];
   $('legalBody').innerHTML = `<div class="pf-tabbar"><button data-lg="terms" class="${legalTab === 'terms' ? 'on' : ''}">📜 이용약관</button><button data-lg="privacy" class="${legalTab === 'privacy' ? 'on' : ''}">🔒 개인정보 처리방침</button></div>
-    <h1 style="font-size:24px;margin-top:10px">${title}</h1><small class="dim">시행일 ${LEGAL_VER} · 개발사 ${DEV.ko} (${DEV.en})</small>
+    <h1 style="font-size:24px;margin-top:10px">${title}</h1><small class="dim">시행일 ${LEGAL_DATE} (2판) · 개발사 ${DEV.ko} (${DEV.en})</small>
     ${items.map(([h, t]) => `<div class="lg-item"><b>${h}</b><p>${t}</p></div>`).join('')}`;
   for (const b of $('legalBody').querySelectorAll('[data-lg]')) b.onclick = () => showLegal(b.dataset.lg);
   if ($('legal').style.display !== 'flex') { $('legal').style.display = 'flex'; screenWipe(legalFrom && legalFrom.id, 'legal'); } $('legal').querySelector('.box').scrollTop = 0;
 }
 $('legalClose').onclick = () => { $('legal').style.display = 'none'; legalFrom = null; };
 document.addEventListener('click', e => { const a = e.target.closest('[data-legal]'); if (a) { e.preventDefault(); e.stopPropagation(); showLegal(a.dataset.legal); } }, true);
+function legalNotice() {   // 약관이 바뀌었으면 메인 화면에서 다시 동의 받기
+  const P = loadProfiles(), me = P[profile]; let el = $('legalNote');
+  if (!me || (me.agree && me.agree.ver === LEGAL_VER)) { if (el) el.remove(); return; }
+  if (!el) { el = document.createElement('div'); el.id = 'legalNote'; el.className = 'sf'; $('station').appendChild(el); }
+  el.innerHTML = `📜 이용약관 · 개인정보 처리방침이 바뀌었습니다 <small>(클라우드 저장 · 서버 순위표 · 순위전)</small> <button data-legal="privacy" class="sec">내용 보기</button><button id="lnOk" class="big">동의</button>`;
+  $('lnOk').onclick = () => { const P2 = loadProfiles(); if (P2[profile]) { P2[profile].agree = { ver: LEGAL_VER, at: Date.now() }; saveProfiles(P2); } el.remove(); toast('✅ 바뀐 약관에 동의했습니다'); };
+}
 function wipeAllData() {   // 설정: 내 기록 모두 지우기 (이 브라우저의 미니워존 저장값 전부)
-  if (!confirm(`이 브라우저에 저장된 미니워존 기록(지휘관 · 전투 기록 · 골드 · 저장 슬롯 · 설정)을 모두 지울까요?\n지운 기록은 되살릴 수 없습니다.`)) return;
+  if (!confirm(`이 브라우저에 저장된 미니워존 기록(지휘관 · 전투 기록 · 골드 · 저장 슬롯 · 설정)을 모두 지울까요?\n지운 기록은 되살릴 수 없습니다.${cloudMeta() ? '\n(클라우드 서버의 기록은 남습니다 — 서버 기록까지 지우려면 먼저 [🗑️ 클라우드 계정 삭제]를 누르세요)' : ''}`)) return;
   try { for (const k of Object.keys(localStorage)) if (k.startsWith('miniwarzone')) localStorage.removeItem(k); } catch (e) {}
   location.reload();
 }
@@ -4949,9 +5092,105 @@ $('pmSet').onclick = () => { $('pausem').style.display = 'none'; renderSettings(
 $('pmGiveup').onclick = () => { $('pausem').style.display = 'none'; G.paused = false; if (isGuest()) relay({ k: 'cmd', c: 'giveup' }); else endGame(false, '항복했습니다.'); };
 $('pmExit').onclick = () => { if (G.net) { wsSend({ t: 'leave' }); } G.over = true; newGame(); showScreen('station'); };
 
+// ================= ☁️ 클라우드 저장: 백엔드 계정(복구 코드)으로 다른 기기에서 이어하기 =================
+// 기록은 늘 브라우저에 먼저 저장하고, 연결한 경우에만 몇 초 뒤 서버와 맞춤 (rev가 다르면 더 최근에 저장한 쪽을 살림)
+var cloudT = null, cloudBusy = false, cloudApplying = false;
+function serverOn() { return location.protocol.startsWith('http'); }
+function cloudKey(name) { return 'miniwarzone.cloud.' + (name ?? profile ?? '__guest'); }
+function cloudMeta() { try { return JSON.parse(localStorage.getItem(cloudKey())) || null; } catch (e) { return null; } }
+function setCloudMeta(m) { try { if (m) localStorage.setItem(cloudKey(), JSON.stringify(m)); else localStorage.removeItem(cloudKey()); } catch (e) {} }
+async function capi(method, path, body) {
+  const m = cloudMeta(), r = await fetch(path, { method, headers: { ...(body ? { 'Content-Type': 'application/json' } : {}), ...(m && m.token ? { Authorization: 'Bearer ' + m.token } : {}) }, body: body ? JSON.stringify(body) : undefined });
+  let j = null; try { j = await r.json(); } catch (e) {}
+  if (r.status === 401 && m && m.token) { setCloudMeta(null); toast('☁️ 클라우드 연결이 해제되었습니다 (다른 기기에서 계정을 지웠거나 만료)'); }
+  return { status: r.status, body: j };
+}
+function cloudData() { const P = loadProfiles()[profile] || {}; let rec = null; try { rec = JSON.parse(localStorage.getItem(recKey())); } catch (e) {} return { rec: rec || {}, profile: { nation: P.nation, agree: P.agree } }; }
+function cloudApply(data) {   // 서버 기록을 이 브라우저에 덮어씀 (saveRec을 거치지 않아 다시 올라가지 않음)
+  if (!data || !data.rec) return;
+  cloudApplying = true;
+  try { localStorage.setItem(recKey(), JSON.stringify(data.rec)); const P = loadProfiles(); if (P[profile] && data.profile && data.profile.nation) { P[profile].nation = data.profile.nation; saveProfiles(P); } } catch (e) {}
+  cloudApplying = false;
+  SETTINGS = loadRec().settings; if ($('station').style.display === 'flex') renderStation();
+}
+function cloudDirty() {   // saveRec이 부를 때마다: 바뀌었다고 표시하고 4초 뒤 한 번에 올림
+  if (cloudApplying) return; const m = cloudMeta(); if (!m) return;
+  m.dirty = true; m.localMod = Date.now(); setCloudMeta(m);
+  clearTimeout(cloudT); cloudT = setTimeout(cloudSync, 4000);
+}
+async function cloudSync() {
+  const m = cloudMeta(); if (!m || !serverOn() || cloudBusy) return;
+  cloudBusy = true; let again = false;
+  try {
+    if (m.dirty) {
+      const r = await capi('PUT', '/api/save', { rev: m.rev || 0, data: cloudData() });
+      if (r.status === 200) Object.assign(m, { rev: r.body.rev, dirty: false, synced: Date.now() });
+      else if (r.status === 409) {   // 다른 기기에서도 저장함 → 더 최근 쪽을 살림
+        if (r.body.updated > (m.localMod || 0)) { cloudApply(r.body.data); Object.assign(m, { rev: r.body.rev, dirty: false, synced: Date.now() }); toast('☁️ 다른 기기의 더 최근 기록을 불러왔습니다'); }
+        else { m.rev = r.body.rev; again = true; }
+      } else if (r.status === 401) return;
+    } else {
+      const r = await capi('GET', '/api/save');
+      if (r.status === 200 && r.body.rev > (m.rev || 0)) { cloudApply(r.body.data); m.rev = r.body.rev; toast('☁️ 클라우드의 최신 기록을 불러왔습니다'); }
+      else if (r.status === 404) { m.dirty = true; again = true; }
+      else if (r.status === 401) return;
+      m.synced = Date.now();
+    }
+    if (cloudMeta()) setCloudMeta(m);
+  } catch (e) { m.offline = Date.now(); }   // 서버가 꺼져 있으면 다음 기회에
+  finally { cloudBusy = false; renderCloudBox(); }
+  if (again) { setCloudMeta(m); return cloudSync(); }
+}
+async function cloudLink() {
+  if (!serverOn()) return toast('서버로 실행해야 클라우드를 쓸 수 있습니다 (node server.js)');
+  const r = await capi('POST', '/api/account', { name: profile, nation: myNation() }).catch(() => ({ status: 0 }));
+  if (r.status !== 201) return toast(`☁️ 연결 실패: ${(r.body && r.body.message) || '서버에 연결할 수 없습니다'}`);
+  setCloudMeta({ id: r.body.id, token: r.body.token, rev: 0, dirty: true, localMod: Date.now() });
+  showCloudCode(r.body.code, true); cloudSync();
+}
+async function cloudNewCode() { const r = await capi('POST', '/api/account/code', {}).catch(() => ({ status: 0 })); if (r.status === 200) showCloudCode(r.body.code, false); else toast('복구 코드를 받지 못했습니다'); }
+async function cloudDelete() {
+  if (!confirm('서버에 있는 클라우드 계정 · 저장 기록 · PVP 레이팅을 모두 지울까요?\n이 브라우저의 기록은 남습니다. 지운 뒤에는 되살릴 수 없습니다.')) return;
+  const r = await capi('DELETE', '/api/me').catch(() => ({ status: 0 }));
+  if (r.status === 200 || r.status === 401) { setCloudMeta(null); toast('🗑️ 클라우드 계정을 지웠습니다'); } else toast('서버에 연결할 수 없습니다');
+  renderCloudBox();
+}
+function cloudUnlink() { if (!confirm('이 기기에서 클라우드 연결을 끊을까요? (서버 기록은 남고, 복구 코드로 다시 연결할 수 있습니다)')) return; setCloudMeta(null); renderCloudBox(); }
+async function cloudRecover(code) {   // 로그인 화면: 복구 코드로 다른 기기의 지휘관과 기록 불러오기
+  const msg = t => { $('lgMsg').textContent = t; };
+  if (!$('lgAgree').checked) { msg('이용약관과 개인정보 처리방침에 동의해 주세요'); $('lgAgree').parentNode.classList.add('need'); return; }
+  const r = await fetch('/api/account/recover', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ code }) }).then(async x => ({ status: x.status, body: await x.json().catch(() => null) })).catch(() => ({ status: 0 }));
+  if (r.status !== 200) return msg(r.status === 404 ? '복구 코드가 맞지 않습니다' : r.status === 429 ? '시도가 너무 많습니다. 잠시 뒤에 다시 하세요' : '서버에 연결할 수 없습니다');
+  const name = r.body.name, P = loadProfiles();
+  P[name] = { ...(P[name] || { created: Date.now() }), nation: r.body.nation, last: Date.now(), agree: { ver: LEGAL_VER, at: Date.now() } }; saveProfiles(P);
+  try { localStorage.setItem(cloudKey(name), JSON.stringify({ id: r.body.id, token: r.body.token, rev: 0, dirty: false })); } catch (e) {}
+  profile = name;
+  const s = await capi('GET', '/api/save').catch(() => ({ status: 0 }));
+  if (s.status === 200) { cloudApply(s.body.data); const m = cloudMeta(); m.rev = s.body.rev; m.synced = Date.now(); setCloudMeta(m); }
+  toast(`☁️ ${name} 지휘관의 기록을 불러왔습니다`); enterAs(name);
+}
+function showCloudCode(code, first) {
+  $('cloudDlg').innerHTML = `<div class="box" style="width:min(460px,92vw)"><h1 style="font-size:22px">🔑 복구 코드</h1>
+    <p style="margin:6px 0 10px">${first ? '클라우드에 연결했습니다! ' : ''}다른 기기에서 <b>🔑 기록 불러오기</b>에 이 코드를 넣으면 이어서 할 수 있습니다.</p>
+    <div class="ccode">${code}</div><small class="dim">안전한 곳에 적어 두세요. 이 코드는 다시 보여 드리지 않습니다 (새로 받으면 예전 코드는 무효). 남에게 알려 주면 기록에 접근할 수 있습니다.</small>
+    <div class="actbar" style="justify-content:center"><button id="ccCopy" class="sec">📋 복사</button><button id="ccOk" class="big" data-primary>적어 두었어요</button></div></div>`;
+  $('cloudDlg').style.display = 'flex';
+  $('ccCopy').onclick = () => { try { navigator.clipboard.writeText(code); toast('복사했습니다'); } catch (e) {} };
+  $('ccOk').onclick = () => { $('cloudDlg').style.display = 'none'; renderCloudBox(); };
+}
+function renderCloudBox() {
+  const el = $('cloudBox'); if (!el) return;
+  const m = cloudMeta(), t = d => { const x = new Date(d); return `${x.getMonth() + 1}/${x.getDate()} ${String(x.getHours()).padStart(2, '0')}:${String(x.getMinutes()).padStart(2, '0')}`; };
+  if (!serverOn()) { el.innerHTML = '<small class="dim">서버로 실행하면 쓸 수 있어요 (터미널에서 <code>node server.js</code> → http://localhost:8080)</small>'; return; }
+  el.innerHTML = m ? `<div class="cl-st">✅ 연결됨 · ${m.dirty ? '⏳ 올릴 기록 있음' : m.synced ? `마지막 동기화 ${t(m.synced)}` : '동기화 대기'}${m.offline && (!m.synced || m.offline > m.synced) ? ' · ⚠️ 서버 응답 없음' : ''}</div>
+      <button id="clSync" class="sec">🔄 지금 동기화</button><button id="clCode">🔑 새 복구 코드</button><button id="clOff">🔌 연결 끊기</button><button id="clDel" class="danger">🗑️ 클라우드 계정 삭제</button>`
+    : `<div class="cl-st">기록을 서버에 저장해 다른 기기에서 이어하고, PVP 순위전 · 서버 순위표에 참여합니다</div><button id="clLink" class="big">☁️ 클라우드 연결</button>`;
+  const on = (id, f) => { const b = $(id); if (b) b.onclick = f; };
+  on('clLink', cloudLink); on('clSync', () => { const mm = cloudMeta(); if (mm) { mm.dirty = true; mm.localMod = Date.now(); setCloudMeta(mm); } cloudSync(); }); on('clCode', cloudNewCode); on('clOff', cloudUnlink); on('clDel', cloudDelete);
+}
 // ================= PVP: 백엔드(server.js) WebSocket으로 매칭·중계 =================
 // 호스트가 전투를 계산하고 0.05초마다 상태를 보내며, 게스트는 화면만 그리고 명령을 보냄
-const NET = { ws: null, state: 'off', lobby: null, seeking: null, seekT: 0, lastRx: 0, snapT: 0, opp: null };
+const NET = { ws: null, state: 'off', lobby: null, seeking: null, seekT: 0, lastRx: 0, snapT: 0, opp: null, me: null, match: null, room: null, roomPick: false, reconT: 0, peerWait: false, lb: null, lbType: 'pvp' };
 const pvpReady = () => location.protocol.startsWith('http');
 function wsSend(m) { if (NET.ws && NET.ws.readyState === 1) NET.ws.send(JSON.stringify(m)); }
 const relay = d => wsSend({ t: 'relay', d });
@@ -4959,18 +5198,37 @@ function netConnect() {
   if (!pvpReady() || (NET.ws && NET.ws.readyState < 2)) return;
   const ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws');
   NET.ws = ws; NET.state = 'connecting'; renderPvp();
-  ws.onopen = () => { NET.state = 'online'; wsSend({ t: 'hello', name: profile || '게스트', nation: myNation() }); renderPvp(); };
+  ws.onopen = () => {
+    NET.state = 'online'; const cm = cloudMeta(); wsSend({ t: 'hello', name: profile || '게스트', nation: myNation(), token: cm && cm.token });
+    if (NET.reconT && NET.match) wsSend({ t: 'resume', matchId: NET.match.id, key: NET.match.key });   // 끊겼던 대전에 다시 들어감
+    renderPvp();
+  };
   ws.onmessage = e => { let m; try { m = JSON.parse(e.data); } catch (_) { return; } netRecv(m); };
   ws.onclose = () => {
-    NET.state = 'off'; NET.seeking = null; renderPvp();
-    if (G.net && G.started && !G.over) endGame(null, '서버와 연결이 끊겼습니다.');
+    NET.state = 'off'; NET.seeking = null; NET.room = null; renderPvp();
+    if (G.net && G.started && !G.over && NET.match) {   // 대전 중 끊김 → 25초 동안 다시 연결 시도 (서버는 30초 기다려 줌)
+      if (!NET.reconT) { NET.reconT = performance.now(); showBanner('📡 연결이 끊겼습니다', '다시 연결하는 중… (30초 안에 돌아오면 이어서 대전)'); }
+      if (performance.now() - NET.reconT < 25e3) setTimeout(netConnect, 1500);
+      else { NET.reconT = 0; endGame(false, '서버와 연결이 끊겼습니다.'); }
+    }
   };
 }
 function netRecv(m) {
   NET.lastRx = performance.now();
   if (m.t === 'lobby') { NET.lobby = m; if ($('pvp').style.display === 'flex') renderPvp(); }
+  else if (m.t === 'welcome') { NET.me = m; if (m.rating) syncPvpRating(m.rating); renderPvp(); }
   else if (m.t === 'matched') startPvp(m);
-  else if (m.t === 'peer_left') { if (G.net && G.started && !G.over) endGame(G.net === 'host' ? true : null, G.net === 'host' ? '상대의 연결이 끊겼습니다.' : '상대(호스트)의 연결이 끊겼습니다.'); }
+  else if (m.t === 'room') { NET.room = m; NET.roomPick = false; renderPvp(); }
+  else if (m.t === 'error') { toast(`⚠️ ${m.message || m.code}`); NET.room = null; renderPvp(); }
+  else if (m.t === 'rated') onRated(m);
+  else if (m.t === 'resumed') { NET.reconT = 0; showBanner('📡 다시 연결됐습니다', '대전을 이어 갑니다'); }
+  else if (m.t === 'resume_fail') { NET.reconT = 0; if (G.net && G.started && !G.over) endGame(false, '서버와 연결이 끊겼습니다.'); }
+  else if (m.t === 'peer_wait') {   // 상대가 잠깐 끊김: 호스트는 전투를 멈추고 기다림
+    NET.peerWait = true; showBanner('📡 상대 연결이 끊겼습니다', `${m.sec}초 동안 돌아오기를 기다립니다 — 안 돌아오면 승리`);
+    if (G.net === 'host') { NET.pwPaused = G.paused; G.paused = true; }
+  }
+  else if (m.t === 'peer_back') { NET.peerWait = false; NET.lastRx = performance.now(); toast('📡 상대가 다시 연결했습니다'); if (G.net === 'host') G.paused = !!NET.pwPaused; }
+  else if (m.t === 'peer_left') { NET.peerWait = false; if (G.net && G.started && !G.over) endGame(true, '상대가 대전을 떠났습니다.'); }
   else if (m.t === 'relay') {
     const d = m.d;
     if (G.net === 'host' && d.k === 'cmd') hostCmd(d);
@@ -4996,6 +5254,15 @@ function renderPvp() {
   const PR = pvpOf(loadRec());
   $('pvpStatus').textContent = `— 🏅 ${PR.season} ${leagueOf(PR.rating)[1]} (${PR.rating})` + (NET.state === 'online' ? ` · 🟢 접속 중 ${L.online}명 · 대전 중 ${L.playing}명` : NET.state === 'connecting' ? ' · 연결 중…' : ' · 🔴 서버 연결 끊김');
   if (NET.state !== 'online') { $('pvpBody').innerHTML = `<div class="alertbox">서버에 연결하지 못했습니다. <button id="pvpRetry">다시 연결</button></div>`; $('pvpRetry').onclick = netConnect; return; }
+  if (NET.room) {   // 친구 방: 코드를 알려 주고 기다림
+    const M = PVP_MAPS().find(m => m.id === NET.room.map);
+    $('pvpBody').innerHTML = `<div class="card2" style="text-align:center;padding:18px"><b>🤝 친구 대전 방</b> · ${M ? M.name : NET.room.map}<div class="ccode">${NET.room.code}</div>
+      <small>친구에게 이 코드를 알려 주세요. 친구가 PVP 화면에서 코드를 넣으면 바로 시작합니다 (순위 미반영) · 10분 뒤 만료</small><br>
+      <button id="rmCopy" class="sec">📋 코드 복사</button> <button id="rmStop">방 닫기</button></div>`;
+    $('rmCopy').onclick = () => { try { navigator.clipboard.writeText(NET.room.code); toast('복사했습니다'); } catch (e) {} };
+    $('rmStop').onclick = () => { wsSend({ t: 'cancel' }); NET.room = null; renderPvp(); };
+    return;
+  }
   if (NET.seeking) {
     const M = PVP_MAPS().find(m => m.id === NET.seeking.map), sec = Math.floor((performance.now() - NET.seekT) / 1000);
     $('pvpBody').innerHTML = `<div class="card2" style="text-align:center;font-size:15px;padding:18px"><span class="spin">⏳</span> <b>${M.name}</b> 지도에서 상대를 찾는 중… (${sec}초)<br>
@@ -5003,23 +5270,62 @@ function renderPvp() {
     $('pvpStop').onclick = () => { pvpCancel(); renderPvp(); };
     return;
   }
-  $('pvpBody').innerHTML = `<p style="margin:4px 0 10px">전장을 고르면 매칭 대기열에 들어갑니다. 초록 숫자는 그 지도에서 기다리는 지휘관 수입니다.</p><div class="maps">` +
-    PVP_MAPS().map(M => `<button class="mapc" data-m="${M.id}">${(L.counts[M.id] || 0) ? `<span class="w">● ${L.counts[M.id]}명 대기</span>` : ''}<b>${M.name}</b><br><small>${M.sub}</small></button>`).join('') + '</div>';
+  const rated = NET.me && NET.me.rated;
+  $('pvpBody').innerHTML = `<div class="pvp-top">
+      <div class="card2"><b>${rated ? '🏅 순위전' : '🎯 빠른 대전 (비순위)'}</b><br><small>${rated ? '아래 전장을 고르면 같은 전장을 고른 지휘관과 매칭 · 결과가 서버 레이팅에 반영' : '☁️ 클라우드에 연결하면(설정) 순위전 · 서버 순위표에 참여할 수 있어요'}</small></div>
+      <div class="card2"><b>🤝 친구 대전</b> <small>순위 미반영</small><div class="rm-row"><button id="rmMake" class="${NET.roomPick ? 'big' : 'sec'}">${NET.roomPick ? '↓ 전장을 고르세요 (취소)' : '🏠 방 만들기'}</button>
+        <input id="rmCode" maxlength="6" placeholder="코드 6자리"><button id="rmJoin" class="sec">참가</button></div></div></div>
+    <p style="margin:8px 0">${NET.roomPick ? '🏠 친구와 싸울 전장을 고르세요' : '전장을 고르면 매칭 대기열에 들어갑니다. 초록 숫자는 그 전장에서 기다리는 지휘관 수입니다.'}</p><div class="maps">` +
+    PVP_MAPS().map(M => `<button class="mapc" data-m="${M.id}">${(L.counts[M.id] || 0) ? `<span class="w">● ${L.counts[M.id]}명 대기</span>` : ''}<b>${M.name}</b><br><small>${M.sub}</small></button>`).join('') + '</div>' + lbHTML();
   for (const b of $('pvpBody').querySelectorAll('.mapc')) b.onclick = () => {
-    const M = PVP_MAPS().find(m => m.id === b.dataset.m);
+    const M = PVP_MAPS().find(m => m.id === b.dataset.m), seed = M.seed ?? ((Math.random() * 1e9) | 0);
+    if (NET.roomPick) { wsSend({ t: 'room_create', map: M.id, seed }); return; }
     NET.seeking = { map: M.id }; NET.seekT = performance.now();
-    wsSend({ t: 'seek', map: M.id, seed: M.seed ?? ((Math.random() * 1e9) | 0) });
+    wsSend({ t: 'seek', map: M.id, seed });
     renderPvp();
   };
+  $('rmMake').onclick = () => { NET.roomPick = !NET.roomPick; renderPvp(); };
+  const join = () => { const c = $('rmCode').value.trim(); if (c.length < 6) return toast('방 코드 6자리를 넣으세요'); wsSend({ t: 'room_join', code: c }); };
+  $('rmJoin').onclick = join; $('rmCode').onkeydown = e => { if (e.key === 'Enter') join(); };
+  for (const b of $('pvpBody').querySelectorAll('[data-lb]')) b.onclick = () => { NET.lbType = b.dataset.lb; NET.lb = null; loadLb(); renderPvp(); };
+  if (!NET.lb || NET.lb.type !== NET.lbType || Date.now() - NET.lb.at > 30e3) loadLb();
 }
 setInterval(() => { if ($('pvp').style.display === 'flex' && NET.seeking) renderPvp(); }, 1000);
+// ---- 서버 순위표 (PVP 레이팅 · 계급 경험치 · 워게임 최고 점수 · 정복 지역)
+const LB_TYPES = [['pvp', '🏅 PVP 레이팅'], ['xp', '🎖️ 계급'], ['score', '🎯 최고 점수'], ['regions', '🌏 정복']];
+async function loadLb() {
+  const type = NET.lbType; NET.lb = { type, at: Date.now(), rows: null };
+  try { const r = await fetch('/api/leaderboard?type=' + type + '&limit=20').then(x => x.json()); if (NET.lbType === type) NET.lb = { type, at: Date.now(), rows: r.rows || [], season: r.season }; }
+  catch (e) { NET.lb = { type, at: Date.now(), rows: [], err: true }; }
+  if ($('pvp').style.display === 'flex' && !NET.seeking && !NET.room) renderPvp();
+}
+function lbHTML() {
+  const lb = NET.lb, me = profile, fmt = (t, r) => t === 'xp' ? `${r.value.toLocaleString()} XP · ${RANKS[rankOf(r.value).i][1]}` : t === 'pvp' ? `${r.value} · ${r.w}승 ${r.l}패` : t === 'regions' ? `${r.value}지역` : r.value.toLocaleString() + '점';
+  return `<div class="pf-h" style="margin-top:14px">🏆 서버 순위표 ${lb && lb.season && NET.lbType === 'pvp' ? `<small>· 시즌 ${lb.season}</small>` : ''}</div>
+    <div class="pf-tabbar lbtabs">${LB_TYPES.map(([k, n]) => `<button data-lb="${k}" class="${NET.lbType === k ? 'on' : ''}">${n}</button>`).join('')}</div>
+    <table class="wg lb">${!lb || !lb.rows ? '<tr><td>불러오는 중…</td></tr>' : lb.err ? '<tr><td>순위표를 불러오지 못했습니다</td></tr>' : !lb.rows.length ? '<tr><td>아직 기록이 없습니다 — 첫 번째 주인공이 되어 보세요!</td></tr>' :
+      lb.rows.map(r => `<tr class="${r.name === me ? 'me' : ''}"><td>${r.rank <= 3 ? ['🥇', '🥈', '🥉'][r.rank - 1] : r.rank}</td><td>${(NATIONS[r.nation] || {}).flag || ''} ${esc(r.name)}</td><td>${fmt(NET.lbType, r)}</td></tr>`).join('')}</table>`;
+}
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+function syncPvpRating(R) {   // 서버 레이팅을 이 브라우저 기록에도 맞춰 둠 (메인 화면 · 프로필 표시용)
+  const r = loadRec(), P = pvpOf(r); Object.assign(P, { rating: R.rating, peak: Math.max(R.peak, R.rating), w: R.w, l: R.l }); saveRec(r);
+}
+function onRated(m) {
+  const el = $('pvpRated'), res = { win: '승리', lose: '패배', draw: '무승부', void: '무효 (양쪽 결과가 달라 반영 안 됨)' }[m.result] || m.result;
+  if (m.unrated) { if (el) el.innerHTML = `<b>🤝 비순위전</b><br>결과: ${res} · 레이팅에 반영되지 않습니다`; return; }
+  const before = leagueOf(pvpOf(loadRec()).rating)[1]; syncPvpRating(m); const L = leagueOf(m.rating)[1];
+  if (G.reward) G.reward.rating = [m.rating, m.delta];
+  if (el) el.innerHTML = `<b>🏅 순위전 · 시즌 ${m.season}</b><br>${res} · 레이팅 <b>${m.rating}</b> (${m.delta >= 0 ? '+' : ''}${m.delta}) · ${L}${L !== before ? (m.delta > 0 ? ' 승급! 🎉' : ' 강등') : ''} · ${m.w}승 ${m.l}패${m.d ? ` ${m.d}무` : ''}`;
+  if (m.delta) toast(`🏅 레이팅 ${m.delta > 0 ? '+' : ''}${m.delta} → ${m.rating}`);
+}
 function startPvp(m) {
   NET.seeking = null;
   const [map, obj] = m.map.split('@');
   newGame({ map, obj: obj || 'destroy', seed: m.seed, size: 1, diff: 't8', time: 600, funds: 1, pvp: m.role, oppNation: m.oppNation });
-  G.oppName = m.opp; NET.lastRx = performance.now(); NET.snapT = 0;
+  G.oppName = m.opp; NET.lastRx = performance.now(); NET.snapT = 0; NET.room = null; NET.peerWait = false; NET.reconT = 0;
+  NET.match = { id: m.matchId, key: m.key, role: m.role, rated: !!m.rated, oppRating: m.oppRating };
   hideScreens(); G.time = 0; G.started = true; musicPlay('battle');
-  toast(`매칭 성공! 상대: ${m.opp} — 나는 ${m.role === 'host' ? '왼쪽(파랑)' : '오른쪽(빨강)'} 진영`);
+  toast(`매칭 성공! ${m.rated ? '🏅 순위전' : '🤝 비순위전'} · 상대: ${m.opp}${m.oppRating ? ` (${m.oppRating})` : ''} — 나는 ${m.role === 'host' ? '왼쪽(파랑)' : '오른쪽(빨강)'} 진영`);
   sfx('merc');
 }
 function hostCmd(c) {   // 게스트가 보낸 명령을 호스트의 시뮬레이션에 적용
@@ -5053,7 +5359,7 @@ function hostCmd(c) {   // 게스트가 보낸 명령을 호스트의 시뮬레�
 function makeSnap() {
   const r1 = v => Math.round(v * 10) / 10, r2 = v => Math.round(v * 100) / 100;
   return { k: 'snap', time: r1(G.time), uk: G.ukills,
-    pl: G.players.map(p => ({ money: p.money | 0, iron: p.iron | 0, kills: p.kills, losses: p.losses, skillCD: p.skillCD, buffs: p.buffs, nation: p.nation, opCD: p.opCD, coTarget: p.coTarget, adDown: !!p.adDown, apDown: !!p.apDown })),
+    pl: G.players.map(p => ({ money: p.money | 0, iron: p.iron | 0, earned: p.earned | 0, kills: p.kills, losses: p.losses, skillCD: p.skillCD, buffs: p.buffs, nation: p.nation, opCD: p.opCD, coTarget: p.coTarget, adDown: !!p.adDown, apDown: !!p.apDown })),
     pts: G.points.map(p => [p.owner, Math.round(p.prog), p.contested ? 1 : 0]), cr: G.crates.map(c => [c.x | 0, c.y | 0, Math.round(c.fall * 10) / 10]),
     st: G.strikes.map(q => [q.x | 0, q.y | 0, q.r]), br: G.barrages.map(b => [b.x | 0, b.y | 0, r1(b.t0), b.team]), sd: G.sudden ? 1 : 0,
     md: { s: G.modeScore, k: G.kothT, b: G.baseProg, c: G.ctfScore, n: G.crateCount, f: (G.flags || []).map(f => [f.x | 0, f.y | 0, f.carrier ? f.carrier.id : 0, f.atHome ? 1 : 0]) },
@@ -5406,7 +5712,8 @@ function saveVets(rec) {   // 살아남은 이름 있는 유닛 → 정예 분�
   const alive = G.units.filter(u => u.alive && u.owner === ME && u.vname).sort((a, b) => (b.kills || 0) - (a.kills || 0));
   const lost = G.fallen.filter(u => u.owner === ME && u.vname);
   st.vets = alive.slice(0, 5).map(u => ({ name: u.vname, type: u.type, kills: u.kills || 0 }));
-  st.memorial = [...(st.memorial || []), ...lost.map(u => ({ name: u.vname, type: u.type, kills: u.kills || 0, turn: st.turn }))].slice(-30);
+  const where = G.story && findRegion(G.story.region);
+  st.memorial = [...(st.memorial || []), ...lost.map(u => ({ name: u.vname, type: u.type, kills: u.kills || 0, turn: st.turn, where: where ? where.name : '', date: Date.now() }))].slice(-30);
   return (st.vets.length ? `<br>🎖️ 정예 분대: ${st.vets.map(v => `${v.name}(${TYPES[v.type].name} Lv.${lvOf(v)})`).join(', ')}` : '') +
     (lost.length ? `<br>🕯️ 전사: ${lost.map(u => u.vname).join(', ')}` : '');
 }
@@ -5762,7 +6069,11 @@ for (const [n, [base, name, over, trait, desc]] of Object.entries(SPECIAL)) {   
     const air = TYPES[id].move === 'air';
     if (!air) { const pz = 0.5 + Math.sin(G.time * 3 + u.id) * 0.25; ctx.beginPath(); ctx.ellipse(u.x, u.y + 2, u.T.r + 9, (u.T.r + 9) * SQ, 0, 0, 7); ctx.strokeStyle = `rgba(255,210,90,${pz})`; ctx.lineWidth = 2; ctx.stroke(); }
     ctx.save(); ctx.translate(u.x, u.y); ctx.scale(1.15, 1.15); ctx.translate(-u.x, -u.y);
-    try { DRAW[TYPES[id].base](u, C, mood); specialArt(u, C, n, mood); specialDeco(u, C, n); } finally { ctx.restore(); }
+    try {
+      face.last = null; DRAW[TYPES[id].base](u, C, mood); const fl = face.last;
+      specialArt(u, C, n, mood); specialDeco(u, C, n);
+      if (fl && fl[3] >= 1.3) face(...fl);   // 나라별 장비가 차량 얼굴을 덮으면 얼굴을 맨 위에 다시 그림
+    } finally { ctx.restore(); }
   };
 }
 for (const k in TYPES) if (TYPES[k].unique || TYPES[k].base) TYPES[k].maxd = Math.max(1, ...Object.values(TYPES[k].dmg));
@@ -6313,6 +6624,88 @@ function hlPlay() {   // 결과 화면의 명장면을 4프레임/초로 반복 
   }, 240);
 }
 
+// ---- 전투 후 통계 그래프: 5초마다 팀별 병력 가치 · 누적 수입 · 격파 수를 기록 → 결과 화면 꺾은선 그래프
+const ST_DT = 5, ST_COL = ['#5aab36', '#cc3e24'];   // 아군 · 적군 (남색 결과 화면에서 명도 · 색약 구분 검증, 적군은 점선으로 한 번 더 구분)
+const ST_KINDS = [['a', '💪 병력', '살아 있는 부대 가치 (생산비 × 남은 체력)'], ['r', '💰 자원 수입', '건물에서 들어온 돈 + 철광 누적'], ['k', '💥 격파', '누적 격파 수']];
+const stTime = t => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
+const stShort = v => v >= 10000 ? (v / 1000).toFixed(0) + 'k' : v >= 1000 ? (v / 1000).toFixed(1) + 'k' : String(Math.round(v));
+function statSample(force) {
+  const L = G.stats || (G.stats = []), last = L[L.length - 1];
+  if (!force && last && G.time - last.t < ST_DT) return;
+  if (force && last && G.time - last.t < 0.5) L.pop();   // 끝 기록은 마지막 순간으로 덮어씀
+  const a = [0, 0], r = [0, 0];
+  for (const u of G.units) if (u.alive && !u.T.building && u.T.cost) a[u.team] += (u.T.cost.m + u.T.cost.i) * Math.min(1, Math.max(0, u.hp / u.T.hp));
+  for (const p of G.players) r[p.team] += p.earned || 0;
+  L.push({ t: G.time, a: a.map(Math.round), r: r.map(Math.round), k: [G.ukills[0] || 0, G.ukills[1] || 0] });
+}
+function statResultHTML() {
+  const L = G.stats || []; if (L.length < 3 || G.tutorial) return '';
+  const my = me().team; G.statShow = { L, my, kind: 'a' };
+  const rows = L.filter((p, i) => i === L.length - 1 || (i && Math.floor(p.t / 60) > Math.floor(L[i - 1].t / 60)));   // 표: 1분마다 + 마지막
+  return `<div class="stwrap"><div class="sthead"><b>📈 전투 흐름</b><span class="sttabs">${ST_KINDS.map(([k, n], i) => `<button data-st="${k}" class="${i ? '' : 'on'}">${n}</button>`).join('')}</span></div>
+    <div class="stleg"><span><i style="background:${ST_COL[0]}"></i>아군</span><span><i class="d" style="border-color:${ST_COL[1]}"></i>적군</span><small id="stDesc">${ST_KINDS[0][2]}</small></div>
+    <div class="stbox"><canvas id="stCv"></canvas><div id="stTip"></div></div>
+    <details class="sttbl"><summary>표로 보기</summary><table class="wg"><tr><th>시간</th>${ST_KINDS.map(([, n]) => `<th>${n}<br><small>아군 / 적군</small></th>`).join('')}</tr>` +
+    rows.map(p => `<tr><td>${stTime(p.t)}</td>${ST_KINDS.map(([k]) => `<td>${p[k][my].toLocaleString()} / ${p[k][1 - my].toLocaleString()}</td>`).join('')}</tr>`).join('') + `</table></details></div>`;
+}
+function statDraw(hi) {
+  const S = G.statShow, cv = $('stCv'); if (!S || !cv || !cv.clientWidth) return;
+  const W = cv.clientWidth, H = cv.clientHeight, dpr = window.devicePixelRatio || 1;
+  if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+  const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+  const { L, my, kind } = S, pad = { l: 40, r: 84, t: 10, b: 22 }, T = Math.max(1, L[L.length - 1].t);
+  let max = Math.max(1, ...L.map(p => Math.max(p[kind][0], p[kind][1])));
+  { const q = max / 4, e = Math.pow(10, Math.floor(Math.log10(q))), m = q / e; const st = (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * e; max = 4 * (kind === 'k' ? Math.max(1, Math.ceil(st)) : st); }   // 눈금 간격이 1·2·2.5·5 단위가 되도록 (격파는 정수)
+  const X = t => pad.l + t / T * (W - pad.l - pad.r), Y = v => H - pad.b - v / max * (H - pad.t - pad.b);
+  const dot = (x, y, c) => { g.beginPath(); g.arc(x, y, 4.5, 0, 6.3); g.fillStyle = c; g.fill(); g.lineWidth = 2; g.strokeStyle = '#141c46'; g.stroke(); };
+  g.font = '11px system-ui, sans-serif'; g.fillStyle = '#9fb0e8'; g.strokeStyle = 'rgba(127,150,230,.16)'; g.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) { const y = Math.round(Y(max * i / 4)) + 0.5; g.beginPath(); g.moveTo(pad.l, y); g.lineTo(W - pad.r, y); g.stroke(); g.textAlign = 'right'; g.textBaseline = 'middle'; g.fillText(stShort(max * i / 4), pad.l - 6, y); }
+  const step = T > 900 ? 180 : T > 480 ? 120 : 60; g.textAlign = 'center'; g.textBaseline = 'top';
+  for (let t = 0; t <= T + 0.1; t += step) g.fillText(stTime(t), X(t), H - pad.b + 6);
+  g.lineWidth = 2; g.lineJoin = g.lineCap = 'round';
+  for (const side of [1, 0]) {   // 적군(점선) 먼저, 아군을 위에
+    const team = side ? 1 - my : my; g.strokeStyle = ST_COL[side]; g.setLineDash(side ? [6, 4] : []); g.beginPath();
+    L.forEach((p, i) => { const x = X(p.t), y = Y(p[kind][team]); i ? g.lineTo(x, y) : g.moveTo(x, y); }); g.stroke();
+  }
+  g.setLineDash([]);
+  const end = L[L.length - 1], ex = X(end.t); let ly = [Y(end[kind][my]), Y(end[kind][1 - my])];
+  if (Math.abs(ly[0] - ly[1]) < 14) { const m = (ly[0] + ly[1]) / 2, d = end[kind][my] >= end[kind][1 - my] ? -7 : 7; ly = [m + d, m - d]; }   // 끝 라벨 겹침 방지
+  [0, 1].forEach(side => { const team = side ? 1 - my : my; dot(ex, Y(end[kind][team]), ST_COL[side]); g.fillStyle = '#e8ecff'; g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillText(`${tt(side ? '적군' : '아군')} ${stShort(end[kind][team])}`, ex + 9, ly[side]); });
+  if (hi != null && L[hi]) { const p = L[hi], x = Math.round(X(p.t)) + 0.5; g.strokeStyle = 'rgba(232,236,255,.45)'; g.lineWidth = 1; g.beginPath(); g.moveTo(x, pad.t); g.lineTo(x, H - pad.b); g.stroke(); [0, 1].forEach(side => dot(x, Y(p[kind][side ? 1 - my : my]), ST_COL[side])); }
+  S.X = X; S.W = W; S.hi = hi;
+}
+function statBind() {
+  const cv = $('stCv'), S = G.statShow, tip = $('stTip'); if (!cv || !S) return;
+  const move = e => {
+    const r = cv.getBoundingClientRect(), mx = e.clientX - r.left; if (!S.X) return;
+    let hi = 0; S.L.forEach((p, i) => { if (Math.abs(S.X(p.t) - mx) < Math.abs(S.X(S.L[hi].t) - mx)) hi = i; });
+    const p = S.L[hi], K = ST_KINDS.find(k => k[0] === S.kind); statDraw(hi);
+    tip.innerHTML = `<b>${stTime(p.t)}</b> · ${K[1]}<br><i style="background:${ST_COL[0]}"></i>아군 <b>${p[S.kind][S.my].toLocaleString()}</b><br><i class="d" style="border-color:${ST_COL[1]}"></i>적군 <b>${p[S.kind][1 - S.my].toLocaleString()}</b>`;
+    tip.style.display = 'block'; const x = S.X(p.t); tip.style.left = (x + 14 + tip.offsetWidth > S.W ? x - 14 - tip.offsetWidth : x + 14) + 'px';
+  };
+  cv.onpointermove = cv.onpointerdown = move;
+  cv.onpointerleave = () => { tip.style.display = 'none'; statDraw(); };
+  for (const b of $('over').querySelectorAll('[data-st]')) b.onclick = () => {
+    S.kind = b.dataset.st; for (const c of $('over').querySelectorAll('[data-st]')) c.classList.toggle('on', c === b);
+    $('stDesc').textContent = ST_KINDS.find(k => k[0] === S.kind)[2]; tip.style.display = 'none'; sfx('click'); statDraw();
+  };
+  if (window.ResizeObserver) new ResizeObserver(() => statDraw(S.hi)).observe(cv);   // 결과 화면이 열릴 때(크기가 생길 때) · 창 크기가 바뀔 때 다시 그림
+  statDraw();
+}
+// ---- 작전도: 지금 함께 다니는 정예 분대 + 전사한 정예 추모관
+function renderVets() {
+  const st = loadRec().story; if (!st) return;
+  const nat = st.nation, vets = st.vets || [], mem = (st.memorial || []).slice().reverse(), memK = mem.reduce((a, v) => a + (v.kills || 0), 0);
+  const card = (v, dead) => `<div class="vcard${dead ? ' dead' : ''}"><img src="${unitIcon(v.type, nat)}" alt=""><div><b>${dead ? '🕯️' : '🎖️'} ${v.name}</b>
+    <small>${TYPES[v.type] ? TYPES[v.type].name : ''} · Lv.${lvOf(v)} · 격파 ${v.kills || 0}</small>${dead ? `<small>${v.turn ? `<span>${v.turn}턴</span> · ` : ''}${v.where ? `<span>${v.where}</span> · ` : ''}<span>전사</span></small>` : ''}</div></div>`;
+  $('vetBody').innerHTML = `<div class="vsec"><b>🎖️ 정예 분대 ${vets.length}/5</b><small class="dim">스토리 전투에서 2레벨이 되어 이름을 얻은 부대 중 격파 수 상위 5기가 다음 전투에 레벨 그대로 함께 출격합니다</small></div>
+    ${vets.length ? `<div class="vgrid">${vets.map(v => card(v)).join('')}</div>` : '<p class="dim">아직 정예 분대가 없습니다. 스토리 전투에서 부대를 격파 2회(2레벨)까지 살려 두세요.</p>'}
+    <div class="vsec"><b>🕯️ 추모관</b><small class="dim">전사한 정예 ${mem.length}기 · 함께 거둔 격파 ${memK}</small></div>
+    ${mem.length ? `<div class="vgrid">${mem.map(v => card(v, true)).join('')}</div>` : '<p class="dim">아직 전사한 정예가 없습니다. 모두 무사히 돌아왔어요.</p>'}
+    <div class="actbar"><button id="vetBack" class="ghost">↩ 작전도</button></div>`;
+  $('vetBack').onclick = () => $('vetHide').click();
+  $('vets').style.display = 'flex';
+}
 // ================= 전투기 · 본부 방공망 =================
 const AD_R = 380, AD_DPS = 140;   // 방공망 반경 · 초당 피해 (전투기 체력 200 → 약 1.4초면 격추)
 // 공항: 본부 뒤쪽에 활주로 + 관제탑. 전투기는 활주로 옆에 나란히 대기
@@ -6562,7 +6955,10 @@ function renameProfile(nn) {   // 지휘관 이름 바꾸기: 기록 저장 위�
   nn = (nn || '').trim(); if (!nn || nn === profile) return;
   const P = loadProfiles(); if (P[nn]) { toast('이미 있는 이름입니다'); return; }
   try { const old = localStorage.getItem(recKey()); P[nn] = { ...(P[profile] || {}), last: Date.now() }; delete P[profile]; saveProfiles(P);
-    if (old) localStorage.setItem('miniwarzone.rec.' + nn, old); localStorage.removeItem(recKey()); profile = nn; localStorage.setItem(CUR_KEY, nn); } catch (e) {}
+    if (old) localStorage.setItem('miniwarzone.rec.' + nn, old); localStorage.removeItem(recKey());
+    const cm = localStorage.getItem(cloudKey()); if (cm) { localStorage.setItem(cloudKey(nn), cm); localStorage.removeItem(cloudKey()); }
+    profile = nn; localStorage.setItem(CUR_KEY, nn); } catch (e) {}
+  if (cloudMeta()) capi('PATCH', '/api/me', { name: nn }).catch(() => {});
   toast(`지휘관 이름을 ${nn}(으)로 바꿨습니다`); renderProfile();
 }
 $('pfRename').onclick = () => renameProfile($('pfName').value);
@@ -6575,6 +6971,16 @@ const LANGS = { ko: '한국어', en: 'English', zh: '中文', ja: '日本語' };
 const I18N = [
   // [한국어, English, 中文, 日本語]
   ['미니워존', 'Mini War Zone', '迷你战区', 'ミニウォーゾーン'], ['등고선 위의 작은 전쟁', 'A tiny war on the contours', '等高线上的小战争', '等高線の上の小さな戦争'],
+  ['전투 흐름', 'Battle Flow', '战斗走势', '戦闘の流れ'], ['병력', 'Army', '兵力', '兵力'], ['자원 수입', 'Income', '资源收入', '資源収入'], ['적군', 'Enemy', '敌军', '敵軍'], ['표로 보기', 'Show as table', '以表格查看', '表で見る'],
+  ['아군 / 적군', 'Ally / Enemy', '我军 / 敌军', '味方 / 敵'], ['살아 있는 부대 가치 (생산비 × 남은 체력)', 'Value of living units (cost × HP left)', '存活部队价值（生产费 × 剩余体力）', '生存部隊の価値（生産費 × 残り体力）'],
+  ['건물에서 들어온 돈 + 철광 누적', 'Cumulative money + iron from buildings', '建筑累计收入（资金 + 铁矿）', '建物からの資金 + 鉄鉱の累計'], ['누적 격파 수', 'Cumulative kills', '累计击毁数', '累計撃破数'],
+  ['정예 · 추모관', 'Veterans · Memorial', '精英 · 纪念馆', '精鋭 · 追悼館'], ['정예 분대 · 추모관', 'Veteran Squad · Memorial', '精英分队 · 纪念馆', '精鋭分隊 · 追悼館'], ['정예 분대', 'Veteran Squad', '精英分队', '精鋭分隊'], ['추모관', 'Memorial', '纪念馆', '追悼館'], ['전사', 'Fallen', '阵亡', '戦死'],
+  ['전사한 정예', 'Fallen veterans', '阵亡精英', '戦死した精鋭'], ['함께 거둔 격파', 'kills together', '共同击毁', '共に挙げた撃破'],
+  ['스토리 전투에서 2레벨이 되어 이름을 얻은 부대 중 격파 수 상위 5기가 다음 전투에 레벨 그대로 함께 출격합니다', 'Named units that reached Lv.2 in story battles — the top 5 by kills join your next battle at their current level', '剧情战斗中达到2级并获得名字的部队，击毁数前5名将保持等级参加下一场战斗', 'ストーリー戦闘で Lv.2 になり名前を得た部隊のうち、撃破数上位5機がレベルそのままで次の戦闘に出撃します'],
+  ['아직 정예 분대가 없습니다. 스토리 전투에서 부대를 격파 2회(2레벨)까지 살려 두세요.', 'No veterans yet. Keep a unit alive until it gets 2 kills (Lv.2) in a story battle.', '还没有精英分队。在剧情战斗中让部队存活到击毁2次（2级）。', 'まだ精鋭分隊はいません。ストーリー戦闘で部隊を撃破2回（Lv.2）まで生き残らせましょう。'],
+  ['아직 전사한 정예가 없습니다. 모두 무사히 돌아왔어요.', 'No fallen veterans. Everyone made it home.', '还没有阵亡的精英。大家都平安归来。', 'まだ戦死した精鋭はいません。全員無事に帰還しました。'],
+  ['전체', 'All', '全部', 'すべて'], ['부대 색', 'Unit Colors', '部队颜色', '部隊カラー'], ['전투 보너스', 'Battle Bonuses', '战斗加成', '戦闘ボーナス'], ['모자', 'Hats', '帽子', '帽子'],
+  ['구매 확인', 'Confirm', '确认购买', '購入確認'], ['구매 완료', 'Purchased', '购买完成', '購入完了'], ['기본 병종', 'Basic Units', '基本兵种', '基本兵種'], ['국가 특수무기', 'National Specials', '国家特殊武器', '国家特殊兵器'], ['본부 · 구조물', 'HQ · Structures', '总部 · 建筑', '本部 · 構造物'],
   ['세계 정복 시작', 'Start Conquest', '开始征服世界', '世界征服を開始'], ['이어하기', 'Continue', '继续', 'つづきから'], ['스토리 모드', 'Story Mode', '故事模式', 'ストーリーモード'],
   ['PVP 모드', 'PVP Mode', 'PVP模式', 'PVPモード'], ['연습 전투', 'Practice Battle', '练习战斗', '練習バトル'], ['튜토리얼', 'Tutorial', '教程', 'チュートリアル'],
   ['지휘관 프로필', 'Commander Profile', '指挥官档案', '指揮官プロフィール'], ['도감', 'Encyclopedia', '图鉴', '図鑑'], ['병기', 'Weapons', '武器', '兵器'], ['국가', 'Nations', '国家', '国家'], ['병기 도감', 'Encyclopedia', '武器图鉴', '兵器図鑑'], ['상점', 'Shop', '商店', 'ショップ'], ['기록실', 'Records', '记录室', '記録室'], ['설정', 'Settings', '设置', '設定'],
@@ -6763,6 +7169,7 @@ function loadRec() {
 function saveRec(r) {
   if (r.slots) { if (r.story) r.story.saved = Date.now(); r.slots[r.slot] = r.story || null; }
   try { localStorage.setItem(recKey(), JSON.stringify({ ...r, story: undefined })); } catch (e) {}
+  cloudDirty();
 }
 function scoreBattle(win) {
   const myTeam = me().team, D = DIFFS[G.diff], k0 = G.ukills[myTeam], k1 = G.ukills[1 - myTeam];
@@ -6777,7 +7184,8 @@ function endGame(win, why) {
   if (G.over) return;
   G.over = true; bannerT = 0; contactT = 0; $('banner').style.display = $('contact').style.display = 'none';
   if (G.net === 'host') { const s = makeSnap(); relay(s); relay({ k: 'over', win: win === null ? null : !win, why: WHY_SWAP[why] || why }); }
-  if (G.net) wsSend({ t: 'done' }); G.hqWin = win && why.startsWith('적 본부');
+  if (G.net) { wsSend({ t: 'result', matchId: NET.match && NET.match.id, win }); wsSend({ t: 'done' }); } G.hqWin = win && why.startsWith('적 본부');
+  statSample(true);
   const pl = me(), t = Math.floor(G.time), sc = scoreBattle(!!win);
   const gold = Math.floor(sc.total / 10);
   G.reward = { gold, storyGold: 0, xp: 0, promo: null, rating: null, tut: 0, score: sc.total, kills: G.ukills[pl.team] || 0, time: t };
@@ -6802,18 +7210,16 @@ function endGame(win, why) {
     <table class="wg"><tr><th>종목</th><th>기록</th><th>점수</th></tr>${rows}<tr><td><b>합계</b></td><td></td><td><b>${sc.total.toLocaleString()}</b></td></tr></table>
     <div>🪙 보상 <b>${gold.toLocaleString()} 골드</b> <small>(누적 ${rec.gold.toLocaleString()})</small></div>` +
     (roster.length ? `<div class="mvp"><b>공로 부대</b> (격파 기여도에 따라 골드 분배)<br>` + roster.map((u, i) =>
-      `${i === 0 ? '🏅' : '·'} ${u.T.name} Lv.${lvOf(u)} — 격파 ${u.kills} · ${Math.round(u.kills / sumK * 100)}% · ${Math.floor(gold * u.kills / sumK)}골드${u.alive ? '' : ' (전사)'}`).join('<br>') + '</div>' : '') + hlResultHTML();
-  setTimeout(hlPlay, 30);
+      `${i === 0 ? '🏅' : '·'} ${u.T.name} Lv.${lvOf(u)} — 격파 ${u.kills} · ${Math.round(u.kills / sumK * 100)}% · ${Math.floor(gold * u.kills / sumK)}골드${u.alive ? '' : ' (전사)'}`).join('<br>') + '</div>' : '') + statResultHTML() + hlResultHTML();
+  setTimeout(hlPlay, 30); setTimeout(statBind, 0);
   $('toTheater').style.display = 'none'; $('again').style.display = G.net ? 'none' : 'inline-block';
   if (G.story) $('overP').innerHTML += storyResult(win);
   { const sto = !!G.story; $('toTitle').className = sto || !G.net ? 'ghost' : 'big'; $('again').className = sto ? 'sec' : 'big'; if (G.net) $('toTitle').className = 'big';   // 주 행동 하나: 스토리 → 작전도 · 연습 → 다시 · PVP → 메뉴
     for (const b of ['toTitle', 'again', 'toTheater']) $(b).toggleAttribute('data-primary', $(b).classList.contains('big')); }
   if (win && !G.tutorial) dailyAdd('win');
-  if (G.net) {   // PVP 시즌 랭크
-    const r2 = loadRec(), P = pvpOf(r2), before = leagueOf(P.rating)[1], d = win === null ? 0 : win ? 25 : -20;
-    P.rating = Math.max(0, P.rating + d); P.peak = Math.max(P.peak, P.rating); win ? P.w++ : win === false && P.l++; saveRec(r2); if (G.reward) G.reward.rating = [P.rating, d];
-    const L = leagueOf(P.rating)[1];
-    $('overP').innerHTML += `<div class="mvp"><b>🏅 PVP 시즌 ${P.season}</b><br>레이팅 ${P.rating} (${d >= 0 ? '+' : ''}${d}) · ${L}${L !== before ? (d > 0 ? ' 승급! 🎉' : ' 강등') : ''} · ${P.w}승 ${P.l}패</div>`;
+  if (G.net) {   // PVP 레이팅: 서버가 양쪽 결과를 맞춰 본 뒤 알려 줌 (onRated)
+    const rated = NET.match && NET.match.rated;
+    $('overP').innerHTML += `<div class="mvp" id="pvpRated"><b>${rated ? '🏅 순위전' : '🤝 비순위전'}</b><br>${rated ? '서버에서 결과를 확인하는 중…' : '친구 대전이거나 클라우드에 연결하지 않아 레이팅에 반영되지 않습니다'}</div>`;
   }
   if (G.tutorial && win) {
     const r2 = loadRec(); const first = !r2.tutDone; r2.tutDone = true; if (first) r2.gold += 300; saveRec(r2); if (G.reward) G.reward.tut = first ? 300 : 0;
@@ -6882,7 +7288,7 @@ function cerButtons() {   // 승부 후 선택: 기본은 지도(작전도)로 /
 }
 function cerAction(a) {
   sfx('click'); $('ceremony').style.display = 'none'; screenWipe.force = a !== 'detail' && a !== 'again';
-  if (a === 'detail') { $('over').style.display = 'flex'; return; }
+  if (a === 'detail') { $('over').style.display = 'flex'; statDraw(); return; }
   $('over').style.display = 'none';
   if (a === 'map') { newGame(); TH_MAP = null; showScreen('theater'); return; }
   if (a === 'menu') { newGame(); showScreen('station'); return; }
@@ -6928,7 +7334,7 @@ function newGame(cfg = DEFAULT_CFG) {
         ukills: [0, 0], fallen: [] };
   G.hexMode = !!SETTINGS.hex; computeHexLevels();
   buildRoads(); computeHexFeatures(); computeElev();
-  G.contour = buildTerrainImage();
+  G.contour = buildTerrainImage(); G.OCC = buildOcclusion();
   G.mini = buildMini(G.contour, MM.w, MM.h);
   const rec0 = loadRec(); if (!cfg.pvp) { players[ME].col = SKINS[rec0.skin].col; players[ME].sparkle = !!SKINS[rec0.skin].sparkle; }
   for (const pl of players) spawnStart(pl);
@@ -6978,7 +7384,7 @@ function frame(now) {
     px += ed.x * sp * 1.4; py += ed.y * sp * 1.4;
     if (px || py) { cam.x += px; cam.y += py; clampCam(); }
   } else G.time += dt;   // 타이틀 화면 애니메이션용
-  if (G.net === 'guest') { if (G.snap && !G.over) { netApply(G.snap); G.snap = null; } if (G.started && !G.over && performance.now() - NET.lastRx > 8000) endGame(null, '서버와 연결이 끊겼습니다.'); }
+  if (G.net === 'guest') { if (G.snap && !G.over) { netApply(G.snap); G.snap = null; } if (G.started && !G.over && !NET.peerWait && !NET.reconT && performance.now() - NET.lastRx > 8000) endGame(null, '서버와 연결이 끊겼습니다.'); }
   else if (G.started && !G.paused && !G.over && G.pendingEnd) {   // 승리 슬로모션
     G.slowT -= dt; update(dt * 0.25);
     if (G.endCam) { const cx = cam.x + VW / cam.zoom / 2, cy = cam.y + VH / cam.zoom / 2; centerCam(cx + (G.endCam.x - cx) * Math.min(1, dt * 4), cy + (G.endCam.y - cy) * Math.min(1, dt * 4)); } if (G.slowT <= 0) { const [w, why] = G.pendingEnd; G.pendingEnd = null; G.over = false; endGame(w, why); }
@@ -6989,6 +7395,7 @@ function frame(now) {
     if (G.slowMoT > 0) G.slowMoT -= dt;
     if (G.net === 'host') { NET.snapT -= dt; if (NET.snapT <= 0) { NET.snapT = 0.05; relay(makeSnap()); } }
   }
+  if (G.started && !G.over && !G.tutorial) statSample();
   const menuOn = !G.started && MENU_SCREENS.some(id => $(id).style.display === 'flex');
   titleCv.style.display = menuOn ? 'block' : 'none';
   if (menuOn) { drawTitleArt($('login').style.display === 'flex' || $('station').style.display === 'flex'); if ($('slots').style.display === 'flex') drawSlotArt(); }

@@ -1,0 +1,8 @@
+node_modules
+data
+*.db*
+index_v*.html
+.git
+.DS_Store
+test
+gameplan.md

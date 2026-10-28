@@ -6,3 +6,6 @@ index_v*.html
 .DS_Store
 test
 gameplan.md
+.github
+.claude
+docs

@@ -1,0 +1,54 @@
+# 도커 이미지 빌드 → 컨테이너를 띄워 /api/health 확인 → GHCR(ghcr.io/hobbong21/4.miniwarzone)에 올림
+name: docker
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 이미지 이름 (소문자)
+        id: name
+        run: echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+
+      - name: 빌드
+        run: docker build -t miniwarzone:test .
+
+      - name: 실행 확인 (health · 공개 파일 허용 목록)
+        run: |
+          docker run -d --name mwz -p 8080:8080 miniwarzone:test
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:8080/api/health && break; sleep 1; done
+          curl -fsS http://127.0.0.1:8080/api/health
+          curl -fsS -o /dev/null http://127.0.0.1:8080/
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/gameplan.md)" != 200
+          docker logs mwz
+          docker rm -f mwz
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ steps.name.outputs.image }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,prefix=
+            type=ref,event=tag
+
+      - name: 올리기
+        run: |
+          for t in $(echo "${{ steps.meta.outputs.tags }}"); do docker tag miniwarzone:test "$t"; docker push "$t"; done

@@ -73,6 +73,11 @@ await clickWait(`showScreen('station')`, 600);
 await clickWait(`showScreen('world')`, 2500);   // 세계 지도: 국경 데이터 · 바탕 그림 · 국기 배지
 R.world = await ev(`[${vis('world')}, WG && WG.countries.length, !!(WG && WG.base), Object.keys(NATIONS).every(k => WG.byNation[k]), Object.keys(FLAG_CV).length]`);
 await shot('3e_world');
+R.th = await ev(`Object.keys(THEATERS).map(key => {   // 작전도 6곳: 지역마다 땅이 있고 · 모든 지역이 이어지고 · 바탕 그림이 만들어짐
+  buildTheaterMap(key); buildTheaterBase(); const M = TH_MAP, n = M.T.regions.length, cnt = new Array(n).fill(0); for (const v of M.hid) if (v >= 0) cnt[v]++;
+  const seen = new Set([0]), st = [0]; while (st.length) for (const j of M.adj[st.pop()]) if (!seen.has(j)) { seen.add(j); st.push(j); }
+  return cnt.every(c => c > 50) && seen.size === n && !!M.base;
+}).concat(WPICK.isPointInPath(WG.byNation.AUS.path, ...wProj(134, -25)))`);
 await clickWait(`showScreen('station')`, 600);
 // 7) 다른 기기 흉내: 저장소를 모두 비우고 로그인 → 같은 기록
 await ev(`localStorage.clear()`); await go(BASE + '/?auth=login');
@@ -126,6 +131,7 @@ const checks = [
   ok('프로필 탭: 프로필 · 기록실 · 도감', R.pfTabs === 'profile,records,dex,close'),
   ok('도감이 프로필 탭 안에서 열림', R.dex[0] && R.dex[1] === 4 && R.dex[2] > 0),
   ok('설정: 독립 화면 · 계정 표시 · 로그아웃 버튼', R.settings[0] && R.settings[1] && R.settings[2].includes('player01') && R.settings[3] === 0),
+  ok('작전도 6곳: 실제 국경 땅 · 지역 연결 · 바탕 그림 (+ 세계 지도에 호주 땅)', R.th.length === 7 && R.th.every(Boolean)),
   ok('세계 지도: 국경 · 바탕 그림 · 모든 나라 땅 · 국기 배지', R.world[0] && R.world[1] > 150 && R.world[2] && R.world[3] && R.world[4] >= 30),
   ok('메인 화면 카드에서 로그아웃', R.stOut[0] === null && R.stOut[1]),
   ok('설정에서 로그아웃', R.setOut[0] === null && R.setOut[1]),

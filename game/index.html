@@ -310,7 +310,10 @@
   .card { min-width: 0; overflow: hidden; }
   /* 좁은 화면: 정책 트리 칸을 화면 폭에 맞춤 */
   @media (max-width: 760px) { .ptree { min-width: 0; } .pt-node { width: 27vw; padding: 5px 4px; } .pt-node small { display: none; } .pt-node b { font-size: 11px; } .pt-root { font-size: 12px; padding: 5px 10px; white-space: normal; max-width: 60vw; } .pt-br { font-size: 11px; } }
-  #stCard { cursor: pointer; } #stCard:hover { border-color: #7fe3ff; }
+  .ch-btns { display: flex; gap: 6px; margin-top: 6px; } .ov .ch-btns button { flex: 1; width: auto; margin: 0; padding: 5px 8px; font-size: 13px; font-weight: 800; }
+  .ov .ch-btns button.out, .ov .set-acct button.out { background: rgba(14,22,60,.6); border-color: #6a7cc8; color: #c9d3ff; }
+  .set-acct { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; } .ov .set-acct button { display: inline-block; width: auto; margin: 0; }
+  .ov .pf-h button.pf-hb { display: inline-block; width: auto; margin: 0 0 0 8px; padding: 2px 10px; font-size: 12px; vertical-align: middle; }
   #titleArt { position: fixed; inset: 0; display: none; }
   #toast { z-index: 30; }
   .ov.scr { background: transparent; }
@@ -773,9 +776,9 @@
     <button class="mmb" data-go="story">🌏 스토리 모드<small>세계 정복 · 저장 슬롯 5개</small></button>
     <button class="mmb" data-go="pvp">⚔️ PVP 모드<small>다른 지휘관과 매칭</small></button>
     <button class="mmb" data-go="setup">🎓 튜토리얼<small>기초 훈련 · AI 상대 자유 전투</small></button>
-    <button class="mmb" data-go="profile">👤 지휘관 프로필<small>계급 · 기록실 · 설정</small></button>
-    <button class="mmb" data-go="dex">📖 도감<small>국가 · 병기</small></button>
+    <button class="mmb" data-go="profile">👤 지휘관 · 도감<small>계급 · 기록실 · 병기 · 국가</small></button>
     <button class="mmb" data-go="shop">🛒 상점</button>
+    <button class="mmb" data-go="settings">⚙️ 설정</button>
   </nav>
   <div id="stCard" class="chip sf"></div>
   <div id="dailyBox" class="daily sf"></div>
@@ -795,7 +798,7 @@
   </div>
   <div class="pf-h">📊 전적</div><div id="pfStats" class="pf-stats"></div>
   <div class="pf-h">🏅 훈장</div><div id="pfMedals" class="pf-medals"></div>
-  <div class="pf-h">🎨 꾸미기 <small class="dim">(새 색·모자는 상점에서)</small></div><div id="pfLook"></div>
+  <div class="pf-h">🎨 꾸미기 <button class="pf-hb" data-go2="shop">🛒 상점</button></div><div id="pfLook"></div>
   <button class="back">↩ 메인 메뉴</button>
 </div></div>
 <div id="setup" class="ov scr"><div class="box" style="width:min(720px,94vw);text-align:left">
@@ -853,12 +856,11 @@
 <div id="vets" class="ov scr"><div class="box" style="width:min(720px,95vw);text-align:left;max-height:88vh;overflow:auto"><span class="hide" id="vetHide" style="float:right;cursor:pointer;color:#c9b97e;font-weight:600">닫기 ✕</span>
   <h1 style="font-size:24px">🎖️ 정예 분대 · 추모관</h1><div id="vetBody"></div></div></div>
 <div id="dex" class="ov scr"><div class="box" style="width:min(820px,94vw);max-height:88vh;overflow:auto;text-align:left">
-  <h1 style="font-size:26px">📖 도감</h1><div class="stickbar"><div class="pf-tabbar dextabs"><button data-dt="weapon" class="on">🔫 병기</button><button data-dt="nation">🌏 국가</button></div><div class="fchips" id="dexChips"></div></div><div id="dexList" class="dexgrid"></div><div id="natDex" class="natdex" style="display:none"></div>
-  <div class="actbar"><button class="back">↩ 메뉴로 이동</button></div>
+  <div class="pftabs"></div><div class="stickbar"><div class="pf-tabbar dextabs"><button data-dt="weapon" class="on">🔫 병기</button><button data-dt="nation">🌏 국가</button></div><div class="fchips" id="dexChips"></div></div><div id="dexList" class="dexgrid"></div><div id="natDex" class="natdex" style="display:none"></div>
 </div></div>
 <div id="settings" class="ov scr"><div class="box pf" style="text-align:left">
-  <div class="pftabs"></div>
   <h1 style="font-size:26px">⚙️ 설정</h1>
+  <div class="opt" id="setAcctRow"><span>계정</span><div id="setAcct" class="set-acct"></div></div>
   <div class="opt"><span>효과음</span><div data-set="sfx"><button data-v="1">켜기</button><button data-v="0">끄기</button></div></div>
   <div class="opt"><span>배경음</span><div data-set="music"><button data-v="1">켜기</button><button data-v="0">끄기</button></div></div>
   <div class="opt"><span>언어</span><div id="setLang"><button data-lang="ko">한국어</button><button data-lang="en">English</button><button data-lang="zh">中文</button><button data-lang="ja">日本語</button></div></div>
@@ -867,7 +869,7 @@
   <div class="opt"><span>약관 · 정보</span><div><button data-legal="terms">📜 이용약관</button><button data-legal="privacy">🔒 개인정보 처리방침</button></div></div>
   <div class="opt"><span>내 기록</span><div><button id="wipeData" class="danger">🗑️ 내 기록 모두 지우기</button></div></div>
   <div class="devcredit">🎮 개발 · 휴먼에이드 (HumanAid) · v2026.10</div>
-  <div style="text-align:center"><button id="setClose">닫기</button></div>
+  <div style="text-align:center"><button id="setClose">↩ 닫기</button></div>
 </div></div>
 <div id="pausem" class="ov"><div class="box" style="width:min(320px,90vw)">
   <h1 style="font-size:26px">⏸ 일시정지</h1>
@@ -4123,7 +4125,7 @@ const SCREENS = ['login', 'station', 'slots', 'profile', 'setup', 'world', 'thea
 const MENU_SCREENS = ['login', 'station', 'slots', 'profile', 'setup', 'world', 'theater', 'brief', 'policy', 'vets', 'pvp', 'dex', 'settings', 'shop', 'records'];
 function hideScreens() { for (const id of SCREENS) $(id).style.display = 'none'; }
 // ---- 화면 전환 플래시: 메뉴 화면이 바뀔 때 장갑판이 사선으로 쓸고 지나가며 다음 화면 이름을 찍음 (0.6초, 입력은 막지 않음)
-const WIPE_NAME = { station: '🏠 지휘 본부', slots: '💾 지휘 슬롯', world: '🌏 세계 지도', theater: '🗺️ 작전도', pvp: '⚔️ PVP 모드', setup: '🎓 튜토리얼', profile: '👤 지휘관 프로필',
+const WIPE_NAME = { station: '🏠 지휘 본부', slots: '💾 지휘 슬롯', world: '🌏 세계 지도', theater: '🗺️ 작전도', pvp: '⚔️ PVP 모드', setup: '🎓 튜토리얼', profile: '👤 지휘관 · 도감',
   dex: '📖 도감', shop: '🛒 상점', brief: '📋 작전 브리핑', records: '🏆 기록실', settings: '⚙️ 설정', legal: '📜 약관 · 개인정보' };
 function screenWipe(prev, id) {
   const pf = ['profile', 'records', 'settings'], force = screenWipe.force; screenWipe.force = false;
@@ -4146,7 +4148,7 @@ function showScreen(id) {
   if (id === 'world') renderWorldInfo();
   if (id === 'slots') renderSlots();
   if (id === 'profile') renderProfile();
-  if (['profile', 'records', 'settings'].includes(id)) renderPfTabs(id);
+  if (['profile', 'records', 'dex'].includes(id)) renderPfTabs(id);
   if (id === 'theater') renderTheater();
   if (id === 'pvp') pvpOpen();
   if (id === 'dex') renderDex();
@@ -4317,7 +4319,8 @@ function renderStation() {
   $('stCard').innerHTML = `<div class="ch-t">${rankBadge(rk.i)} <span class="rk">${rk.name}</span> <span class="fl">${MN.flag}</span> <b>${profile || '지휘관'}</b></div>${rec.motto ? `<div class="ch-s">“${rec.motto}”</div>` : ''}
     <div class="ch-s">${MN.name}군${nq ? ` · ⭐ 특수무기 ${nq[1]}` : ''}</div>
     <div class="ch-r">🪙 ${rec.gold.toLocaleString()} · 전적 ${rec.battles.length}전 ${wins}승 · 🏅 ${leagueOf(pvpOf(rec).rating)[1]} ${pvpOf(rec).rating}</div>
-    <div class="xbar"><i style="width:${Math.round(rk.prog * 100)}%"></i><span>⭐ ${rec.xp.toLocaleString()} XP · ${rk.next ? `${rk.next}까지 ${rk.need.toLocaleString()} XP` : '최고 계급 (4성 장군)'}</span></div><small class="dim">👤 눌러서 프로필 보기</small>`;
+    <div class="xbar"><i style="width:${Math.round(rk.prog * 100)}%"></i><span>⭐ ${rec.xp.toLocaleString()} XP · ${rk.next ? `${rk.next}까지 ${rk.need.toLocaleString()} XP` : '최고 계급 (4성 장군)'}</span></div><div class="ch-btns"><button data-go2="profile">👤 프로필</button><button data-go2="settings">⚙️ 설정</button><button class="out" id="stLogout">🚪 로그아웃</button></div>`;
+  $('stLogout').onclick = logout;
   $('contTxt').textContent = st ? '▶ 이어하기' : '▶ 세계 정복 시작';
   $('contSub').textContent = st ? `💾 슬롯 ${rec.slot + 1} · ${NATIONS[st.nation].flag} ${NATIONS[st.nation].name} · ${THEATERS[st.theater || 'korea'].name} ${terr}/${THEATERS[st.theater || 'korea'].regions.length}` : '저장 슬롯에서 나라를 고르세요';
   // CTA 정리: 이어하기(주황)가 곧 스토리 입구 → 스토리를 시작하기 전엔 같은 일을 하는 '스토리 모드' 버튼을 숨김
@@ -5114,6 +5117,10 @@ function animateDex() {
 // --- 설정
 function renderSettings() {   // (소속 국가·게임 속도·지형 표시는 정리하고, 언어 선택 추가)
   renderCloudBox();
+  const m = cloudMeta(), inBattle = G.started && !G.over;   // 계정: 회원/게스트 + 로그아웃 (전투 중에는 숨김)
+  $('setAcctRow').style.display = profile && !inBattle ? '' : 'none';
+  $('setAcct').innerHTML = `<span class="tag">${m && m.login ? `🔑 ${esc(m.login)}` : '🎖️ 게스트'}</span><button class="out" id="setLogout">🚪 로그아웃</button>`;
+  $('setLogout').onclick = logout;
   for (const b of $('setLang').querySelectorAll('button')) {
     b.classList.toggle('sel', (SETTINGS.lang || 'ko') === b.dataset.lang);
     b.onclick = () => { SETTINGS.lang = b.dataset.lang; const rec = loadRec(); rec.settings = SETTINGS; saveRec(rec); setLang(SETTINGS.lang); renderSettings(); };
@@ -5197,7 +5204,7 @@ function togglePause(show) {
 $('menuBtn').onclick = () => togglePause(true);
 $('pmResume').onclick = () => togglePause(false);
 $('pmHelp').onclick = () => { $('pausem').style.display = 'none'; $('help').style.display = 'flex'; helpPaused = false; };
-$('pmSet').onclick = () => { $('pausem').style.display = 'none'; renderSettings(); renderPfTabs('settings'); $('settings').style.display = 'flex'; };
+$('pmSet').onclick = () => { $('pausem').style.display = 'none'; renderSettings(); $('settings').style.display = 'flex'; };
 $('pmGiveup').onclick = () => { $('pausem').style.display = 'none'; G.paused = false; if (isGuest()) relay({ k: 'cmd', c: 'giveup' }); else endGame(false, '항복했습니다.'); };
 $('pmExit').onclick = () => { if (G.net) { wsSend({ t: 'leave' }); } G.over = true; newGame(); showScreen('station'); };
 
@@ -7051,11 +7058,11 @@ const MEDALS = [
   ['🚩', '첫 점령', '스토리에서 지역 1곳 점령', r => r.stats.conquered >= 1], ['🗺️', '정복자', '지역 10곳 점령', r => r.stats.conquered >= 10], ['🌏', '통일 영웅', '전장 하나를 통일', r => r.stats.unified >= 1],
   ['💥', '격파왕', '적 부대 200개 격파', r => r.stats.kills >= 200], ['⭐', '장교 임관', '소위 진급', r => rankOf(r.xp).i >= 10], ['🌟', '장군 진급', '준장 진급', r => rankOf(r.xp).i >= 16], ['👑', '4성 장군', '대장 진급', r => rankOf(r.xp).i >= 19],
 ];
-function renderPfTabs(cur) {   // 프로필 · 기록실 · 설정 탭 + 이름·레벨 머리글
+function renderPfTabs(cur) {   // 프로필 · 기록실 · 도감 탭 + 이름·레벨 머리글
   const rec = loadRec(), rk = rankOf(rec.xp), inBattle = G.started && !G.over;
   const html = `<div class="pf-id">${rankBadge(rk.i, true)}<div><div class="pf-nm">${profile || '지휘관'} <span class="pf-lv">Lv.${rk.i + 1}</span></div><div class="pf-rk">${rk.name} · ${RANK_GROUP(rk.i)}${rec.motto ? ` · “${rec.motto}”` : ''}</div>
       <div class="xbar"><i style="width:${Math.round(rk.prog * 100)}%"></i><span>⭐ ${rec.xp.toLocaleString()} XP${rk.next ? ` · ${rk.next}까지 ${rk.need.toLocaleString()}` : ''}</span></div></div></div>
-    <div class="pf-tabbar">${inBattle ? '' : [['profile', '👤 프로필'], ['records', '🏆 기록실'], ['settings', '⚙️ 설정']].map(([k, l]) => `<button data-tab="${k}" class="${k === cur ? 'on' : ''}">${l}</button>`).join('')}
+    <div class="pf-tabbar">${inBattle ? '' : [['profile', '👤 프로필'], ['records', '🏆 기록실'], ['dex', '📖 도감']].map(([k, l]) => `<button data-tab="${k}" class="${k === cur ? 'on' : ''}">${l}</button>`).join('')}
       <button data-tab="close" class="x">${inBattle ? '↩ 돌아가기' : '↩ 메뉴로 이동'}</button></div>`;
   for (const el of document.querySelectorAll('.pftabs')) { el.innerHTML = html; for (const b of el.querySelectorAll('button[data-tab]')) b.onclick = () => {
     sfx('click'); const t = b.dataset.tab;
@@ -7069,8 +7076,7 @@ function renderProfile() {
   $('pfNation').innerHTML = `${N.flag} ${N.name}군 소속 · ${natIntro(myNation())}`;
   renderAcct();
   $('pfRank').innerHTML = `<div class="pf-rank">${rankBadge(rk.i, true)}<div><b>${rk.name}</b><small class="dim">${RANK_GROUP(rk.i)} · ${rk.i + 1} / ${RANKS.length} 단계</small></div></div>
-    <div class="xbar"><i style="width:${Math.round(rk.prog * 100)}%"></i><span>⭐ ${rec.xp.toLocaleString()} XP · ${rk.next ? `${rk.next}까지 ${rk.need.toLocaleString()} XP` : '최고 계급 달성!'}</span></div>
-    <small class="dim">스토리 모드에서 이길 때마다 경험치와 골드를 얻습니다 (공격전 100 · 방어전 60 XP × 난이도, 수도 +80, 전장 통일 +500). 진급하면 보너스 골드!</small>`;
+    <div class="xbar"><i style="width:${Math.round(rk.prog * 100)}%"></i><span>⭐ ${rec.xp.toLocaleString()} XP · ${rk.next ? `${rk.next}까지 ${rk.need.toLocaleString()} XP` : '최고 계급 달성!'}</span></div>`;
   $('pfLadder').innerHTML = RANKS.map(([xp, nm], i) => `<div class="pl ${i < rk.i ? 'done' : i === rk.i ? 'cur' : ''}" title="${nm} · ${xp.toLocaleString()} XP">${rankBadge(i)}<b>${nm}</b><small>${xp.toLocaleString()}</small></div>`).join('');
   const winRate = S.battles ? Math.round(S.wins / S.battles * 100) : 0;
   $('pfStats').innerHTML = [['⚔️', '전투', S.battles], ['🏆', '승리', S.wins], ['📈', '승률', winRate + '%'], ['🗺️', '스토리 승리', S.storyWins], ['🚩', '점령 지역', S.conquered], ['🌏', '전장 통일', S.unified],
@@ -7107,7 +7113,7 @@ function renameProfile(nn) {   // 지휘관 이름 바꾸기: 기록 저장 위�
 }
 $('pfRename').onclick = () => renameProfile($('pfName').value);
 $('pfMottoSave').onclick = () => { const r = loadRec(); r.motto = $('pfMotto').value.trim().slice(0, 20); saveRec(r); toast('좌우명 저장!'); };
-$('stCard').onclick = () => showScreen('profile');
+document.addEventListener('click', e => { const b = e.target.closest('button[data-go2]'); if (b) { sfx('click'); showScreen(b.dataset.go2); } });   // 화면 사이 바로가기 버튼
 
 // ================= 언어 선택 (한국어 · English · 中文 · 日本語) =================
 // 화면의 짧은 UI 문구를 사전으로 바꿈. 바꾼 뒤에도 한글이 남는 긴 설명문(도움말·도감 등)은 섞이지 않도록 한국어 원문을 유지
@@ -7173,7 +7179,7 @@ const I18N = [
   ['훈련병', 'Recruit', '新兵', '訓練兵'], ['이병', 'Private', '列兵', '二等兵'], ['일병', 'Private 1st Class', '上等兵', '一等兵'], ['상병', 'Corporal', '下士', '上等兵'], ['병장', 'Sergeant', '中士', '兵長'], ['하사', 'Staff Sergeant', '上士', '下士'],
   ['중사', 'Sergeant 1st Class', '军士长', '中士'], ['상사', 'Master Sergeant', '三级军士长', '上士'], ['원사', 'Sergeant Major', '一级军士长', '曹長'], ['준위', 'Warrant Officer', '准尉', '准尉'], ['소위', '2nd Lieutenant', '少尉', '少尉'], ['중위', '1st Lieutenant', '中尉', '中尉'],
   ['대위', 'Captain', '上尉', '大尉'], ['소령', 'Major', '少校', '少佐'], ['중령', 'Lt. Colonel', '中校', '中佐'], ['대령', 'Colonel', '上校', '大佐'], ['준장', 'Brigadier General', '准将', '准将'], ['소장', 'Major General', '少将', '少将'], ['중장', 'Lt. General', '中将', '中将'], ['대장', 'General ★★★★', '上将', '大将'],
-  ['까지', ' in', '还差', 'まで'], ['작전도로 돌아가기', 'Back to theater map', '返回作战图', '作戦図に戻る'], ['다음 지역', 'Next region', '下一个地区', '次の地域'], ['다시 하기', 'Play again', '再来一次', 'もう一度'], ['계속', 'Continue', '继续', '続ける'], ['국가 정복', 'Nation conquered', '国家征服', '国家征服'], ['전장 통일', 'Theater unified', '战区统一', '戦域統一'], ['전선 확대!', 'Front expanded!', '战线扩大！', '戦線拡大！'], ['프로필', 'Profile', '档案', 'プロフィール'], ['돌아가기', 'Back', '返回', '戻る'], ['간단히', 'Compact', '简洁', 'シンプル'], ['자세히', 'Detailed', '详细', '詳細'], ['결과 자세히', 'Details', '查看详情', '詳細'], ['전투 보상', 'Battle reward', '战斗奖励', '戦闘報酬'], ['점령 보상', 'Conquest reward', '占领奖励', '占領報酬'], ['계정 경험치', 'Account XP', '账号经验', 'アカウント経験値'], ['워게임 점수', 'Wargame score', '战争游戏得分', 'ウォーゲーム得点'], ['훈련 완료!', 'Training complete!', '训练完成！', '訓練完了！'], ['본부 함락', 'HQ lost', '总部沦陷', '本部陥落'], ['기초 훈련 · AI 상대 자유 전투', 'Basic training · free battle vs AI', '基础训练 · 对战AI自由战斗', '基礎訓練 · AI自由戦闘'], ['계급 · 기록실 · 설정', 'Rank · records · settings', '军衔 · 记录 · 设置', '階級 · 記録 · 設定'], ['기초 훈련 시작', 'Start basic training', '开始基础训练', '基礎訓練開始'], ['자유 전투 설정', 'Free battle setup', '自由战斗设置', '自由戦闘設定'], ['건너뛰기', 'Skip', '跳过', 'スキップ'], ['단계', 'steps', '级', '段階'], ['병사', 'Enlisted', '士兵', '兵士'], ['부사관', 'NCO', '士官', '下士官'], ['위관 장교', 'Company officer', '尉官', '尉官'], ['영관 장교', 'Field officer', '校官', '佐官'], ['장성', 'General officer', '将官', '将官'],
+  ['까지', ' in', '还差', 'まで'], ['작전도로 돌아가기', 'Back to theater map', '返回作战图', '作戦図に戻る'], ['다음 지역', 'Next region', '下一个地区', '次の地域'], ['다시 하기', 'Play again', '再来一次', 'もう一度'], ['계속', 'Continue', '继续', '続ける'], ['국가 정복', 'Nation conquered', '国家征服', '国家征服'], ['전장 통일', 'Theater unified', '战区统一', '戦域統一'], ['전선 확대!', 'Front expanded!', '战线扩大！', '戦線拡大！'], ['프로필', 'Profile', '档案', 'プロフィール'], ['돌아가기', 'Back', '返回', '戻る'], ['간단히', 'Compact', '简洁', 'シンプル'], ['자세히', 'Detailed', '详细', '詳細'], ['결과 자세히', 'Details', '查看详情', '詳細'], ['전투 보상', 'Battle reward', '战斗奖励', '戦闘報酬'], ['점령 보상', 'Conquest reward', '占领奖励', '占領報酬'], ['계정 경험치', 'Account XP', '账号经验', 'アカウント経験値'], ['워게임 점수', 'Wargame score', '战争游戏得分', 'ウォーゲーム得点'], ['훈련 완료!', 'Training complete!', '训练完成！', '訓練完了！'], ['본부 함락', 'HQ lost', '总部沦陷', '本部陥落'], ['기초 훈련 · AI 상대 자유 전투', 'Basic training · free battle vs AI', '基础训练 · 对战AI自由战斗', '基礎訓練 · AI自由戦闘'], ['계급 · 기록실 · 설정', 'Rank · records · settings', '军衔 · 记录 · 设置', '階級 · 記録 · 設定'], ['계급 · 기록실 · 병기 · 국가', 'Rank · records · weapons · nations', '军衔 · 记录 · 兵器 · 国家', '階級 · 記録 · 兵器 · 国家'], ['지휘관 · 도감', 'Commander · Encyclopedia', '指挥官 · 图鉴', '指揮官 · 図鑑'], ['계정', 'Account', '账号', 'アカウント'], ['기초 훈련 시작', 'Start basic training', '开始基础训练', '基礎訓練開始'], ['자유 전투 설정', 'Free battle setup', '自由战斗设置', '自由戦闘設定'], ['건너뛰기', 'Skip', '跳过', 'スキップ'], ['단계', 'steps', '级', '段階'], ['병사', 'Enlisted', '士兵', '兵士'], ['부사관', 'NCO', '士官', '下士官'], ['위관 장교', 'Company officer', '尉官', '尉官'], ['영관 장교', 'Field officer', '校官', '佐官'], ['장성', 'General officer', '将官', '将官'],
   ['좌우명 (예: 필승!)', 'Motto (e.g. Victory!)', '座右铭（例：必胜！）', '座右の銘（例：必勝！）'], ['소속', 'unit', '所属', '所属'], ['장점', 'Strength', '优势', '長所'], ['전적', 'Record', '战绩', '戦績'], ['리그', 'league', '联赛', 'リーグ'], ['이등병', 'Private', '列兵', '二等兵'],
   ['지휘관 스킬 3회 사용', 'Use commander skill 3x', '使用指挥官技能3次', '指揮官スキルを3回使用'], ['헬기 3기 격추', 'Shoot down 3 helicopters', '击落3架直升机', 'ヘリを3機撃墜'], ['보급 상자 2개 획득', 'Grab 2 supply crates', '获得2个补给箱', '補給箱を2個獲得'],
   ['처음이라면', 'New here?', '第一次？', '初めてなら'], ['튜토리얼부터!', 'Start with the tutorial!', '先玩教程！', 'チュートリアルから！'], ['첫 완료', 'first clear', '首次完成', '初回クリア'],

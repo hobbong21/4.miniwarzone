@@ -58,10 +58,23 @@ const li = (pw) => `(async () => { $('liId').value = 'player01'; $('liPw').value
 R.wrong = await ev(li('nope1234!'));
 R.login = await ev(li('abc123!x'));
 R.restored = await ev(`[${vis('station')}, loadRec().gold, loadRec().motto, !!loadRec().tutSkip]`);
+// 6-1) 메인 메뉴 · 지휘관 카드 버튼 · 프로필 탭(도감 포함) · 설정 독립
+await wait(3500); await shot('3b_station');   // 첫 입장 인트로가 끝난 뒤
+R.menu = await ev(`[[...document.querySelectorAll('#station .mmb')].filter(b => b.style.display !== 'none').map(b => b.dataset.go), document.querySelectorAll('#stCard [data-go2], #stLogout').length, $('stCard').textContent.includes('눌러서')]`);
+await clickWait(`document.querySelector('#stCard [data-go2="profile"]').click()`, 600);
+R.pfTabs = await ev(`[...document.querySelectorAll('#profile .pf-tabbar button[data-tab]')].map(b => b.dataset.tab).join(',')`);
+await clickWait(`document.querySelector('#profile .pf-tabbar button[data-tab="dex"]').click()`, 800);
+R.dex = await ev(`[${vis('dex')}, document.querySelectorAll('#dex .pf-tabbar button[data-tab]').length, $('dexList').children.length]`);
+await shot('3c_dex');
+await clickWait(`document.querySelector('#stCard [data-go2="settings"]').click()`, 600);
+R.settings = await ev(`[${vis('settings')}, !!$('setLogout'), $('setAcct').textContent, document.querySelectorAll('#settings .pftabs').length]`);
+await shot('3d_settings');
+await clickWait(`showScreen('station')`, 600);
 // 7) 다른 기기 흉내: 저장소를 모두 비우고 로그인 → 같은 기록
 await ev(`localStorage.clear()`); await go(BASE + '/?auth=login');
 R.device2 = await ev(`(async () => { $('liId').value = 'player01'; $('liPw').value = 'abc123!x'; $('liGo').click(); await new Promise(r => setTimeout(r, 1800)); return [profile, loadRec().gold, ${vis('station')}, !!document.getElementById('legalNote')]; })()`);
-await clickWait(`showScreen('profile')`, 600); await clickWait(`$('pfLogout').click()`, 2500);
+await clickWait(`$('stLogout').click()`, 2500);   // 메인 화면 카드의 로그아웃 버튼
+R.stOut = await ev(`[profile, ${vis('login')}]`);
 // 8) 게스트 → 설정에서 회원가입 (지금 기록 그대로 서버로)
 await clickWait(`lgSet('guest')`, 300);
 R.guestTab = await ev(`[$('suAcc').hidden, $('lgGo').textContent]`);
@@ -76,7 +89,8 @@ R.join = await ev(`(async () => { $('cjId').value = 'guest777'; $('cjPw').value 
 const gl = await (await fetch(BASE + '/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ login: 'guest777', password: 'abc123!x' }) })).json();
 R.joinServer = [gl.name, (await (await fetch(BASE + '/api/save', { headers: { Authorization: 'Bearer ' + gl.token } })).json()).data?.rec?.gold];
 // 9) 휴대폰 폭 로그인 화면
-await clickWait(`showScreen('profile')`, 500); await clickWait(`$('pfLogout').click()`, 2500);
+await clickWait(`showScreen('settings')`, 500); await clickWait(`$('setLogout').click()`, 2500);   // 설정의 로그아웃 버튼
+R.setOut = await ev(`[profile, ${vis('login')}]`);
 await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
 await go(BASE + '/?auth=signup'); R.mobile = await ev('document.documentElement.scrollWidth <= innerWidth'); await shot('5_mobile_signup');
 await send('Emulation.clearDeviceMetricsOverride');
@@ -103,6 +117,13 @@ const checks = [
   ok('로그인 성공', R.login[1] === '철수'),
   ok('로그인하면 서버 기록 복원 (골드 · 좌우명 · 훈련 건너뜀)', R.restored[0] && R.restored[1] === 4321 && R.restored[2] === '필승!' && R.restored[3]),
   ok('다른 기기(빈 저장소)에서 로그인 → 같은 기록 · 약관 재동의 없음', R.device2[0] === '철수' && R.device2[1] === 4321 && R.device2[2] && !R.device2[3]),
+  ok('메인 메뉴: 프로필 · 도감 합침, 설정 독립', !R.menu[0].includes('dex') && R.menu[0].includes('profile') && R.menu[0].includes('settings')),
+  ok('지휘관 카드: 안내문 대신 프로필 · 설정 · 로그아웃 버튼', R.menu[1] === 3 && !R.menu[2]),
+  ok('프로필 탭: 프로필 · 기록실 · 도감', R.pfTabs === 'profile,records,dex,close'),
+  ok('도감이 프로필 탭 안에서 열림', R.dex[0] && R.dex[1] === 4 && R.dex[2] > 0),
+  ok('설정: 독립 화면 · 계정 표시 · 로그아웃 버튼', R.settings[0] && R.settings[1] && R.settings[2].includes('player01') && R.settings[3] === 0),
+  ok('메인 화면 카드에서 로그아웃', R.stOut[0] === null && R.stOut[1]),
+  ok('설정에서 로그아웃', R.setOut[0] === null && R.setOut[1]),
   ok('게스트 탭: 아이디 칸 숨김 · 게스트로 시작', R.guestTab[0] && R.guestTab[1].startsWith('게스트로 시작')),
   ok('게스트 프로필: 게스트 표시 · 회원가입 버튼', R.guestAcct[0].includes('게스트') && R.guestAcct[1] && R.joinForm),
   ok('설정에서 회원가입 → 아이디 연결 · 기록 업로드', R.join[0] === 'guest777' && R.join[1] === false && R.join[2]),

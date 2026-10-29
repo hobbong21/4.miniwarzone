@@ -331,16 +331,20 @@
 ## 11. 기술 구조
 
 ### 11.1 파일
-| 파일 | 역할 |
+| 폴더 · 파일 | 역할 |
 |---|---|
-| `index.html` | 게임 전체 (HTML + CSS + JS, 외부 라이브러리 없음) |
-| `server.js` | 백엔드: 게임 파일 제공 + PVP 매칭·중계 (Node.js 기본 모듈만 사용) |
-| `gameplan.md` | 이 기획서 |
-| `index_v1~v7.html` | 이전 버전 백업 |
+| `game/index.html` | 게임 전체 (HTML + CSS + JS, 외부 라이브러리 없음) |
+| `game/member/` | 예전 회원가입 · 로그인 주소 (게임 안 탭으로 넘김) |
+| `server/` | 백엔드: 게임 파일 제공 · 계정 · 저장 · 순위 · PVP 매칭·중계 (Node.js 기본 모듈만 사용) |
+| `docs/` | 이 기획서 · 안내 문서 · 그림 |
+| `deploy/` | Docker 설치 · 배포 |
+| `tests/` | 자동 테스트 |
+| `start.bat` · `start.sh` | 서버 실행 + 게임 열기 |
+| `archive/` | 이전 버전 백업 (로컬 전용) |
 
 ### 11.2 실행
-- 혼자 하기: `index.html`을 브라우저로 열기
-- PVP: `node server.js` 실행 → `http://localhost:8080` 접속. 같은 네트워크의 다른 PC는 `http://(서버 PC IP):8080`
+- 혼자 하기: `game/index.html`을 브라우저로 열기
+- PVP: `start.bat`(또는 `npm start`) 실행 → `http://localhost:8080` 접속. 같은 네트워크의 다른 PC는 `http://(서버 PC IP):8080`
 
 ### 11.3 PVP 네트워크 구조
 - WebSocket(`/ws`) 기반. 서버는 매칭과 메시지 중계만 담당
@@ -869,7 +873,7 @@
 
 ## 31. 캐릭터 이미지 개선: 얼굴 · 표정 · 입체감 (2026-10-28)
 
-> 디자인 원칙 1 "캐릭터가 핵심"을 더 살림 — 차량 얼굴이 포탑 옆 점 두 개처럼 보이던 문제. 비교 그림: `docs/character_before_after.png` (위 = 전, 아래 = 후)
+> 디자인 원칙 1 "캐릭터가 핵심"을 더 살림 — 차량 얼굴이 포탑 옆 점 두 개처럼 보이던 문제. 비교 그림: `docs/images/character_before_after.png` (위 = 전, 아래 = 후)
 
 ### 공용 얼굴 `face()` (모든 유닛 · 건물이 함께 씀)
 - 눈: 흰자를 조금 키우고 **세로로 긴 눈동자 + 반짝임 두 개**(큰 것 왼쪽 위, 작은 것 오른쪽 아래)
@@ -932,6 +936,24 @@
 ### 검증
 - `npm test` 10/10 (회원 API: 중복확인 · 형식 · 가입 · 409 · 해시만 저장 · 로그인 실패/성공 · 저장 공유 · 로그아웃 토큰 무효 · 다른 세션 유지 · 아이디 붙이기)
 - `npm run test:auth` 23/23: 예전 주소 넘김 · 가입 오류 6종 · 가입 → 메인 · 프로필 표시 · 로그아웃(기록 · 토큰 삭제) · 다시 열어도 로그인 화면 · 로그인 실패/성공 · 서버 기록 복원 · 빈 저장소(다른 기기)에서 같은 기록 · 게스트 → 설정에서 회원가입 → 서버로 기록 이전 · 휴대폰 폭 · 파일로 열면 게스트만 · JS 오류 0
+
+## 34. 폴더 정리 (2026-10-29)
+
+> 게임 · 백엔드 · 기획 문서 · 설치 파일이 한 폴더에 섞여 있던 것을 역할별로 나눔. 처음 보는 사람도 "무엇을 열면 되는지" 바로 알 수 있게.
+
+| 전 | 후 |
+|---|---|
+| `index.html` · `member/` | `game/` |
+| `server.js` · `backend/*.js` | `server/` |
+| `gameplan.md` · `member/README.md` · `docs/*.png` | `docs/` (`gameplan.md` · `member-pages.md` · `images/`) |
+| `Dockerfile` · `.dockerignore` | `deploy/Dockerfile` · `deploy/Dockerfile.dockerignore` (빌드: `docker build -f deploy/Dockerfile .`) |
+| `test/` | `tests/` |
+| `index_v*.html` | `archive/` (git 제외) |
+| — | `start.bat` · `start.sh`: 더블클릭으로 서버 실행 + 브라우저 열기 |
+
+- 서버는 `game/` 안의 허용 목록 파일만 내보냄 (주소는 그대로: `/` · `/member/...`). DB 기본 위치는 그대로 `data/`
+- 도커 이미지에는 `package.json` · `server/` · `game/`만 들어감. GitHub Actions 빌드 경로 변경
+- `.gitattributes`: `*.sh`는 LF, `*.bat`은 CRLF로 고정
 
 ## 14. 레퍼런스 분석: 스팀 전략게임 10종에서 가져올 개선점
 

@@ -9,7 +9,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..'), OUT = join(tmp
 const CHROME = process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 rmSync(OUT, { recursive: true, force: true }); mkdirSync(OUT + '/prof', { recursive: true });
 const wait = ms => new Promise(r => setTimeout(r, ms));
-const srv = spawn(process.execPath, ['server.js'], { cwd: ROOT, env: { ...process.env, PORT: String(PORT), DB_PATH: join(OUT, 'test.db'), MWZ_CREATE_PER_MIN: '1000' }, stdio: 'ignore' });
+const srv = spawn(process.execPath, ['server/server.js'], { cwd: ROOT, env: { ...process.env, PORT: String(PORT), DB_PATH: join(OUT, 'test.db'), MWZ_CREATE_PER_MIN: '1000' }, stdio: 'ignore' });
 const BASE = `http://127.0.0.1:${PORT}`;
 for (let i = 0; i < 50; i++) { try { if ((await fetch(BASE + '/api/health')).ok) break; } catch {} await wait(150); }
 const chrome = spawn(CHROME, ['--headless=new', `--remote-debugging-port=${CDP}`, `--user-data-dir=${OUT}/prof`, '--window-size=1400,900', 'about:blank'], { stdio: 'ignore' });
@@ -81,7 +81,7 @@ await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, devi
 await go(BASE + '/?auth=signup'); R.mobile = await ev('document.documentElement.scrollWidth <= innerWidth'); await shot('5_mobile_signup');
 await send('Emulation.clearDeviceMetricsOverride');
 // 10) 파일로 열면 게스트만
-await ev(`localStorage.clear()`); await go('file:///' + ROOT.replace(/\\/g, '/') + '/index.html');
+await ev(`localStorage.clear()`); await go('file:///' + ROOT.replace(/\\/g, '/') + '/game/index.html');
 R.file = await ev(`[lgTab, [...document.querySelectorAll('#login [data-lt]')].map(b => b.disabled).join(',')]`);
 await shot('6_file_guest');
 

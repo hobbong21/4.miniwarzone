@@ -22,7 +22,7 @@ jobs:
         run: echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
 
       - name: 빌드
-        run: docker build -t miniwarzone:test .
+        run: docker build -f deploy/Dockerfile -t miniwarzone:test .
 
       - name: 실행 확인 (health · 공개 파일 허용 목록)
         run: |

@@ -4,7 +4,7 @@ process.env.MWZ_RESUME_SEC = '1'; process.env.MWZ_REPORT_SEC = '1'; process.env.
 const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const http = require('http');
-const { createServer } = require('../server');
+const { createServer } = require('../server/server');
 
 let srv, base, wsBase;
 before(async () => { srv = createServer({ dbPath: ':memory:' }); await new Promise(r => srv.server.listen(0, r)); const p = srv.server.address().port; base = `http://127.0.0.1:${p}`; wsBase = `ws://127.0.0.1:${p}/ws`; });

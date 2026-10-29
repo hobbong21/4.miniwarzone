@@ -3,17 +3,36 @@
 등고선 위의 작은 전쟁 — 브라우저에서 바로 하는 2.5D 실시간 전략 게임.
 개발: **휴먼에이드 (HumanAid)**
 
-- `index.html` — 게임 전체 (외부 라이브러리 없음, 파일만 열어도 혼자 플레이 가능)
-- `server.js` + `backend/` — 백엔드 (계정 · 클라우드 저장 · 서버 순위표 · PVP 매칭/중계)
-- `gameplan.md` — 기획서 (시스템별 상세 설명)
+## 폴더 구성
+
+```
+4.miniwarzone/
+├─ start.bat · start.sh   ▶ 더블클릭으로 서버 실행 + 게임 열기 (Windows · macOS/Linux)
+├─ game/                  🎮 게임 (브라우저에서 여는 파일)
+│  ├─ index.html          게임 전체 — 파일만 열어도 혼자 플레이 가능
+│  └─ member/             예전 회원가입 · 로그인 주소 → 게임 안 탭으로 넘김
+├─ server/                🖥️ 백엔드 (계정 · 클라우드 저장 · 순위표 · PVP)
+├─ docs/                  📘 기획 문서
+│  ├─ gameplan.md         기획서 (시스템별 상세 설명 · 개발 기록)
+│  ├─ member-pages.md     회원가입 · 로그인 주소 안내
+│  └─ images/             기획서 그림
+├─ deploy/                📦 설치 · 배포 (Docker)
+├─ tests/                 ✅ 자동 테스트
+├─ data/                  서버 DB (자동 생성 · git 제외 · 백업 대상)
+└─ archive/               예전 버전 백업 index_v*.html (로컬 전용 · git 제외)
+```
 
 ## 실행
 
 Node.js **22.5 이상** (내장 SQLite 사용 · 설치할 패키지 없음)
 
+- **혼자 하기**: `game/index.html`을 브라우저로 열기 (설치 필요 없음)
+- **서버와 함께 (회원 · 순위 · PVP)**: `start.bat`(Windows) 또는 `./start.sh`(macOS · Linux) 더블클릭 → 브라우저가 `http://localhost:8080`을 엶
+
 ```bash
-npm start            # 또는 node server.js  →  http://localhost:8080
-npm test             # 백엔드 통합 테스트 (node --test)
+npm start            # 서버만 실행 (= node server/server.js)
+npm test             # 백엔드 통합 테스트
+npm run test:auth    # 게임 화면 회원가입 · 로그인 브라우저 테스트
 ```
 
 같은 네트워크의 다른 PC는 `http://(이 PC의 IP):8080` 으로 접속하면 함께 PVP를 할 수 있습니다.
@@ -39,7 +58,7 @@ npm test             # 백엔드 통합 테스트 (node --test)
 ## 배포 (Docker)
 
 ```bash
-docker build -t miniwarzone .
+docker build -f deploy/Dockerfile -t miniwarzone .
 docker run -d -p 8080:8080 -v miniwarzone-data:/data --name miniwarzone miniwarzone
 curl http://localhost:8080/api/health
 ```
@@ -59,14 +78,14 @@ docker run -d -p 8080:8080 -v miniwarzone-data:/data --name miniwarzone ghcr.io/
 
 | 파일 | 역할 |
 |---|---|
-| `server.js` | HTTP 서버 · 공개 파일 허용 목록(index.html · member/ 페이지 4개) · 보안 헤더(CSP 등) · 출처 검사 · 종료 처리 |
-| `backend/db.js` | SQLite 스키마와 쿼리 (계정 · 세션 · 저장 · 레이팅 · 대전 기록) |
-| `backend/api.js` | REST API · 입력 검증 · 크기 제한 · IP별 요청 제한 |
-| `backend/ws.js` | WebSocket · 로비 · 매칭 · 친구 방 코드 · 재접속 · 결과 합의 · 하트비트 |
-| `backend/rating.js` | Elo 레이팅(K=32) · 시즌 이월 |
-| `test/server.test.js` | 통합 테스트 (`npm test`) |
-| `member/` | 예전 회원가입 · 로그인 주소 → 게임 안 탭으로 넘김 |
-| `test/auth.e2e.mjs` | 게임 안 회원가입 · 로그인 · 로그아웃 브라우저 테스트 (`npm run test:auth`) |
+| `server/server.js` | HTTP 서버 · 공개 파일 허용 목록(game/ 안의 index.html · member/ 페이지만) · 보안 헤더(CSP 등) · 출처 검사 · 종료 처리 |
+| `server/db.js` | SQLite 스키마와 쿼리 (계정 · 세션 · 저장 · 레이팅 · 대전 기록) |
+| `server/api.js` | REST API · 입력 검증 · 크기 제한 · IP별 요청 제한 |
+| `server/ws.js` | WebSocket · 로비 · 매칭 · 친구 방 코드 · 재접속 · 결과 합의 · 하트비트 |
+| `server/rating.js` | Elo 레이팅(K=32) · 시즌 이월 |
+| `tests/server.test.js` | 통합 테스트 (`npm test`) |
+| `game/member/` | 예전 회원가입 · 로그인 주소 → 게임 안 탭으로 넘김 |
+| `tests/auth.e2e.mjs` | 게임 안 회원가입 · 로그인 · 로그아웃 브라우저 테스트 (`npm run test:auth`) |
 
 ### 계정 방식
 

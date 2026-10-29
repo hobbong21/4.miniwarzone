@@ -1,5 +1,5 @@
 // 미니워존 백엔드: 게임 파일 제공 + REST API(계정 · 클라우드 저장 · 순위표) + PVP 매칭/중계(WebSocket)
-// 실행: node server.js  →  http://localhost:8080      테스트: node --test
+// 실행: npm start (= node server/server.js)  →  http://localhost:8080      테스트: npm test
 // 외부 패키지 없이 Node.js 기본 모듈만 사용 (Node 22.5 이상: 내장 SQLite)
 //
 // 환경 변수
@@ -11,14 +11,15 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { log } = require('./backend/util');
-const { open } = require('./backend/db');
-const { makeApi } = require('./backend/api');
-const { makeWs } = require('./backend/ws');
+const { log } = require('./util');
+const { open } = require('./db');
+const { makeApi } = require('./api');
+const { makeWs } = require('./ws');
 
 const VERSION = '2026.10.2';
-const ROOT = __dirname;
-// 공개하는 파일만 명시 (기획서 · 백업 · 서버 코드 · DB는 절대 내보내지 않음)
+const GAME_DIR = path.join(__dirname, '..', 'game');   // 브라우저로 내보내는 게임 파일
+const DATA_DIR = path.join(__dirname, '..', 'data');   // 서버 DB (git · 도커 이미지 제외)
+// 공개하는 파일만 명시 (game/ 안의 파일만 · 기획서 · 백업 · 서버 코드 · DB는 절대 내보내지 않음)
 const PUBLIC = { '/': 'index.html', '/index.html': 'index.html',
   '/member/': 'member/login.html', '/member/login.html': 'member/login.html', '/member/signup.html': 'member/signup.html' };   // 예전 주소 → 게임 안 로그인 · 회원가입 탭으로 넘김
 const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8' };
@@ -29,7 +30,7 @@ const SECURITY_HEADERS = {
 };
 
 function createServer(opts = {}) {
-  const db = open(opts.dbPath || process.env.DB_PATH || path.join(ROOT, 'data', 'miniwarzone.db'));
+  const db = open(opts.dbPath || process.env.DB_PATH || path.join(DATA_DIR, 'miniwarzone.db'));
   const trustProxy = opts.trustProxy ?? process.env.TRUST_PROXY === '1';
   const allowed = new Set(String(opts.allowedOrigins ?? process.env.ALLOWED_ORIGINS ?? '').split(',').map(s => s.trim()).filter(Boolean));
   const ipOf = req => (trustProxy && String(req.headers['x-forwarded-for'] || '').split(',')[0].trim()) || req.socket.remoteAddress || '?';
@@ -53,7 +54,7 @@ function createServer(opts = {}) {
       res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
       return res.end('not found');
     }
-    const resolved = path.join(ROOT, name);
+    const resolved = path.join(GAME_DIR, name);
     const send = data => {
       res.writeHead(200, { 'Content-Type': TYPES[path.extname(name)], 'Cache-Control': 'no-cache' });
       res.end(req.method === 'HEAD' ? undefined : data);

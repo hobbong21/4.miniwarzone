@@ -1,0 +1,11 @@
+node_modules
+data
+archive
+docs
+tests
+deploy
+.git
+.github
+.claude
+*.db*
+.DS_Store

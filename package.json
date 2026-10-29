@@ -5,12 +5,12 @@
   "author": "휴먼에이드 (HumanAid)",
   "private": true,
   "license": "UNLICENSED",
-  "main": "server.js",
+  "main": "server/server.js",
   "engines": { "node": ">=22.5" },
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js",
+    "start": "node server/server.js",
+    "dev": "node --watch server/server.js",
     "test": "node --test",
-    "test:auth": "node test/auth.e2e.mjs"
+    "test:auth": "node tests/auth.e2e.mjs"
   }
 }

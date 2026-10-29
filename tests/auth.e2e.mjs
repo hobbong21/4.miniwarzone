@@ -70,6 +70,10 @@ await clickWait(`document.querySelector('#stCard [data-go2="settings"]').click()
 R.settings = await ev(`[${vis('settings')}, !!$('setLogout'), $('setAcct').textContent, document.querySelectorAll('#settings .pftabs').length]`);
 await shot('3d_settings');
 await clickWait(`showScreen('station')`, 600);
+await clickWait(`showScreen('world')`, 2500);   // 세계 지도: 국경 데이터 · 바탕 그림 · 국기 배지
+R.world = await ev(`[${vis('world')}, WG && WG.countries.length, !!(WG && WG.base), Object.keys(NATIONS).every(k => WG.byNation[k]), Object.keys(FLAG_CV).length]`);
+await shot('3e_world');
+await clickWait(`showScreen('station')`, 600);
 // 7) 다른 기기 흉내: 저장소를 모두 비우고 로그인 → 같은 기록
 await ev(`localStorage.clear()`); await go(BASE + '/?auth=login');
 R.device2 = await ev(`(async () => { $('liId').value = 'player01'; $('liPw').value = 'abc123!x'; $('liGo').click(); await new Promise(r => setTimeout(r, 1800)); return [profile, loadRec().gold, ${vis('station')}, !!document.getElementById('legalNote')]; })()`);
@@ -122,6 +126,7 @@ const checks = [
   ok('프로필 탭: 프로필 · 기록실 · 도감', R.pfTabs === 'profile,records,dex,close'),
   ok('도감이 프로필 탭 안에서 열림', R.dex[0] && R.dex[1] === 4 && R.dex[2] > 0),
   ok('설정: 독립 화면 · 계정 표시 · 로그아웃 버튼', R.settings[0] && R.settings[1] && R.settings[2].includes('player01') && R.settings[3] === 0),
+  ok('세계 지도: 국경 · 바탕 그림 · 모든 나라 땅 · 국기 배지', R.world[0] && R.world[1] > 150 && R.world[2] && R.world[3] && R.world[4] >= 30),
   ok('메인 화면 카드에서 로그아웃', R.stOut[0] === null && R.stOut[1]),
   ok('설정에서 로그아웃', R.setOut[0] === null && R.setOut[1]),
   ok('게스트 탭: 아이디 칸 숨김 · 게스트로 시작', R.guestTab[0] && R.guestTab[1].startsWith('게스트로 시작')),

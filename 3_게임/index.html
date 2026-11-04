@@ -915,6 +915,7 @@
   <div class="opt"><span>효과음</span><div data-set="sfx"><button data-v="1">켜기</button><button data-v="0">끄기</button></div></div>
   <div class="opt"><span>배경음</span><div data-set="music"><button data-v="1">켜기</button><button data-v="0">끄기</button></div></div>
   <div class="opt"><span>언어</span><div id="setLang"><button data-lang="ko">한국어</button><button data-lang="en">English</button><button data-lang="zh">中文</button><button data-lang="ja">日本語</button></div></div>
+  <div class="opt"><span>그래픽</span><div data-set="dio"><button data-v="1">🏝️ 디오라마</button><button data-v="0">🧸 치비 (예전)</button></div></div>
   <div class="opt"><span>가장자리 스크롤</span><div data-set="edge"><button data-v="1">켜기</button><button data-v="0">끄기</button></div></div>
   <div class="opt"><span>☁️ 클라우드</span><div id="cloudBox" class="cloudbox"></div></div>
   <div class="opt"><span>약관 · 정보</span><div><button data-legal="terms">📜 이용약관</button><button data-legal="privacy">🔒 개인정보 처리방침</button></div></div>
@@ -1037,6 +1038,18 @@ const EVENTS = [
   { id: 'ops',        name: '긴급 작전', icon: '🚨', base: 150, unit: '긴급 작전 성공 1회당', winOnly: false },
 ];
 // 상점: 골드로 사는 부대 색(스킨)과 전투 시작 보너스
+// ================= 디오라마 화풍 (기획서 §44): 금속 질감 파랑 vs 빨강 · 청록 바다 · 무성한 숲 · 햇빛 음영 =================
+// 설정 '그래픽'에서 고름 (기본 디오라마, 0 = 예전 치비). 전투 화면을 그릴 때만 켜짐(DIO_ON) → 메뉴 · 도감의 치비 그림은 그대로
+let DIO_ON = false;
+const dioOn = () => SETTINGS.dio !== 0;
+const DPCOL = {   // 아군(내 팀) 파랑 · 적 빨강 — 같은 팀 안에서는 색조만 조금씩 다르게
+  ally: [{ main: '#4f80d4', mid: '#2c559e', dark: '#12244a', light: '#d4e4ff' }, { main: '#4f9ac8', mid: '#2b6896', dark: '#112c44', light: '#d2ecf8' }, { main: '#6a74d8', mid: '#3f47a4', dark: '#1a1d4c', light: '#dcdcfa' }],
+  foe:  [{ main: '#d4503e', mid: '#9e2e24', dark: '#45130e', light: '#ffd8ce' }, { main: '#d0693a', mid: '#9a421d', dark: '#42190a', light: '#fbdcc8' }, { main: '#c44a6c', mid: '#8e2b48', dark: '#3e1020', light: '#f6d2de' }],
+};
+function dioColors(players) {   // 디오라마: 내 팀 파랑 · 상대 빨강 (상점 스킨을 산 경우 내 부대는 그 스킨 유지)
+  const my = players[ME] ? players[ME].team : 0, n = [0, 0];
+  for (const p of players) { const k = p.team === my ? 'ally' : 'foe', i = n[p.team === my ? 0 : 1]++; p.col = DPCOL[k][i % 3]; }
+}
 const SKINS = {
   blue:     { name: '국방색',     price: 0,    col: PCOL[0][0] },
   mint:     { name: '해군 회색',   price: 300,  col: PCOL[0][1] },
@@ -1324,7 +1337,7 @@ function Zs(x, y) {   // 그 지점 땅 윗면의 화면 높이 (헥스 모드: 
 function buildHexTerrain() {
   const c = document.createElement('canvas'); c.width = WW * CS; c.height = (WH + ZM) * CS;
   const g = c.getContext('2d'); g.scale(CS, CS); g.translate(0, ZM); g.lineJoin = 'round'; g.lineCap = 'round';
-  const BI = BIOMES[biomeOf()], LND = BI.land || LAND, rng = mulberry32(G.seed + 7);
+  const DIO = dioOn(), BI = BIOMES[biomeOf()], LND = (DIO && DIO_LAND[biomeOf()]) || BI.land || LAND, rng = mulberry32(G.seed + 7);
   g.fillStyle = shade(LND[0], 0.7); g.fillRect(0, -ZM, WW, WH + ZM);
   const corner = (x, y, i, z) => { const a = Math.PI / 180 * (60 * i - 30); return [x + HEX_R * Math.cos(a), y + HEX_R * Math.sin(a) - z]; };
   const poly = pts => { g.beginPath(); g.moveTo(...pts[0]); for (const p of pts.slice(1)) g.lineTo(...p); g.closePath(); };
@@ -1342,6 +1355,7 @@ function buildHexTerrain() {
     for (let cI = 0; cI < HEX_COLS; cI++) {
       const [x, y] = hexCenter(cI, r), l = G.HEXL[r * HEX_COLS + cI];
       if (l < 0) {   // 물 헥스
+        if (DIO) { poly([0, 1, 2, 3, 4, 5].map(i => corner(x, y, i, 0))); g.fillStyle = '#1590a8'; g.fill(); continue; }   // 디오라마: 물은 나중에 한 번에 (깊이 · 물거품)
         poly([0, 1, 2, 3, 4, 5].map(i => corner(x, y, i, 0))); g.fillStyle = BI.river[1]; g.fill(); g.strokeStyle = BI.river[0]; g.lineWidth = 0.8; g.stroke();
         g.strokeStyle = 'rgba(255,255,255,.3)'; g.lineWidth = 1.2; g.beginPath(); g.moveTo(x - 7, y); g.quadraticCurveTo(x - 3, y - 3, x + 1, y); g.quadraticCurveTo(x + 5, y + 3, x + 8, y); g.stroke();
         continue;
@@ -1354,9 +1368,9 @@ function buildHexTerrain() {
       if (z > 0) { g.strokeStyle = 'rgba(30,35,25,.18)'; g.lineWidth = 0.6; g.beginPath();   // 옆면 세로 모서리
         for (const i of [1, 2, 3]) { const a = corner(x, y, i, z), b = corner(x, y, i, 0); g.moveTo(...a); g.lineTo(...b); } g.stroke(); }
       poly([0, 1, 2, 3, 4, 5].map(i => corner(x, y, i, z))); g.fillStyle = G.HEXF && G.HEXF[r * HEX_COLS + cI] === 3 ? shade(LND[l], 0.85) : top; g.fill();
-      g.strokeStyle = 'rgba(30,35,25,.16)'; g.lineWidth = 0.7; g.stroke();
-      g.strokeStyle = 'rgba(255,255,255,.18)'; g.lineWidth = 0.9; g.beginPath(); g.moveTo(...corner(x, y, 3, z)); g.lineTo(...corner(x, y, 4, z)); g.lineTo(...corner(x, y, 5, z)); g.stroke();   // 위쪽 빛
-      if (G.HEXF && G.HEXF[r * HEX_COLS + cI]) drawTileFeature(g, G.HEXF[r * HEX_COLS + cI], x, y - z, biomeOf());
+      g.strokeStyle = DIO ? 'rgba(30,35,25,.045)' : 'rgba(30,35,25,.16)'; g.lineWidth = 0.7; g.stroke();   // 디오라마: 헥스 격자선은 아주 옅게
+      g.strokeStyle = DIO ? 'rgba(255,255,255,.07)' : 'rgba(255,255,255,.18)'; g.lineWidth = 0.9; g.beginPath(); g.moveTo(...corner(x, y, 3, z)); g.lineTo(...corner(x, y, 4, z)); g.lineTo(...corner(x, y, 5, z)); g.stroke();   // 위쪽 빛
+      if (G.HEXF && G.HEXF[r * HEX_COLS + cI]) (DIO ? dioTileFeature : drawTileFeature)(g, G.HEXF[r * HEX_COLS + cI], x, y - z, biomeOf());
       if (l >= HIGH_MTN) drawPeak(g, x, y - z, l);   // 높은 산: 바위 봉우리 + 눈
     }
     for (const [w, col] of [[27, BI.road[0]], [20, BI.road[1]], [1.6, 'rgba(255,250,225,.55)']]) {   // 넓은 도로 + 가운데 차선
@@ -1364,10 +1378,107 @@ function buildHexTerrain() {
       g.beginPath(); for (const [a, b] of roadRows[r] || []) { g.moveTo(a.x, a.y - a.z); g.lineTo(b.x, b.y - b.z); }
       g.strokeStyle = col; g.lineWidth = w; g.stroke(); g.setLineDash([]);
     }
-    for (const d of decoRows[r] || []) drawDecor(g, BI.decor, d.x, d.y - Zs(d.x, d.y), d.sz);
+    for (const d of decoRows[r] || []) (DIO ? dioDecor : drawDecor)(g, BI.decor, d.x, d.y - Zs(d.x, d.y), d.sz);
   }
   drawBridges(g);
+  if (DIO) dioPost(c, g, corner, poly);
   return c;
+}
+// ---- 디오라마 지형 (§44): 무성한 나무 · 청록 바다(깊이 단계 + 물거품 + 모래사장) · 땅 질감 · 햇빛 음영
+const DIO_LAND = {   // 디오라마 땅 색: 낮은 곳은 짙고 높을수록 밝게 (온대 · 정글은 무성한 초록, 사막은 따뜻한 모래, 설원은 푸른 그늘)
+  temperate: ['#4f8d34', '#58963a', '#62a041', '#6ca848', '#77b050', '#82b859', '#8ebf63', '#9ac66e', '#a7cd7b', '#b5d48a'],
+  jungle:    ['#3f7f2c', '#468832', '#4e9138', '#579a3f', '#60a247', '#6aab50', '#75b35a', '#80ba65', '#8cc171', '#99c87e'],
+  desert:    ['#d6b072', '#dab779', '#debe81', '#e2c48a', '#e6ca93', '#e9cf9c', '#ecd5a6', '#efdab0', '#f2e0ba', '#f5e6c6'],
+  snow:      ['#c9d6e0', '#d0dce5', '#d7e1e9', '#dee6ed', '#e4ebf1', '#eaf0f4', '#eff3f7', '#f3f6f9', '#f7f9fb', '#fbfcfd'],
+};
+const hash2 = (x, y) => { const h = Math.sin(x * 127.1 + y * 311.7) * 43758.5453; return h - Math.floor(h); };
+function dioTree(g, x, y, sz, kind) {
+  g.fillStyle = 'rgba(10,30,15,.32)'; g.beginPath(); g.ellipse(x + 3.2 * sz, y + 1.2 * sz, 6.4 * sz, 2.6 * sz, 0, 0, 7); g.fill();   // 오른쪽 아래 그림자
+  if (kind === 'pines') {   // 침엽수: 층층이 짙은 녹색 + 위에 눈
+    for (const [w, yy, c] of [[5.8, -2, '#244a35'], [4.6, -6.5, '#2d5a40'], [3.3, -10.5, '#386a4b']]) { g.beginPath(); g.moveTo(x - w * sz, y + yy * sz); g.lineTo(x, y + (yy - 6.5) * sz); g.lineTo(x + w * sz, y + yy * sz); g.closePath(); g.fillStyle = c; g.fill();
+      g.beginPath(); g.moveTo(x - w * sz * 0.8, y + yy * sz - 0.6 * sz); g.lineTo(x, y + (yy - 6.5) * sz); g.lineTo(x - w * sz * 0.1, y + yy * sz - 0.6 * sz); g.closePath(); g.fillStyle = 'rgba(240,248,250,.55)'; g.fill(); }
+    return;
+  }
+  if (kind === 'cacti') { g.strokeStyle = '#4f8a46'; g.lineCap = 'round'; g.lineWidth = 2.6 * sz; g.beginPath(); g.moveTo(x, y); g.lineTo(x, y - 10 * sz); g.moveTo(x, y - 5 * sz); g.lineTo(x - 3 * sz, y - 5 * sz); g.lineTo(x - 3 * sz, y - 8 * sz); g.stroke();
+    g.strokeStyle = 'rgba(255,255,220,.35)'; g.lineWidth = 0.8 * sz; g.beginPath(); g.moveTo(x - 0.8 * sz, y - 1); g.lineTo(x - 0.8 * sz, y - 9.5 * sz); g.stroke(); return; }
+  if (kind === 'jungle') {   // 야자수: 휜 줄기 + 밝은 잎 부채
+    g.strokeStyle = '#7a5a36'; g.lineWidth = 1.5 * sz; g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x + 2 * sz, y - 6 * sz, x + 1.2 * sz, y - 12 * sz); g.stroke();
+    for (let i = 0; i < 7; i++) { const a = -Math.PI / 2 + (i - 3) * 0.55, L = 6.5 * sz; g.strokeStyle = i % 2 ? '#3f8f3a' : '#5bb04a'; g.lineWidth = 2.2 * sz; g.beginPath(); g.moveTo(x + 1.2 * sz, y - 12 * sz);
+      g.quadraticCurveTo(x + 1.2 * sz + Math.cos(a) * L * 0.6, y - 12 * sz + Math.sin(a) * L * 0.6 - 2 * sz, x + 1.2 * sz + Math.cos(a) * L, y - 12 * sz + Math.sin(a) * L * 0.5 + 2.5 * sz); g.stroke(); }
+    return;
+  }
+  // 활엽수: 둥근 수관 여러 덩이 · 왼쪽 위가 밝음
+  g.fillStyle = '#5a4128'; g.fillRect(x - 0.7 * sz, y - 4 * sz, 1.4 * sz, 4 * sz);
+  for (const [dx, dy, r] of [[-2.6, -7.5, 4.2], [2.6, -7.8, 4.4], [0, -10.6, 4.8], [-1.2, -13, 3.2], [2.2, -12.4, 2.8]]) {
+    const cx = x + dx * sz, cy = y + dy * sz, R = r * sz, gr = g.createRadialGradient(cx - R * 0.45, cy - R * 0.5, R * 0.1, cx, cy, R);
+    gr.addColorStop(0, '#9fd46a'); gr.addColorStop(0.45, '#4f9a3c'); gr.addColorStop(1, '#1f5226'); g.fillStyle = gr; g.beginPath(); g.arc(cx, cy, R, 0, 7); g.fill();
+  }
+}
+function dioDecor(g, kind, x, y, sz) { dioTree(g, x, y, sz * 1.1, kind); }
+function dioTileFeature(g, f, x, y, biome) {
+  if (f === 1) {   // 숲: 나무 6그루를 빽빽하게 (위치는 헥스마다 고정)
+    const kind = { snow: 'pines', jungle: 'jungle', desert: 'cacti' }[biome] || 'trees';
+    g.fillStyle = 'rgba(20,50,20,.22)'; g.beginPath(); g.ellipse(x, y + 1, 15, 8, 0, 0, 7); g.fill();   // 숲 바닥 그늘
+    const pts = [[-8, -2], [3, -6], [-2, 3], [9, 1], [-9, 5], [5, 6]].map(([dx, dy], i) => [x + dx + (hash2(x, y + i) - 0.5) * 3, y + dy + (hash2(y, x + i) - 0.5) * 2, 0.62 + hash2(x + i, y) * 0.22]);
+    pts.sort((a, b) => a[1] - b[1]); for (const [px, py, sz] of pts) dioTree(g, px, py, sz, kind);
+    return;
+  }
+  const blob = (cx, cy, rx, ry, c0, c1, c2) => { const gr = g.createRadialGradient(cx - rx * 0.4, cy - ry * 0.5, 1, cx, cy, Math.max(rx, ry)); gr.addColorStop(0, c0); gr.addColorStop(0.55, c1); gr.addColorStop(1, c2); g.fillStyle = gr; g.beginPath(); g.ellipse(cx, cy, rx, ry, 0, 0, 7); g.fill(); };
+  if (f === 2) {   // 언덕: 둥근 흙더미 두 개 (빛 받는 쪽 밝게) + 풀
+    for (const [dx, sz] of [[-5, 7.5], [6, 9]]) { g.fillStyle = 'rgba(10,30,10,.25)'; g.beginPath(); g.ellipse(x + dx + 2.5, y + 3.5, sz, sz * 0.45, 0, 0, 7); g.fill(); blob(x + dx, y + 1, sz, sz * 0.55, 'rgba(255,250,210,.55)', 'rgba(120,150,70,.35)', 'rgba(40,70,25,.45)'); }
+    return;
+  }
+  if (f === 3) {   // 늪: 짙은 물웅덩이 + 갈대
+    blob(x - 3, y + 2, 9, 4, 'rgba(120,170,150,.7)', 'rgba(40,85,70,.75)', 'rgba(25,55,40,.6)'); blob(x + 6, y - 3, 4.5, 2.2, 'rgba(120,170,150,.6)', 'rgba(40,85,70,.7)', 'rgba(25,55,40,.5)');
+    g.strokeStyle = '#4e6a2c'; g.lineWidth = 1; g.beginPath(); for (const dx of [5, 7, 9, -9]) { g.moveTo(x + dx, y + 5); g.lineTo(x + dx - 1, y - 2); } g.stroke(); return;
+  }
+  if (f === 4) {   // 돌: 그림자 진 큰 바위 덩어리
+    for (const [dx, dy, sz] of [[-7, 3, 6], [5, 4, 7.5], [0, -4, 5.5], [9, -3, 4]]) { g.fillStyle = 'rgba(10,20,15,.3)'; g.beginPath(); g.ellipse(x + dx + sz * 0.4, y + dy + sz * 0.45, sz, sz * 0.5, 0, 0, 7); g.fill();
+      blob(x + dx, y + dy - sz * 0.25, sz, sz * 0.72, '#e4e1d8', '#9c988d', '#4f4c45'); }
+    return;
+  }
+  if (f === 5) {   // 흙길: 부드러운 흙 얼룩
+    blob(x, y, 15, 8, 'rgba(225,190,130,.55)', 'rgba(170,125,75,.45)', 'rgba(140,100,60,0)'); return;
+  }
+  drawTileFeature(g, f, x, y, biome);
+}
+let NOISE_PAT = null;
+function noiseCanvas() {   // 땅 질감용 잔잔한 얼룩 (값 노이즈 2겹, 128×128 반복)
+  if (NOISE_PAT) return NOISE_PAT;
+  const N = 128, c = document.createElement('canvas'); c.width = c.height = N; const g = c.getContext('2d'), im = g.createImageData(N, N);
+  const v = (x, y, f) => { const X = Math.floor(x * f), Y = Math.floor(y * f), fx = x * f - X, fy = y * f - Y, w = f | 0, h = (i, j) => hash2(((i % w) + w) % w, ((j % w) + w) % w);
+    const sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy); return (h(X, Y) * (1 - sx) + h(X + 1, Y) * sx) * (1 - sy) + (h(X, Y + 1) * (1 - sx) + h(X + 1, Y + 1) * sx) * sy; };
+  for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) { const n = 0.55 * v(i / N, j / N, 8) + 0.3 * v(i / N, j / N, 16) + 0.15 * hash2(i, j), k = (j * N + i) * 4, c8 = n * 255 | 0; im.data[k] = im.data[k + 1] = im.data[k + 2] = c8; im.data[k + 3] = 255; }
+  g.putImageData(im, 0, 0); return (NOISE_PAT = c);
+}
+function dioPost(c, g, corner, poly) {
+  const W = c.width, H = c.height, canBlur = 'filter' in g, mk = () => { const m = document.createElement('canvas'); m.width = W; m.height = H; return m; };
+  const tf = g.getTransform();
+  // 1) 땅 질감 · 채도 · 햇빛 (물은 아래에서 덮음)
+  g.save(); g.setTransform(1, 0, 0, 1, 0, 0);
+  g.globalCompositeOperation = 'soft-light'; g.globalAlpha = 0.3; g.fillStyle = g.createPattern(noiseCanvas(), 'repeat'); g.fillRect(0, 0, W, H);
+  g.globalAlpha = 1; const sun = g.createLinearGradient(0, 0, W, H); sun.addColorStop(0, 'rgba(255,240,200,.55)'); sun.addColorStop(0.5, 'rgba(128,128,128,0)'); sun.addColorStop(1, 'rgba(20,40,70,.5)');
+  g.fillStyle = sun; g.fillRect(0, 0, W, H); g.globalCompositeOperation = 'source-over';
+  if (canBlur) { const t = mk(); t.getContext('2d').drawImage(c, 0, 0); g.clearRect(0, 0, W, H); g.filter = 'saturate(1.06) contrast(1.06)'; g.drawImage(t, 0, 0); g.filter = 'none'; }
+  g.restore();
+  // 2) 물: 물 헥스 모양 마스크 → 깊은 청록 + 해안 가까이 얕은 옥색 + 흰 물거품
+  const M = mk(), mg = M.getContext('2d'); mg.setTransform(tf); mg.fillStyle = '#fff';
+  let any = false;
+  for (let r = 0; r < HEX_ROWS; r++) for (let cI = 0; cI < HEX_COLS; cI++) { if (G.HEXL[r * HEX_COLS + cI] >= 0) continue; any = true; const [x, y] = hexCenter(cI, r);
+    mg.beginPath(); [0, 1, 2, 3, 4, 5].forEach((i, k) => { const p = corner(x, y, i, 0); k ? mg.lineTo(p[0], p[1]) : mg.moveTo(p[0], p[1]); }); mg.closePath(); mg.fill(); mg.lineWidth = 1.2; mg.strokeStyle = '#fff'; mg.stroke(); }
+  if (!any) return;
+  const L = mk(), lg = L.getContext('2d'); lg.fillStyle = '#fff'; lg.fillRect(0, 0, W, H); lg.globalCompositeOperation = 'destination-out'; lg.drawImage(M, 0, 0);   // 땅 마스크 = 물이 아닌 곳
+  const tint = (src, col, blur) => { const t = mk(), tg = t.getContext('2d'); if (blur && canBlur) tg.filter = `blur(${blur}px)`; tg.drawImage(src, 0, 0); tg.filter = 'none'; tg.globalCompositeOperation = 'source-in'; tg.fillStyle = col; tg.fillRect(0, 0, W, H); return t; };
+  const Wt = mk(), wg = Wt.getContext('2d');
+  wg.fillStyle = '#0a5a80'; wg.fillRect(0, 0, W, H);   // 깊은 바다
+  wg.globalAlpha = 0.95; wg.drawImage(tint(L, '#1fb3c0', 70), 0, 0); wg.globalAlpha = 0.9; wg.drawImage(tint(L, '#5fe0d0', 26), 0, 0); wg.globalAlpha = 1;   // 해안에 가까울수록 얕은 옥색
+  wg.globalCompositeOperation = 'soft-light'; wg.globalAlpha = 0.5; wg.fillStyle = wg.createPattern(noiseCanvas(), 'repeat'); wg.fillRect(0, 0, W, H); wg.globalAlpha = 1; wg.globalCompositeOperation = 'source-over';
+  wg.globalAlpha = 0.85; wg.drawImage(tint(L, '#f4fbff', 5), 0, 0); wg.globalAlpha = 1;   // 물거품 띠
+  wg.globalCompositeOperation = 'destination-in'; wg.drawImage(M, 0, 0); wg.globalCompositeOperation = 'source-over';   // 물 헥스 안만 남김
+  g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(Wt, 0, 0);
+  // 3) 모래사장: 물 바로 옆 땅을 모래색으로 (높은 절벽 위는 거의 닿지 않음)
+  const sand = tint(M, '#e9d6a2', 9), sg = sand.getContext('2d'); sg.globalCompositeOperation = 'destination-in'; sg.drawImage(L, 0, 0);
+  g.globalAlpha = 0.8; g.drawImage(sand, 0, 0); g.globalAlpha = 1; g.restore();
 }
 function drawBridges(g) {
   for (const b of G.bridges) {   // 나무 다리
@@ -2990,6 +3101,10 @@ function insigniaOld(u, lx, z, ang, r = 2.6) {   // (예전) 흰 별
   ctx.closePath(); ctx.fillStyle = 'rgba(245,245,235,.8)'; ctx.fill();
 }
 function shadow(x, y, rx, ry, a = 0.17) {   // 넓고 옅은 그림자 + 바로 아래 좁고 진한 접지 그림자
+  if (DIO_ON) {   // 디오라마: 햇빛이 왼쪽 위 → 그림자는 오른쪽 아래로 진하게
+    ctx.beginPath(); ctx.ellipse(x + rx * 0.28, y + ry * 0.35, rx * 1.05, ry, 0, 0, Math.PI * 2); ctx.fillStyle = `rgba(10,22,18,${Math.min(0.5, a * 1.9)})`; ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x + rx * 0.08, y + ry * 0.1, rx * 0.7, ry * 0.55, 0, 0, Math.PI * 2); ctx.fillStyle = `rgba(6,12,10,${Math.min(0.45, a * 1.4)})`; ctx.fill(); return;
+  }
   ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); ctx.fillStyle = `rgba(80,60,30,${a})`; ctx.fill();
   ctx.beginPath(); ctx.ellipse(x, y + ry * 0.08, rx * 0.7, ry * 0.6, 0, 0, Math.PI * 2); ctx.fillStyle = `rgba(55,40,20,${a * 0.75})`; ctx.fill();
 }
@@ -3004,13 +3119,21 @@ function extrude(fn, x, y, z0, h, ang, top, side, ln) {
   let gl = SHEEN.get(ctx);   // 윗면 왼쪽 위에서 비치는 은은한 광택: 캔버스마다 한 번 만든 그라데이션을 윗면 위치로 옮겨 칠함
   if (!gl) { gl = ctx.createLinearGradient(-10, -8, 6, 6); gl.addColorStop(0, 'rgba(255,255,240,.2)'); gl.addColorStop(0.55, 'rgba(255,255,240,0)'); gl.addColorStop(1, 'rgba(0,0,0,.06)'); SHEEN.set(ctx, gl); }
   ctx.save(); ctx.translate(x, y - z0 - h); ctx.fillStyle = gl; ctx.fill(); ctx.restore();   // 경로는 이미 정해져 있으므로 옮겨지는 건 그라데이션뿐
+  if (DIO_ON) {   // 디오라마: 금속 반사광(왼쪽 위 밝게 · 오른쪽 아래 어둡게) + 가는 테두리 + 모서리 하이라이트
+    let mg = SHEEN_D.get(ctx);
+    if (!mg) { mg = ctx.createLinearGradient(-12, -9, 10, 8); mg.addColorStop(0, 'rgba(255,255,255,.42)'); mg.addColorStop(0.35, 'rgba(255,255,255,.08)'); mg.addColorStop(0.6, 'rgba(0,0,0,0)'); mg.addColorStop(1, 'rgba(0,0,20,.28)'); SHEEN_D.set(ctx, mg); }
+    ctx.save(); ctx.translate(x, y - z0 - h); ctx.fillStyle = mg; ctx.fill(); ctx.restore();
+    ctx.lineWidth = 0.7; ctx.stroke(); ctx.strokeStyle = 'rgba(255,255,255,.22)'; ctx.lineWidth = 0.45; ctx.stroke(); return;
+  }
   ctx.lineWidth = 0.8; ctx.stroke();
 }
+const SHEEN_D = new WeakMap();
 const SHEEN = new WeakMap();
 function shine(fn, x, y, z, ang) { pathAt(fn, x, y, z, ang); ctx.fillStyle = 'rgba(255,255,255,.22)'; ctx.fill(); }
 // 얼굴: 큰 눈 + 반짝임 두 개 + 볼터치. mood: ok / front(정면) / hurt(><, 땀방울) / sleep(건설 중)
 // 차량 · 건물처럼 큰 얼굴(s ≥ 1.3)은 눈썹도 그림: 평소엔 결의에 찬 눈썹, 피격 땐 걱정 눈썹
 function face(cx, cy, ang, s, mood, brow = s >= 1.3) {
+  if (DIO_ON) return;   // 디오라마: 차량 · 건물에 얼굴 없음
   const fs = Math.sin(ang), fc = Math.cos(ang);
   if (fs < -0.55 && mood !== 'front') return;   // 뒤돌아 있으면 안 보임
   face.last = [cx, cy, ang, s, mood, brow];   // 특수무기가 장비를 덧그린 뒤 얼굴을 다시 그릴 때 씀
@@ -3059,7 +3182,23 @@ function mouth(x, y, s, mood) {   // 입: 평소 미소 · 피격 'o' · 작업 
   ctx.beginPath(); ctx.arc(x, y - s * 0.15, s * 0.42, 0.18 * Math.PI, 0.82 * Math.PI); ctx.strokeStyle = INKC; ctx.lineWidth = s * 0.2; ctx.stroke();
 }
 function brows(x, y, s, mood) { for (const k of [-1, 1]) line([x + k * s * 0.75, y + (mood === 'hurt' ? -s * 0.15 : 0)], [x + k * s * 1.75, y - s * (mood === 'hurt' ? -0.1 : 0.25)], s * 0.22, INKC); }
+function miniSoldier(x, y, ang, C, bob, flash, work, ST) {   // 디오라마 병사: 머리가 작은 실제 비율 · 철모 · 배낭 · 총
+  shadow(x, y, 3.2, 1.4, 0.22);
+  const by = y - bob * 0.6, fs = Math.sin(ang), fc = Math.cos(ang), back = fs < -0.45, side = fc >= 0 ? 1 : -1, st = work || bob > 0.5 ? Math.sin(G.time * 14 + x) * 1.2 : 0;
+  for (const k of [-1, 1]) line([x + k * 1.1, by - 4], [x + k * 1.3 + k * st * 0.4, y - 0.3], 1.5, C.dark);   // 다리
+  const gear = () => { if (ST.rifle) { const h = [x + side * 1.6, by - 6], e = [h[0] + fc * 6.5, h[1] + fs * 2.4 - 0.4]; line(h, e, 1.2, '#22211c'); if (flash) flashAt(e[0] + fc * 1.5, e[1], 2.2); }
+    else { const h = [x + side * 2.2, by - 6], e = [h[0] + side * 3, h[1] - 3.8 + (work ? Math.sin(G.time * 16 + x) * 1.5 : 0)]; line(h, e, 1.2, '#6b5236'); rr(e[0] - 1.6, e[1] - 1, 3.2, 2, 0.6); ctx.fillStyle = '#9aa0a8'; ctx.fill(); } };
+  if (back) gear();
+  rr(x - 2.3, by - 9, 4.6, 5.4, 1.6); { const g = ctx.createLinearGradient(x - 2.3, by - 9, x + 2.3, by - 3.6); g.addColorStop(0, C.light); g.addColorStop(0.25, C.main); g.addColorStop(1, C.dark); ctx.fillStyle = g; } ctx.fill();   // 몸통(빛 받는 쪽 밝게)
+  rr(x - 2.3, by - 9, 4.6, 5.4, 1.6); ctx.strokeStyle = 'rgba(0,0,0,.45)'; ctx.lineWidth = 0.5; ctx.stroke();
+  if (!back) { rr(x - 1.6 - side * 1.1, by - 8.6, 2, 3.4, 0.6); ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fill(); } else { rr(x - 1.8, by - 8.8, 3.6, 3.6, 0.8); ctx.fillStyle = C.mid; ctx.fill(); }   // 탄입대 / 배낭
+  circ(x, by - 10.6, 1.9); ctx.fillStyle = back ? C.dark : '#d9b896'; ctx.fill();   // 얼굴(작게)
+  ctx.beginPath(); ctx.ellipse(x, by - 11.3, 2.6, 2.1, 0, Math.PI, 0); ctx.closePath(); { const g = ctx.createLinearGradient(x - 2.6, by - 13.4, x + 2.6, by - 11); g.addColorStop(0, C.light); g.addColorStop(0.35, C.mid); g.addColorStop(1, C.dark); ctx.fillStyle = g; } ctx.fill();   // 철모
+  line([x - 2.8, by - 11.2], [x + 2.8, by - 11.2], 0.7, C.dark);
+  if (!back) gear();
+}
 function chibi(x, y, ang, C, bob, mood, flash, work, ST = NSTYLE_DEF) {
+  if (DIO_ON) return miniSoldier(x, y, ang, C, bob, flash, work, ST);
   shadow(x, y, 3.8, 1.6);
   const by = y - bob, fs = Math.sin(ang), fc = Math.cos(ang), back = fs < -0.45, side = fc >= 0 ? 1 : -1;
   const hammer = () => {
@@ -3845,6 +3984,17 @@ function drawFog() {
 function drawPoints() {   // 보급 거점: 다리 위 점선 원 + 점령 진행 고리
   for (const p of G.points || []) {
     const cy = p.y - Zs(p.x, p.y), C = p.owner >= 0 ? G.players.find(q => q.team === p.owner).col : null;
+    if (DIO_ON) {   // 디오라마: 빛나는 고리 + 하늘로 솟는 빛기둥 (중립 금색 · 점령하면 그 팀 색)
+      const rgb = C ? (p.owner === me().team ? '110,180,255' : '255,110,90') : '255,205,90', pz = 0.75 + 0.25 * Math.sin(G.time * 3 + p.x);
+      ctx.save(); ctx.globalCompositeOperation = 'lighter';
+      const rg = ctx.createRadialGradient(p.x, cy, CAP_R * 0.6, p.x, cy, CAP_R * 1.25); rg.addColorStop(0, `rgba(${rgb},0)`); rg.addColorStop(0.75, `rgba(${rgb},${0.35 * pz})`); rg.addColorStop(1, `rgba(${rgb},0)`);
+      ctx.beginPath(); ctx.ellipse(p.x, cy, CAP_R * 1.25, CAP_R * 1.25 * SQ, 0, 0, 7); ctx.fillStyle = rg; ctx.fill();
+      ctx.beginPath(); ctx.ellipse(p.x, cy, CAP_R, CAP_R * SQ, 0, 0, 7); ctx.strokeStyle = `rgba(${rgb},${0.9 * pz})`; ctx.lineWidth = 2.4; ctx.stroke();
+      const bh = 150, bg = ctx.createLinearGradient(0, cy, 0, cy - bh); bg.addColorStop(0, `rgba(${rgb},${0.55 * pz})`); bg.addColorStop(0.5, `rgba(${rgb},${0.18 * pz})`); bg.addColorStop(1, `rgba(${rgb},0)`);
+      ctx.fillStyle = bg; ctx.beginPath(); ctx.moveTo(p.x - 7, cy); ctx.lineTo(p.x - 2.5, cy - bh); ctx.lineTo(p.x + 2.5, cy - bh); ctx.lineTo(p.x + 7, cy); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = `rgba(255,255,240,${0.5 * pz})`; ctx.fillRect(p.x - 1, cy - bh * 0.85, 2, bh * 0.85);
+      ctx.restore();
+    }
     ctx.beginPath(); ctx.ellipse(p.x, cy, CAP_R, CAP_R * SQ, 0, 0, 7); ctx.fillStyle = C ? C.main + '33' : 'rgba(230,230,210,.12)'; ctx.fill();
     ctx.setLineDash([3, 6]); ctx.strokeStyle = C ? C.dark : '#e8ead8'; ctx.lineWidth = 2; ctx.lineCap = 'round'; ctx.stroke(); ctx.setLineDash([]);
     if (Math.abs(p.prog) > 0.5 && Math.abs(p.prog) < 100) {
@@ -3942,6 +4092,18 @@ function drawMinimap() {
   ctx.strokeStyle = '#4a3d2a'; ctx.lineWidth = 1;
   ctx.strokeRect(MM.x + Math.max(0, cam.x) * sx, MM.y + Math.max(0, cam.y) * sy, Math.min(WW, VW / cam.zoom) * sx, Math.min(WH, VH / cam.zoom) * sy);
 }
+function dioScreenFX() {   // 미니어처를 찍은 듯한 화면: 위아래 가장자리가 살짝 어둡고 · 왼쪽 위에서 따뜻한 햇빛
+  let g = DIO_SCR.g;
+  if (!g || DIO_SCR.w !== VW || DIO_SCR.h !== VH) {
+    const c = DIO_SCR.c || (DIO_SCR.c = document.createElement('canvas')); c.width = Math.max(1, VW); c.height = Math.max(1, VH); g = DIO_SCR.g = c.getContext('2d'); DIO_SCR.w = VW; DIO_SCR.h = VH;
+    const t = g.createLinearGradient(0, 0, 0, VH); t.addColorStop(0, 'rgba(8,16,28,.32)'); t.addColorStop(0.16, 'rgba(8,16,28,0)'); t.addColorStop(0.82, 'rgba(8,16,28,0)'); t.addColorStop(1, 'rgba(8,16,28,.36)');
+    g.fillStyle = t; g.fillRect(0, 0, VW, VH);
+    const w = g.createRadialGradient(VW * 0.18, VH * 0.1, 0, VW * 0.18, VH * 0.1, Math.max(VW, VH) * 0.75); w.addColorStop(0, 'rgba(255,236,190,.14)'); w.addColorStop(1, 'rgba(255,236,190,0)');
+    g.fillStyle = w; g.fillRect(0, 0, VW, VH);
+  }
+  ctx.drawImage(DIO_SCR.c, 0, 0, VW, VH);
+}
+const DIO_SCR = {};
 function render() {
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   ctx.fillStyle = '#2b3025'; ctx.fillRect(0, 0, VW, VH);
@@ -3951,6 +4113,7 @@ function render() {
   drawWorldLayer(z, ox, oy);
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   drawFog();
+  if (dioOn() && G.started) dioScreenFX();
   if (G.worldTf && G.calls && G.calls.length) { ctx.setTransform(G.worldTf); drawCalls(); ctx.setTransform(DPR, 0, 0, DPR, 0, 0); }
   drawWeather();
   drawVignette();
@@ -3965,7 +4128,8 @@ function render() {
   cv.style.cursor = edc ? edc + '-resize' : placing ? 'copy' : skillAim || opAim || attackMode || hoverEnemy ? 'crosshair' : 'default';
 }
 let CAPTURE = false;   // 명장면 녹화 중: 선택 범위·설계도 같은 조작 표시는 빼고 그림
-function drawWorldLayer(z, ox, oy) {
+function drawWorldLayer(...a) { DIO_ON = dioOn(); try { drawWorldLayer0(...a); } finally { DIO_ON = false; } }   // 전투 화면에서만 디오라마 화풍
+function drawWorldLayer0(z, ox, oy) {
   const myTeam = me().team;
   ctx.setTransform(z, 0, 0, z, -cam.x * z + ox, -cam.y * z + oy);
   ctx.imageSmoothingEnabled = true;
@@ -5618,9 +5782,13 @@ function renderSettings() {   // (소속 국가·게임 속도·지형 표시는
   }
   for (const grp of document.querySelectorAll('#settings [data-set]')) for (const b of grp.querySelectorAll('button')) {
     const k = grp.dataset.set;
-    b.classList.toggle('sel', SETTINGS[k] === +b.dataset.v);
+    b.classList.toggle('sel', (k === 'dio' ? (SETTINGS.dio === 0 ? 0 : 1) : SETTINGS[k]) === +b.dataset.v);
     b.onclick = () => {
       SETTINGS[k] = +b.dataset.v; const rec = loadRec(); rec.settings = SETTINGS; saveRec(rec); renderSettings();
+      if (k === 'dio' && G && G.players) {   // 그래픽 화풍 바꾸면 지형 · 부대 색을 다시 그림
+        if (dioOn()) dioColors(G.players); else { G.players.forEach(p => { p.col = PCOL[p.team][G.players.filter(q => q.team === p.team).indexOf(p) % 3]; }); const r0 = loadRec(); if (!G.net) G.players[ME].col = SKINS[r0.skin].col; }
+        G.contour = buildTerrainImage(); G.OCC = buildOcclusion(); G.mini = buildMini(G.contour, MM.w, MM.h);
+      }
       if (k === 'hex' && G.hexMode !== !!SETTINGS.hex) {   // 지형 표시 방식 바꾸면 지형 이미지를 다시 그림
         G.hexMode = !!SETTINGS.hex; for (const rd of G.roads) for (const q of rd) q.z = Zs(q.x, q.y);
         G.contour = buildTerrainImage(); G.OCC = buildOcclusion(); G.mini = buildMini(G.contour, MM.w, MM.h);
@@ -8127,7 +8295,8 @@ function newGame(cfg = DEFAULT_CFG) {
   buildRoads(); computeHexFeatures(); computeElev();
   G.contour = buildTerrainImage(); G.OCC = buildOcclusion();
   G.mini = buildMini(G.contour, MM.w, MM.h);
-  const rec0 = loadRec(); if (!cfg.pvp) { players[ME].col = SKINS[rec0.skin].col; players[ME].sparkle = !!SKINS[rec0.skin].sparkle; }
+  const rec0 = loadRec(); if (dioOn()) dioColors(players);   // 디오라마: 내 팀 파랑 · 상대 빨강
+  if (!cfg.pvp && (!dioOn() || (rec0.skin && rec0.skin !== 'blue'))) { players[ME].col = SKINS[rec0.skin].col; players[ME].sparkle = !!SKINS[rec0.skin].sparkle; }
   for (const pl of players) spawnStart(pl);
   if (cfg.enemyTurrets) for (const pl of players) if (pl.team === 1) {   // 캠페인: 적 기지 앞에 공병이 들어가 있는 벙커
     const toE = Math.atan2(WH / 2 - pl.hq.y, WW / 2 - pl.hq.x);

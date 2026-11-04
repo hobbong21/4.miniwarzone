@@ -115,6 +115,17 @@ r = await J(`(()=>{ newGame(); G.started=true; const a=me(), b=G.players.find(p=
 ok('airstrike reticle is a capsule along the bomb line', r.kind==='airstrike' && r.capsule && r.inLine && !r.outEnd && !r.outSide, JSON.stringify(r));
 r = await J(`(()=>{ const S=makeSnap(); const n=G.calls.length; G.calls=[]; const t=G.time; netApply(S); return JSON.stringify({sent:S.cl.length, back:G.calls.length, n, kind:G.calls[0]&&G.calls[0].kind}) })()`);
 ok('PvP snapshot carries reticles to the guest', r.sent===1 && r.back===1 && r.kind==='airstrike', JSON.stringify(r));
+// ---- 5c. 디오라마 화풍 (기획서 §44)
+r = await J(`(()=>{ const o={};
+  SETTINGS.dio=undefined; o.defaultOn=dioOn();
+  hideScreens(); newGame({map:'island'}); o.allyBlue=me().col.main===DPCOL.ally[0].main; o.foeRed=G.players.find(p=>p.team!==me().team).col.main===DPCOL.foe[0].main;
+  const t0=performance.now(); G.contour=buildTerrainImage(); o.buildMs=Math.round(performance.now()-t0);
+  o.dioOffOutside=DIO_ON===false; render(); o.dioOffAfterRender=DIO_ON===false;
+  let faceCalls=0; const f0=face; face=function(){ faceCalls++; return f0.apply(this, arguments); }; DIO_ON=true; face(0,0,1,2,'ok'); DIO_ON=false; face=f0; o.faceStillCallable=faceCalls===1;
+  SETTINGS.dio=0; newGame({map:'island'}); o.chibiColors=me().col.main===SKINS[loadRec().skin].col.main && G.players.find(p=>p.team!==me().team).col.main===PCOL[1][0].main;
+  SETTINGS.dio=1; return JSON.stringify(o) })()`);
+ok('diorama is default; ally blue / foe red palette; chibi palette when off', r.defaultOn && r.allyBlue && r.foeRed && r.chibiColors, JSON.stringify(r));
+ok('diorama flag only while drawing the battle (menus keep chibi art); terrain build < 1.5s', r.dioOffOutside && r.dioOffAfterRender && r.buildMs < 1500, JSON.stringify(r));
 // ---- 6. PvP snapshot carries wreck value
 r = await J(`(()=>{ newGame(); G.started=true; const a=me(), b=G.players.find(p=>p.team!==a.team); const t=makeUnit(b,'tank',WW/2,WH/2); t.built=true; G.units.push(t); damage(t,1e5,a.hq); const s=makeSnap(); const w=s.w.find(w=>w.val!==undefined); return JSON.stringify({has:!!w, val:w&&w.val}) })()`);
 ok('PvP snapshot includes wreck val', r.has, JSON.stringify(r));

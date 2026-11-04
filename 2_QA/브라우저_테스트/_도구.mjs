@@ -7,7 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-export const GAME = path.resolve(HERE, '../../3_게임/index.html');
+export const GAME = process.env.MWZ_GAME ? path.resolve(process.env.MWZ_GAME) : path.resolve(HERE, '../../3_게임/index.html');   // MWZ_GAME: 다른 버전 비교용
 export const SHOTS = path.join(HERE, '스크린샷');
 const CHROME = process.env.CHROME || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 

@@ -18,7 +18,7 @@
 
 - **혼자 하기 (설치 없음)**: `3_게임/index.html`을 브라우저로 열기 → 게스트로 플레이
 - **회원 · 순위 · PVP**: `start.bat` / `./start.sh` 더블클릭, 또는 `npm start` → http://localhost:8080 (Node.js 22.5 이상)
-- **테스트**: `npm test`(서버) · `npm run test:auth`(회원가입 · 로그인) · `npm run test:game`(게임 회귀)
+- **테스트**: `npm test`(서버) · `npm run test:auth`(회원가입 · 로그인) · `npm run test:game`(게임 회귀) · `npm run test:fun`(재미 측정, AI 대 AI)
 
 ## 관리 원칙
 

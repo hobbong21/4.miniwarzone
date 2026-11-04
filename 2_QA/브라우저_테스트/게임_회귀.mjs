@@ -50,8 +50,8 @@ ok('aircraft cannot salvage', r.heliNo);
 // ---- 3. Comeback charge
 r = await J(`(()=>{ newGame(); G.started=true; const a=me(), b=G.players.find(p=>p.team!==a.team); a.skillCD=60; b.skillCD=60;
   const t=makeUnit(a,'tank',WW/2,WH/2); t.built=true; G.units.push(t); const k=makeUnit(b,'tank',WW/2+50,WH/2); k.built=true; G.units.push(k); damage(t,99999,k);
-  return JSON.stringify({loser:+(60-a.skillCD).toFixed(2), killer:+(60-b.skillCD).toFixed(2)}) })()`);
-ok('comeback charge: loser 7.2s, killer 1.8s (4:1)', r.loser===7.2 && r.killer===1.8, JSON.stringify(r));
+  return JSON.stringify({loser:+(60-a.skillCD).toFixed(2), killer:+(60-b.skillCD).toFixed(2), kwant:+(360*0.012*gaugeMax(b)/100).toFixed(2)}) })()`);
+ok('command gauge (§45): tank lost → loser +18% (16.2s of 90s), killer +4.3% (≈4:1)', r.loser===16.2 && r.killer===r.kwant, JSON.stringify(r));
 // ---- 4. Juice
 r = await J(`(()=>{ newGame(); G.started=true; const a=me(), b=G.players.find(p=>p.team!==a.team); const t=makeUnit(a,'tank',WW/2,WH/2); t.built=true; G.units.push(t); const k=makeUnit(b,'tank',WW/2-2000,WH/2); k.built=true; G.units.push(k);
   damage(t,100,k); const g0=t.hpG, h=t.hp, ring=G.time-t.combatT<3; for(let i=0;i<5;i++) updateUnit(t,1/30); const g1=t.hpG; for(let i=0;i<60;i++) updateUnit(t,1/30);
@@ -126,6 +126,41 @@ r = await J(`(()=>{ const o={};
   SETTINGS.dio=1; return JSON.stringify(o) })()`);
 ok('diorama is default; ally blue / foe red palette; chibi palette when off', r.defaultOn && r.allyBlue && r.foeRed && r.chibiColors, JSON.stringify(r));
 ok('diorama flag only while drawing the battle (menus keep chibi art); terrain build < 1.5s', r.dioOffOutside && r.dioOffAfterRender && r.buildMs < 1500, JSON.stringify(r));
+// ---- 5d. 재미 3원칙 (기획서 §45): 중앙 거점 · 전선 집결 · 결전 · 총동원 · 최후의 반격 · 현상금 · 대칭 보급 · 경계 구역
+r = await J(`(()=>{ $('ceremony').style.display='none'; $('over').style.display='none'; newGame({map:'plains'}); G.started=true; G.tutorial=false; const o={};
+  const core=G.points.find(p=>p.core); o.core=!!core; o.coreNearMid=core && Math.hypot(core.x-WW/2, core.y-WH/2)<330;
+  const a=me(), b=G.players.find(p=>p.team!==a.team); o.rallyFwd=Math.abs(a.rally.x-a.hq.x)>300 && Math.abs(b.rally.x-b.hq.x)>300 && G.frontRally;
+  o.inc0=incomeMul(a); core.owner=a.team; o.incCore=+incomeMul(a).toFixed(2); G.points.filter(p=>!p.core).forEach(p=>p.owner=a.team); o.incAll=+incomeMul(a).toFixed(2); o.incWant=+(1.3+Math.min(0.5,0.2*G.points.filter(p=>!p.core).length)).toFixed(2); G.points.forEach(p=>p.owner=-1); core.owner=-1;
+  const u=makeUnit(a,'tank',b.hq.x-300,b.hq.y); u.built=true; G.units.push(u); o.guard=guardSlow(u); G.time=61; o.guardOff=guardSlow(u); u.alive=false;
+  return JSON.stringify(o) })()`);
+ok('§45 center core point near map middle, front rally ahead of HQ', r.core && r.coreNearMid && r.rallyFwd, JSON.stringify(r));
+ok('§45 income: core +30%, edge +20% each (cap +50%)', r.inc0===1 && r.incCore===1.3 && r.incAll===r.incWant, JSON.stringify(r));
+ok('§45 enemy-HQ guard zone slows to 60% only in first 60s', r.guard===0.6 && r.guardOff===1, JSON.stringify(r));
+r = await J(`(()=>{ newGame({map:'plains'}); G.started=true; G.tutorial=false; const a=me(), b=G.players.find(p=>p.team!==a.team); const o={};
+  G.time=70; for (let i=0;i<6;i++) { const t=makeUnit(b,'tank',WW/2+i*20,WH/2+300); t.built=true; G.units.push(t); }
+  for (let i=0;i<30*12;i++) { G.time+=1/30; updateComeback(1/30); } o.ao=G.allout[a.team]; o.aoFoe=G.allout[b.team];
+  o.cost=costOf(a, TYPES.tank.cost).m; o.inc=+incomeMul(a).toFixed(2);
+  const e=makeUnit(a,'mech',a.hq.x+60,a.hq.y); e.built=true; G.units.push(e); const h0=e.hp; damage(e,100,G.units.find(u=>u.owner===b.id&&u.type==='tank')); o.dmgTaken=Math.round(h0-e.hp);
+  const n0=G.units.filter(u=>u.alive&&u.owner===a.id&&!u.T.building).length; a.hq.hp=a.hq.T.hp*0.3; G.cbT=0; updateComeback(1/30); o.ls=a.lastStand!=null; o.lsUnits=G.units.filter(u=>u.alive&&u.owner===a.id&&!u.T.building).length-n0;
+  const again=G.units.length; G.cbT=0; updateComeback(1/30); o.once=G.units.length===again;
+  return JSON.stringify(o) })()`);
+ok('§45 total mobilization after 10s at <65% army: cost -25%, income ×1.25, -25% damage near HQ', r.ao && !r.aoFoe && r.cost===135 && r.inc===1.25 && r.dmgTaken===75, JSON.stringify(r));
+ok('§45 last stand once at HQ <40%: free reinforcements', r.ls && r.lsUnits>=1 && r.once, JSON.stringify(r));
+r = await J(`(()=>{ newGame({map:'plains'}); G.started=true; G.tutorial=false; const a=me(), b=G.players.find(p=>p.team!==a.team); const o={};
+  const core=G.points.find(p=>p.core); core.owner=a.team; core.prog=100; G.time=G.timeLimit-119; updateCrates(1/30); o.final=G.sudden;
+  for (const p of G.points) if (!p.core) { p.owner=-1; p.prog=0; } const t=makeUnit(b,'mech',G.points.find(p=>!p.core).x,G.points.find(p=>!p.core).y); t.built=true; G.units.push(t);
+  const h0=b.hq.hp; for (let i=0;i<30*10.2;i++) { updatePoints(1/30); updateComeback(1/30); } o.shell=Math.round(h0-b.hq.hp); o.hold=Math.round(G.coreHold[a.team]); o.edgeFrozen=G.points.filter(p=>!p.core).every(p=>p.prog===0);
+  G.time=G.timeLimit+1; let res=null; const ee=endGame; endGame=(w,why)=>{res=[w,why]}; G.units.filter(u=>u.alive).forEach(u=>{}); update(1/30); endGame=ee; o.res=res;
+  return JSON.stringify(o) })()`);
+ok('§45 final battle: core holder shells enemy HQ 3%/10s, edge points frozen', r.final && r.shell>=48 && r.hold>=10 && r.edgeFrozen, JSON.stringify(r));
+ok('§45 time-out judged by core hold first', r.res && r.res[0]===true && /중앙 확보/.test(r.res[1]), JSON.stringify(r));
+r = await J(`(()=>{ newGame({map:'plains'}); G.started=true; G.tutorial=false; const a=me(), b=G.players.find(p=>p.team!==a.team); const o={};
+  G.crateT=0; updateCrates(1/30); o.n=G.crates.length; o.mirror=G.crates.length===2 && Math.abs(G.crates[0].x+G.crates[1].x-WW)<1 && G.crates[0].y===G.crates[1].y;
+  const v=makeUnit(b,'tank',WW/2,WH/2); v.built=true; v.kills=5; G.units.push(v); const k=makeUnit(a,'tank',WW/2+40,WH/2); k.built=true; G.units.push(k); a.skillCD=60; o.lv=lvOf(v);
+  damage(v,1e5,k); o.wreck=G.wrecks.at(-1).val; o.gain=+(60-a.skillCD).toFixed(2); o.gwant=+((360*0.012+15)*gaugeMax(a)/100).toFixed(2); o.lvMul=+lvMul({kills:5}).toFixed(2);
+  return JSON.stringify(o) })()`);
+ok('§45 symmetric crates (2, mirrored)', r.n===2 && r.mirror, JSON.stringify(r));
+ok('§45 bounty: Lv.3+ kill → wreck ×2 (216), gauge +15', r.lv>=3 && r.wreck===216 && r.gain===r.gwant, JSON.stringify(r));
 // ---- 6. PvP snapshot carries wreck value
 r = await J(`(()=>{ newGame(); G.started=true; const a=me(), b=G.players.find(p=>p.team!==a.team); const t=makeUnit(b,'tank',WW/2,WH/2); t.built=true; G.units.push(t); damage(t,1e5,a.hq); const s=makeSnap(); const w=s.w.find(w=>w.val!==undefined); return JSON.stringify({has:!!w, val:w&&w.val}) })()`);
 ok('PvP snapshot includes wreck val', r.has, JSON.stringify(r));

@@ -1022,7 +1022,7 @@ const BASE_R = 260, HEAL = 0.03;   // 베이스캠프 반경, 초당 회복률(�
 const FIELD_REPAIR = 0.012, REPAIR_R = 75;   // 공병 야전 긴급수리: 초당 1.2% (베이스캠프의 40%), 자동 수리 탐색 반경
 const LV_KILLS = [0, 2, 5, 9, 14];  // 레벨 2~5에 필요한 누적 격파 수
 const lvOf = u => { let l = 1; for (let i = 1; i < LV_KILLS.length; i++) if ((u.kills || 0) >= LV_KILLS[i]) l = i + 1; return l; };
-const lvMul = u => 1 + 0.12 * (lvOf(u) - 1);   // 레벨당 공격력 +12%
+const lvMul = u => 1 + 0.08 * (lvOf(u) - 1);   // 레벨당 공격력 +8% (§45 눈덩이 줄이기: 예전 +12%)
 
 // 워게임 단계: 점수 배율(×1/×2/×5)과 적 AI 세기 (월드 오브 기갑부대 워게임의 쟁탈전 06/08/10단계를 본뜸)
 const DIFFS = {
@@ -1887,7 +1887,7 @@ function moveStep(u, tx, ty, dt) {
     if (Math.abs(df) > 0.9) { if (mv === 'track') { u.moving = true; if (u.T.indirect) u.dep = 0; return d; } k = 0.35; }   // 궤도차는 제자리 선회
   } else u.ang += clamp(angDiff(u.ang, want), -8 * dt, 8 * dt);
   const mo = u.orders[0] && u.orders[0].march, blitz = (mv !== 'foot' && buff(G.players[u.owner], 'blitz') ? 1.5 : 1) * (u.carry ? 0.8 : 1) * opSpeed(u) * (mo && !u.returning ? Math.min(1, mo.vcap * 1.05 / u.T.speed) : 1);   // 행군 중엔 가장 느린 부대 속도에 맞춤
-  const step = Math.min(u.T.speed * k * blitz * terrainFactor(u, dx / d, dy / d) * dt, d);
+  const step = Math.min(u.T.speed * k * blitz * guardSlow(u) * terrainFactor(u, dx / d, dy / d) * dt, d);
   const a = TURN[mv] ? u.ang : want;
   const nx = u.x + Math.cos(a) * step, ny = u.y + Math.sin(a) * step;
   const stuck = !passXY(mv, u.x, u.y);   // 막힌 칸에 갇혔으면 빠져나오게 허용
@@ -1956,7 +1956,7 @@ function engage(u, t, dt) {
     if (Math.abs(df) > 0.1) return;
   } else u.ang = want;
   if (u.T.indirect && (u.dep || 0) < 1) return;   // 포 전개가 끝나야 사격
-  if (u.reload <= 0) { fire(u, t); u.reload = u.T.reload * rnd(0.9, 1.1) * (u.type === 'art' ? 1 + 0.35 * (4 - membersAlive(u)) : 1); }
+  if (u.reload <= 0) { fire(u, t); u.reload = u.T.reload * rnd(0.9, 1.1) * (u.type === 'art' ? 1 + 0.35 * (4 - membersAlive(u)) : 1) * (u.type === 'hq' && G.time - (G.players[u.owner].lastStand ?? -99) < LAST_STAND.fireT ? 1 / 3 : 1); }
 }
 function fire(u, t) {
   const T = u.T, d = dist(u, t), aim = T.turret ? u.tur : u.ang;
@@ -2019,6 +2019,7 @@ function damage(t, dmg, src) {
   if (t.routing) dmg *= 1.2;
   if (t.T.tough) dmg *= t.T.tough;   // 특수무기: 받는 피해 감소
   if (t.dug >= 3 && !t.moving) dmg *= 0.75;   // 거점 사수: 진지 구축 완료
+  if (G.allout && G.allout[t.team]) { const h = G.players[t.owner].hq; if (h && h.alive && Math.hypot(t.x - h.x, t.y - h.y) < ALLOUT.r) dmg *= ALLOUT.def; }   // §45 총동원: 본부 근처 받는 피해 -25%
   if (!(t.hpLagT > 0)) t.hpG = Math.max(t.hp, t.hpG || 0); t.hpLagT = 0.3;   // 깎인 체력이 0.3초 남았다가 빠짐
   t.hp -= dmg; t.hitT = 0.25; t.combatT = G.time;
   if (!t.T.building && t.hp > 0) {   // 사기: 피해 비율 + 측후방 피격
@@ -2049,9 +2050,11 @@ function damage(t, dmg, src) {
       (G.lostAcc ||= [0, 0])[t.team] += worth;
       if (!G.firstBlood && src.team !== t.team) G.firstBlood = { t: G.time, team: src.team };
     }
-    if (worth && !t.T.flat) {   // 역전의 길: 잃은 쪽 지휘관 스킬이 잡은 쪽보다 4배 빨리 충전
-      owner.skillCD = Math.max(0, (owner.skillCD || 0) - worth * 0.02);
-      const kp = G.players[src.owner]; if (kp !== owner) kp.skillCD = Math.max(0, (kp.skillCD || 0) - worth * 0.005);
+    const bounty = !t.T.building && !t.T.flat && (lvOf(t) >= 3 || /^w_/.test(t.type));   // §45 현상금: Lv.3 이상 · 특수무기
+    if (worth && !t.T.flat) {   // 역전의 길 (§45 지휘 게이지): 잃은 쪽이 잡은 쪽보다 약 4배 빨리 충전
+      gaugeAdd(owner, worth * GAUGE.loss);
+      const kp = G.players[src.owner]; if (kp !== owner) gaugeAdd(kp, worth * GAUGE.kill + (bounty ? GAUGE.bounty : 0));
+      if (bounty && kp !== owner && kp.id === ME) toast(`💰 현상금! ${unitName(t)} 격파 — 지휘 게이지 +${GAUGE.bounty} · 잔해 2배`);
     }
     if (t.type === 'hq') hqBoom(t);
     if (t.crew) ejectCrew(t, 0.3);
@@ -2066,7 +2069,7 @@ function damage(t, dmg, src) {
       }
     }
     if (t.T.building) { if (t.dep) t.dep.mine = null; else if (t.T.roadOk) { if (t.built) markVB(t, -1); } else if (!t.T.flat) markBlock(t.x, t.y, t.T.r, -1); }
-    G.wrecks.push({ x: t.x, y: t.y, ang: t.ang, type: t.type, r: t.T.r, t: Math.round(G.time * 10) / 10, val: !t.T.building && !t.T.flat && worth ? Math.round(worth * SALVAGE_RATE) : 0 });   // 잔해: 값의 30%를 회수 가능
+    G.wrecks.push({ x: t.x, y: t.y, ang: t.ang, type: t.type, r: t.T.r, t: Math.round(G.time * 10) / 10, val: !t.T.building && !t.T.flat && worth ? Math.round(worth * SALVAGE_RATE * (bounty ? 2 : 1)) : 0 });   // 잔해: 값의 30%를 회수 가능
     if (!t.T.flat && t.type !== 'eng') fxBlast(t.x, t.y - altOf(t) - dzOf(t), t.T.building ? t.T.r * 1.4 : t.T.r, t.T.building || t.T.armor === 'heavy' || t.T.move === 'air');
     if (t.seen[me().team]) sfx(t.type === 'eng' || t.T.flat ? 'small' : 'boom', t.x, t.y);
     G.fx.push({ k: 'boom', x: t.x, y: t.y - altOf(t) - dzOf(t), t: 0, ttl: t.T.building ? 1.2 : 0.7, r: t.T.building ? t.T.r * 2 : t.type === 'eng' || t.T.flat ? 12 : 24 });
@@ -2307,7 +2310,7 @@ function aiThink(pl) {
   }
   pl.waveT -= 1;
   const enemyHQ = G.players.filter(p => p.team !== pl.team && p.hq.alive).map(p => p.hq)[0];
-  if (enemyHQ && pl.waveT <= 0 && army.length >= 8 + 3 * pl.waves) {   // 총공격 (회차마다 더 크게 모아서)
+  if (enemyHQ && pl.waveT <= 0 && army.length >= 8 + 3 * pl.waves && (G.tutorial || G.obj && G.obj.type === 'survive' || armyVal(pl.team) >= armyVal(1 - pl.team) * AI45.push)) {   // 총공격 (회차마다 더 크게 모아서) · §45: 확실히 앞설 때만 본부로, 아니면 중앙 다툼
     pl.waveT = 70 * DIFFS[G.diff].wave; pl.waves++;
     for (const u of army) if (!u.forced) issue(u, { kind: 'amove', x: enemyHQ.x + rnd(-60, 60), y: enemyHQ.y + rnd(-60, 60), tag: 'atk' }, false);
     return;
@@ -2320,11 +2323,11 @@ function aiThink(pl) {
   }
   const tgtPts = (G.points || []).filter(p => p.owner !== pl.team);
   if (tgtPts.length && ground.length >= 3) {   // 놀고 있는 병력은 가까운 거점부터 점령
-    const p = tgtPts.sort((a, b) => dist(a, hq) - dist(b, hq))[0];
+    const p = tgtPts.sort((a, b) => (dist(a, hq) - (a.core ? 450 : 0) + (G.sudden && !a.core && !a.hill ? 1e5 : 0)) - (dist(b, hq) - (b.core ? 450 : 0) + (G.sudden && !b.core && !b.hill ? 1e5 : 0)))[0];   // 중앙 거점 우선 · 결전엔 중앙만
     for (const u of ground) { const a = rnd(0, 6.28), r = rnd(0, 45); issue(u, { kind: 'amove', x: p.x + Math.cos(a) * r, y: p.y + Math.sin(a) * r }, false); }
     return;
   }
-  const front = { x: hq.x + Math.cos(toE) * 420, y: hq.y + Math.sin(toE) * 420 };   // 대기 병력은 전방 집결지로
+  const front = G.frontRally ? pl.rally : { x: hq.x + Math.cos(toE) * 420, y: hq.y + Math.sin(toE) * 420 };   // 대기 병력은 전방 집결지로 (§45: 내 쪽 전선)
   for (const u of army) if (!u.orders.length && !u.forced && !u.auto && !u.returning && dist(u, front) > 130) {
     const a = rnd(0, 6.28), r = rnd(0, 90);
     issue(u, { kind: 'amove', x: front.x + Math.cos(a) * r, y: front.y + Math.sin(a) * r }, false);
@@ -2904,8 +2907,8 @@ function updateHUD() {
   $('clock').textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`;
   $('clock').style.color = G.sudden ? '#ff8a6a' : '';
   if (G.started) {
-    const S = skillOf(me()), cd = Math.ceil(me().skillCD || 0);
-    $('skillBtn').innerHTML = `${NATIONS[me().nation]?.flag || ''} ${S.icon} ${S.name} ${cd ? `<small>${cd}초</small>` : '<small>F</small>'}`;
+    const S = skillOf(me()), cd = Math.ceil(me().skillCD || 0), gp = gaugePct(me());
+    $('skillBtn').innerHTML = `${NATIONS[me().nation]?.flag || ''} ${S.icon} ${S.name} ${cd ? `<small>🔋${gp}%</small>` : '<small>F</small>'}`;
     $('skillBtn').classList.toggle('ready', !cd); $('skillBtn').title = `${S.name}: ${S.desc} (F)`;
     const O = G.obj && OBJ[G.obj.type];
     if (O && (G.obj.type !== 'destroy' || G.story)) {
@@ -2917,8 +2920,9 @@ function updateHUD() {
         (G.obj.type === 'basecap' ? modeBar(G.baseProg, BASECAP_T, '초') : '') + (G.obj.type === 'ctf' ? modeBar(G.ctfScore, CTF_WIN, '회') : '') +
         (G.obj.type === 'crates' ? modeBar(G.crateCount, CRATE_WIN, '개') : '') +
         (G.obj.type === 'boss' && G.boss ? `<div class="bar" style="margin-top:4px"><i style="width:${Math.max(0, G.boss.hp) / G.boss.T.hp * 100}%;background:#c0675a"></i></div><small>거대 전차 ${Math.max(0, Math.ceil(G.boss.hp))}</small>` : '') +
-        (G.sudden ? '<br><b style="color:#ff8a6a">⚠️ 서든데스: 본부 기관총 정지 · 수입 2배</b>' : '');
-    } else if (G.sudden) { $('objBox').style.display = 'block'; $('objBox').innerHTML = '<b style="color:#ff8a6a">⚠️ 서든데스</b><br><small>본부 기관총 정지 · 수입 2배</small>'; }
+        (G.sudden ? `<br><b style="color:#ff8a6a">⚔️ 결전: 중앙을 잡아라</b> <small>${finalHoldTxt()}</small>` : '');
+    } else if (G.sudden) { $('objBox').style.display = 'block'; $('objBox').innerHTML = `<b style="color:#ff8a6a">⚔️ 결전 — 중앙을 잡아라</b><br><small>${FINAL_SUB()}</small><br><small>${finalHoldTxt()}</small>`; }
+    else if (G.allout && G.allout[me().team]) { $('objBox').style.display = 'block'; $('objBox').innerHTML = `<b style="color:#ffb35a">🔥 총동원 — 반격의 기회</b><br><small>생산 비용 -25% · 수입 +25% · 본부 근처 받는 피해 -25%</small>`; }
     else $('objBox').style.display = 'none';
   }
   const pl = me(), inc = incomeOf(pl);
@@ -4002,7 +4006,7 @@ function drawPoints() {   // 보급 거점: 다리 위 점선 원 + 점령 진�
       ctx.strokeStyle = p.prog > 0 ? G.players.find(q => q.team === 0).col.mid : G.players.find(q => q.team === 1).col.mid; ctx.lineWidth = 4; ctx.stroke();
     }
     ctx.font = '800 15px -apple-system, sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(30,35,25,.8)';
-    const label = `${p.hill ? '👑' : '🚩'} ${tt(p.hill ? '고지' : '거점') + (p.hill ? '' : ' ' + p.name)}${p.contested ? ' ⚔️' : ''}`; ctx.strokeText(label, p.x, cy - CAP_R * SQ - 8); ctx.fillStyle = C ? C.light : '#f0f2e4'; ctx.fillText(label, p.x, cy - CAP_R * SQ - 8);
+    const label = `${p.hill ? '👑' : p.core ? '⭐' : '🚩'} ${tt(p.hill ? '고지' : p.core ? '중앙' : '거점') + (p.hill || p.core ? '' : ' ' + p.name)}${p.contested ? ' ⚔️' : ''}${G.sudden && !p.core && !p.hill && G.points.some(q => q.core) ? ' 💤' : ''}`; ctx.strokeText(label, p.x, cy - CAP_R * SQ - 8); ctx.fillStyle = C ? C.light : '#f0f2e4'; ctx.fillText(label, p.x, cy - CAP_R * SQ - 8);
   }
 }
 function drawModeMarks() {
@@ -6170,7 +6174,7 @@ function makeSnap() {
   return { k: 'snap', time: r1(G.time), uk: G.ukills,
     pl: G.players.map(p => ({ money: p.money | 0, iron: p.iron | 0, earned: p.earned | 0, kills: p.kills, losses: p.losses, skillCD: p.skillCD, buffs: p.buffs, nation: p.nation, opCD: p.opCD, coTarget: p.coTarget, adDown: !!p.adDown, apDown: !!p.apDown })),
     pts: G.points.map(p => [p.owner, Math.round(p.prog), p.contested ? 1 : 0]), cr: G.crates.map(c => [c.x | 0, c.y | 0, Math.round(c.fall * 10) / 10]),
-    st: G.strikes.map(q => [q.x | 0, q.y | 0, q.r]), cl: (G.calls || []).map(c => [c.x | 0, c.y | 0, c.r | 0, c.x0 == null ? -1 : c.x0 | 0, c.x1 == null ? -1 : c.x1 | 0, r1(c.t0), r1(c.t1), r1(c.t2), c.team, c.kind]), br: G.barrages.map(b => [b.x | 0, b.y | 0, r1(b.t0), b.team]), sd: G.sudden ? 1 : 0,
+    st: G.strikes.map(q => [q.x | 0, q.y | 0, q.r]), cl: (G.calls || []).map(c => [c.x | 0, c.y | 0, c.r | 0, c.x0 == null ? -1 : c.x0 | 0, c.x1 == null ? -1 : c.x1 | 0, r1(c.t0), r1(c.t1), r1(c.t2), c.team, c.kind]), br: G.barrages.map(b => [b.x | 0, b.y | 0, r1(b.t0), b.team]), sd: G.sudden ? 1 : 0, ao: (G.allout || [false, false]).map(v => v ? 1 : 0), ch: (G.coreHold || [0, 0]).map(r1),
     md: { s: G.modeScore, k: G.kothT, b: G.baseProg, c: G.ctfScore, n: G.crateCount, f: (G.flags || []).map(f => [f.x | 0, f.y | 0, f.carrier ? f.carrier.id : 0, f.atHome ? 1 : 0]) },
     u: G.units.filter(u => u.alive).map(u => [u.id, u.type, u.owner, r1(u.x), r1(u.y), Math.round(u.hp), r2(u.ang), r2(u.tur),
       (u.built ? 1 : 0) | (u.moving ? 2 : 0) | (u.working ? 4 : 0) | (u.flash > 0 ? 8 : 0) | (u.crew ? 16 : 0) | (u.seen[0] ? 32 : 0) | (u.seen[1] ? 64 : 0) | (u.inTrench ? 128 : 0) | (u.hitT > 0 ? 256 : 0) | (u.resting ? 512 : 0) | (u.repairT > 0 ? 1024 : 0),
@@ -6207,35 +6211,42 @@ function netApply(S) {   // 게스트: 호스트가 보낸 상태로 화면 갱�
   G.crates = (S.cr || []).map(a => ({ x: a[0], y: a[1], fall: a[2] })); G.strikes = (S.st || []).map(a => ({ x: a[0], y: a[1], r: a[2] }));
   { const known = new Set((G.calls || []).map(c => c.t0 + ':' + c.x)); G.calls = (S.cl || []).map(a => ({ x: a[0], y: a[1], r: a[2], x0: a[3] < 0 ? null : a[3], x1: a[4] < 0 ? null : a[4], t0: a[5], t1: a[6], t2: a[7], team: a[8], kind: a[9] }));
     for (const c of G.calls) if (!known.has(c.t0 + ':' + c.x) && c.team !== me().team) warnCall(c); }   // 게스트: 새 적 포격 예고 경고 G.barrages = (S.br || []).map(a => ({ x: a[0], y: a[1], t0: a[2], team: a[3], k: 0, n: 1 }));
-  if (S.sd && !G.sudden) { G.sudden = true; showBanner('⚠️ 서든데스!', '본부 방어 기관총 정지 · 수입 2배'); }
+  if (S.sd && !G.sudden) { G.sudden = true; showBanner('⚔️ 결전!', FINAL_SUB()); }
+  if (S.ao) { for (const t of [0, 1]) if (S.ao[t] !== !!(G.allout && G.allout[t])) alloutNotice(t, !!S.ao[t]); G.allout = S.ao.map(Boolean); }
+  if (S.ch) G.coreHold = S.ch;
   if (S.fx.some(f => f.k === 'boom' && f.t < 0.06 && f.r >= 20)) shake(3);
 }
 
 // ================= 재미 시스템 =================
 // ---- ① 보급 거점 · 보급 상자 · 서든데스
-const CAP_R = 70, CRATE_FIRST = 60, CRATE_EVERY = 180, SUDDEN = 120, POINT_BONUS = 0.5;
+const CAP_R = 70, CRATE_FIRST = 60, CRATE_EVERY = 90, SUDDEN = 120, POINT_BONUS = 0.2, POINT_CAP = 0.5, CORE_BONUS = 0.3;   // §45: 가장자리 거점 +20%(상한 +50%) · 중앙 거점 +30% · 보급 90초마다 · 마지막 2분 결전
 const ownedPoints = team => (G.points || []).filter(p => p.owner === team).length;
-const incomeMul = pl => (1 + POINT_BONUS * ownedPoints(pl.team)) * (G.sudden ? 2 : 1);
+const pointBonus = team => Math.min(POINT_CAP, POINT_BONUS * (G.points || []).filter(p => p.owner === team && !p.core && !(G.sudden && !p.hill)).length) + ((G.points || []).some(p => p.core && p.owner === team) ? CORE_BONUS : 0);
+const incomeMul = pl => (1 + pointBonus(pl.team)) * (G.sudden ? 2 : 1) * (G.allout && G.allout[pl.team] ? ALLOUT.inc : 1);
 function makePoints() {   // 거점 = 다리 위 (평야 3곳, 산악 2곳)
   G.points = (G.bridges.length ? G.bridges : G.mapPts || []).map((b, i) => ({ name: 'ABCDEF'[i], x: b.x, y: b.y, owner: -1, prog: 0 }));
+  G.allout = [false, false]; G.aoLow = [0, 0]; G.coreHold = [0, 0]; G.coreShellT = [FINAL.shell, FINAL.shell]; G.coreRwT = [-99, -99]; G.cbT = 0; G.frontRally = false;
+  if (!G.cfg.tutorial) { addCorePoint(); setFrontRally(); }   // §45 원칙 ③: 정중앙 "전선 핵심" 거점 · 내 쪽 전선 집결
   G.crateT = CRATE_FIRST; G.crates = []; G.strikes = []; G.sudden = false; TRACKS = []; DUST = []; G.missions = {}; G.barrages = []; G.task = null; G.taskT = TASK_FIRST; G.taskWins = 0; G.hl = []; G.wasBehind = false; G.hqChain = null; G.endCam = null; G.reward = null; G.pings = []; RADIO = []; radioLast = {}; coState = {}; G.contactT = -99; G.slowMoT = 0;
 }
 function updatePoints(dt) {
   for (const p of G.points) {
+    if (G.sudden && !p.core && !p.hill && G.points.some(q => q.core)) { p.contested = false; continue; }   // 결전: 가장자리 거점은 멈춤
     let n0 = 0, n1 = 0;
     for (const u of G.units) {
       if (!u.alive || u.T.building || u.T.move === 'air') continue;
       if (Math.hypot(u.x - p.x, u.y - p.y) < CAP_R) u.team ? n1++ : n0++;
     }
     p.contested = n0 > 0 && n1 > 0;
-    if (n0 && !n1) p.prog = Math.min(100, p.prog + 9 * Math.min(3, n0) * dt);
-    if (n1 && !n0) p.prog = Math.max(-100, p.prog - 9 * Math.min(3, n1) * dt);
+    if (n0 && !n1) p.prog = Math.min(100, p.prog + 9 * Math.min(3, n0) * dt * capMul(0));
+    if (n1 && !n0) p.prog = Math.max(-100, p.prog - 9 * Math.min(3, n1) * dt * capMul(1));
     const prev = p.owner;
     if (p.prog >= 100) p.owner = 0; else if (p.prog <= -100) p.owner = 1;
     else if ((p.owner === 0 && p.prog <= 0) || (p.owner === 1 && p.prog >= 0)) p.owner = -1;
     if (prev !== p.owner) {
       const my = me().team;
-      if (p.owner === my) { toast(`🚩 거점 ${p.name} 점령! 수입 +${POINT_BONUS * 100}%`); sfx('done'); dailyAdd('capture'); notify(`🚩 거점 ${p.name} 점령`, p.x, p.y); }
+      if (p.core && p.owner >= 0) coreTaken(p);
+      if (p.owner === my) { toast(p.core ? `⭐ 중앙 거점 점령! 수입 +${CORE_BONUS * 100}% · 지휘 게이지 충전 +50%` : `🚩 거점 ${p.name} 점령! 수입 +${POINT_BONUS * 100}%`); sfx('done'); dailyAdd('capture'); notify(`🚩 거점 ${p.name} 점령`, p.x, p.y); }
       else if (p.owner >= 0) { toast(`⚠️ 적이 거점 ${p.name}을(를) 점령했습니다`); notify(`⚠️ 거점 ${p.name} 빼앗김`, p.x, p.y); }
       else if (prev === my) toast(`거점 ${p.name}을(를) 잃었습니다`);
     }
@@ -6245,10 +6256,13 @@ function updateCrates(dt) {
   G.crateT -= dt;
   if (G.crateT <= 0) {   // 보급 상자 투하 (맵 가운데 쪽 육지)
     G.crateT = G.obj && G.obj.type === 'crates' ? 45 : CRATE_EVERY;
-    for (let k = 0; k < 60; k++) {
-      const x = rnd(WW * 0.3, WW * 0.7), y = rnd(WH * 0.15, WH * 0.85);
-      if (!passXY('wheel', x, y) || G.WATER[cellIdx(x, y)]) continue;
-      G.crates.push({ x, y, fall: 4 }); toast('📦 보급 상자가 투하됩니다! 먼저 줍는 쪽이 가져갑니다'); sfx('alert'); notify('📦 보급 상자 투하', x, y); break;
+    const land = (x, y) => passXY('wheel', x, y) && !G.WATER[cellIdx(x, y)];
+    const av = [armyVal(0), armyVal(1)], behind = av[0] < av[1] * 0.85 ? 0 : av[1] < av[0] * 0.85 ? 1 : -1;
+    for (let k = 0; k < 80; k++) {   // §45: 양쪽 절반에 하나씩 대칭 투하 · 뒤진 쪽 가까운 상자는 보상 ×1.5
+      const x = rnd(WW * 0.3, WW * 0.45), y = rnd(WH * 0.15, WH * 0.85), x2 = WW - x;
+      if (!land(x, y) || !land(x2, y)) continue;
+      G.crates.push({ x, y, fall: 4, bonus: behind === 0 ? 1.5 : 1 }, { x: x2, y, fall: 4, bonus: behind === 1 ? 1.5 : 1 });
+      toast('📦 보급 상자 2개가 투하됩니다! (양쪽에 하나씩)'); sfx('alert'); notify('📦 보급 상자 투하', WW / 2, y); break;
     }
   }
   for (const c of G.crates) {
@@ -6256,11 +6270,12 @@ function updateCrates(dt) {
     const u = G.units.find(u => u.alive && !u.T.building && u.T.move !== 'air' && Math.hypot(u.x - c.x, u.y - c.y) < 20);
     if (!u) continue;
     c.taken = true; if (G.crateCount) G.crateCount[u.team]++;
-    const pl = G.players[u.owner], kind = ['money', 'squad', 'heal'][(Math.random() * 3) | 0];
+    const pl = G.players[u.owner], kind = ['money', 'squad', 'heal'][(Math.random() * 3) | 0], cb = c.bonus || 1;
     let txt, nm;
     if (kind === 'squad' && (nm = freeSquad(pl))) txt = `무료 증원: ${nm}`;
-    else if (kind === 'heal') { for (const v of G.units) if (v.alive && v.team === pl.team && v.built) v.hp = Math.min(v.T.hp, v.hp + v.T.hp * 0.3); txt = '전군 체력 30% 회복'; }
-    else { pl.money += 250; pl.iron += 150; txt = '돈 +250 · 철광 +150'; }
+    else if (kind === 'heal') { for (const v of G.units) if (v.alive && v.team === pl.team && v.built) v.hp = Math.min(v.T.hp, v.hp + v.T.hp * 0.3 * cb); txt = `전군 체력 ${Math.round(30 * cb)}% 회복`; }
+    else { pl.money += 250 * cb; pl.iron += 150 * cb; txt = `돈 +${250 * cb} · 철광 +${150 * cb}`; }
+    if (cb > 1) txt += ' (🔥 역전 보너스)';
     G.fx.push({ k: 'text', x: c.x, y: c.y - Zs(c.x, c.y) - 20, txt: '📦 ' + txt, c: '#e3c85a', t: 0, ttl: 2 });
     if (pl.id === ME) { toast(`📦 보급 상자 획득: ${txt}`); sfx('merc'); dailyAdd('crate'); } else if (u.team !== me().team) toast(`적이 보급 상자를 가져갔습니다 (${txt})`);
   }
@@ -6282,7 +6297,120 @@ function updateCrates(dt) {
     w.val = 0;
   }
   const sd = G.time >= G.timeLimit - SUDDEN && !(G.obj && G.obj.type === 'survive');
-  if (sd && !G.sudden) { G.sudden = true; showBanner('⚠️ 서든데스!', '본부 방어 기관총 정지 · 수입 2배'); sfx('alert'); }
+  if (sd && !G.sudden) { G.sudden = true; showBanner('⚔️ 결전!', FINAL_SUB()); sfx('alert'); notify('⚔️ 결전 — 중앙을 잡아라', WW / 2, WH / 2); }
+}
+
+// ---- §45 재미 3원칙: 중앙 거점 · 전선 집결 · 결전 · 지휘 게이지 · 총동원 · 현상금 · 최후의 반격
+const GAUGE = { rate: 0.6, loss: 0.05, kill: 0.012, bounty: 15, core: 1.5 };   // 게이지(0~100) 단위: 초당 · 잃은/잡은 비용 1당 · 현상금 · 중앙 거점 배율
+const ALLOUT = { on: 0.65, off: 0.85, hold: 10, cost: 0.75, inc: 1.25, def: 0.75, r: 450, home: 0.3 };   // 총동원: 병력 65% 미만 10초 → 켜짐, 85% 이상 → 꺼짐 · 생산 비용 -25% · 수입 +25% · 본부 근처 받는 피해 -25% · AI는 본부 앞에 모였다가 반격
+const LAST_STAND = { hp: 0.4, share: 0.5, min: 300, max: 900, pvp: 500, fireT: 10 };
+const AI45 = { push: 1.3 };   // AI 총공격 조건: 내 병력 가치 ≥ 상대 × 1.3
+const FINAL = { shell: 10, dmg: 0.03 }, GUARD = { t: 60, r: 450, k: 0.6 };
+const gaugeMax = pl => pl.skillMax || (skillOf(pl) || {}).cd || 90;
+function gaugeAdd(pl, pts) { if (!pl) return; pl.skillCD = Math.max(0, (pl.skillCD || 0) - pts * gaugeMax(pl) / 100); }
+const gaugePct = pl => clamp(Math.floor(100 * (1 - (pl.skillCD || 0) / gaugeMax(pl))), 0, 100);
+const FINAL_SUB = () => (G.points || []).some(p => p.core) ? '중앙 거점만 남습니다 — 잡은 쪽이 10초마다 적 본부 포격 · 수입 2배 · 본부 기관총 정지' : '본부 방어 기관총 정지 · 수입 2배';
+const finalHoldTxt = () => { const ch = G.coreHold || [0, 0], my = me().team; return (G.points || []).some(p => p.core) ? `중앙 확보 아군 ${Math.floor(ch[my])}초 · 적 ${Math.floor(ch[1 - my])}초` : ''; };
+const capMul = team => {   // 점수 모드: 뒤진 쪽은 점령 속도 +50%
+  const sc = G.obj && (G.obj.type === 'dom' ? G.modeScore : G.obj.type === 'koth' ? G.kothT : null);
+  return sc && sc[team] < sc[1 - team] - 5 ? 1.5 : 1;
+};
+function addCorePoint() {
+  const cx = WW / 2, cy = WH / 2, land = (x, y) => x > 0 && y > 0 && x < WW && y < WH && passXY('wheel', x, y) && !G.WATER[cellIdx(x, y)];
+  const near = G.points.filter(p => Math.hypot(p.x - cx, p.y - cy) < 230).sort((a, b) => Math.hypot(a.x - cx, a.y - cy) - Math.hypot(b.x - cx, b.y - cy))[0];
+  if (near) { near.core = true; return near; }
+  for (let r = 0; r <= 320; r += 20) for (let a = 0; a < 6.28; a += r ? 20 / r : 7) {
+    const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r * 0.8;
+    if (land(x, y) && !G.points.some(p => Math.hypot(p.x - x, p.y - y) < CAP_R * 2.2)) { const p = { name: '★', x, y, owner: -1, prog: 0, core: true }; G.points.push(p); return p; }
+  }
+  return null;
+}
+function setFrontRally() {   // 새 부대의 기본 집결지: 본부와 중앙 사이 65% 지점 (지나갈 수 있는 땅)
+  for (const pl of G.players) {
+    const h = pl.hq || pl.spawn, tx = WW / 2, ty = lerp(h.y, WH / 2, 0.5);
+    for (let f = 0.65; f >= 0.25; f -= 0.05) {
+      const x = lerp(h.x, tx, f), y = lerp(h.y, ty, f);
+      if (passXY('wheel', x, y) && !G.WATER[cellIdx(x, y)]) { pl.rally = { x, y }; G.frontRally = true; break; }
+    }
+  }
+}
+function guardSlow(u) {   // 첫 60초: 적 본부 반경 450 안에서는 속도 -40% ("적 경계 구역")
+  if (G.time >= GUARD.t || G.tutorial || u.T.building) return 1;
+  for (const p of G.players) if (p.team !== u.team && p.hq && p.hq.alive && Math.hypot(u.x - p.hq.x, u.y - p.hq.y) < GUARD.r) return GUARD.k;
+  return 1;
+}
+function coreTaken(p) {   // 중앙 거점을 차지할 때 보상 2택 (팀당 45초에 한 번)
+  const team = p.owner; if (G.time - G.coreRwT[team] < 45) return; G.coreRwT[team] = G.time;
+  const pls = G.players.filter(q => q.team === team);
+  const give = (pl, k) => { if (k === 'gauge') gaugeAdd(pl, 30); else { pl.money += 200; pl.iron += 120; } };
+  for (const pl of pls) {
+    if (pl.id === ME && pl.ctrl === 'human' && !G.net) { coreChoice(pl); continue; }
+    const av = armyVal(team), fv = armyVal(1 - team);
+    give(pl, (G.allout && G.allout[team]) || av < fv || pl.skillCD > 20 ? 'gauge' : 'supply');
+  }
+  G._coreGive = give;
+}
+function coreChoice(pl) {
+  let el = $('coreCh');
+  if (!el) { el = document.createElement('div'); el.id = 'coreCh'; el.style.cssText = 'position:fixed;left:50%;top:84px;transform:translateX(-50%);z-index:60;display:flex;gap:8px;align-items:center;background:rgba(18,28,48,.92);border:1px solid #5fc8ff;border-radius:10px;padding:8px 10px;color:#e8f2ff;font-size:13px;box-shadow:0 4px 18px rgba(0,0,0,.4)'; document.body.appendChild(el); }
+  const pick = k => { if (!el.dataset.on) return; el.dataset.on = ''; el.style.display = 'none'; clearTimeout(el._t); (G._coreGive || (() => {}))(pl, k); toast(k === 'gauge' ? '⚡ 지휘 게이지 +30' : '💰 돈 +200 · 철광 +120'); sfx('done'); };
+  el.innerHTML = `<b>⭐ 중앙 점령 보상</b><button class="sec" data-k="supply" style="padding:6px 10px">💰 보급 <small>돈 +200 · 철광 +120</small></button><button class="sec" data-k="gauge" style="padding:6px 10px">⚡ 지휘 <small>게이지 +30</small></button><small>5초</small>`;
+  el.dataset.on = '1'; el.style.display = 'flex';
+  el.querySelectorAll('button').forEach(b => b.onclick = e => { e.stopPropagation(); pick(b.dataset.k); });
+  el._t = setTimeout(() => pick('supply'), 5000);
+}
+function alloutNotice(t, on) {
+  if (t === me().team) { if (on) { showBanner('🔥 총동원!', '반격의 기회 — 생산 비용 -25% · 수입 +25% · 본부 근처 받는 피해 -25%'); sfx('alert'); } else toast('🔥 총동원 해제 — 전력이 회복되었습니다'); }
+  else if (on) { toast('⚠️ 적 총동원 — 적의 생산·수입이 늘었습니다. 지금 몰아붙이세요'); notify('⚠️ 적 총동원'); }
+}
+function alloutRally(t, on) {   // AI: 총동원 중엔 본부 앞(중앙 쪽 30%)에 모여 버티고, 회복하면 다시 전선으로
+  for (const pl of G.players) if (pl.team === t && pl.ctrl === 'ai' && pl.hq) {
+    if (on) { pl.rallyFront = pl.rallyFront || pl.rally; const h = pl.hq; pl.rally = { x: lerp(h.x, WW / 2, ALLOUT.home), y: lerp(h.y, WH / 2, ALLOUT.home * 0.5) }; if (!passXY('wheel', pl.rally.x, pl.rally.y)) pl.rally = pl.rallyFront; }
+    else if (pl.rallyFront) { pl.rally = pl.rallyFront; pl.rallyFront = null; }
+  }
+}
+function lastStand(pl, foeVal, myVal) {   // 본부 체력 35% 이하: 한 번, 무료 증원 + 본부 포대 10초간 3배
+  pl.lastStand = G.time;
+  let budget = G.net ? LAST_STAND.pvp : clamp((foeVal - myVal) * LAST_STAND.share, LAST_STAND.min, LAST_STAND.max), n = 0;
+  const h = pl.hq;
+  while (budget >= 185 && n < 6) {
+    const type = budget >= 360 && Math.random() < 0.6 ? 'tank' : 'mech', T = TYPES[type];
+    for (let k = 0; k < 30; k++) {
+      const a = rnd(0, 6.28), r = h.T.r + rnd(26, 48), x = h.x + Math.cos(a) * r, y = h.y + Math.sin(a) * r;
+      if (!passXY(T.move, x, y)) continue;
+      const u = makeUnit(pl, type, x, y); u.ang = u.tur = a; G.units.push(u); assignCo(u); n++; break;
+    }
+    budget -= T.cost.m + T.cost.i;
+  }
+  G.fx.push({ k: 'ring', x: h.x, y: h.y - dzOf(h), t: 0, ttl: 0.9, r: 120 });
+  if (pl.id === ME) { showBanner('🏚️ 최후의 반격!', `증원 ${n}개 부대 도착 · 본부 포대 10초간 3배 사격`); sfx('alert'); }
+  else if (pl.team !== me().team) toast('⚠️ 적 최후의 반격 — 적 본부에 증원이 도착했습니다');
+}
+function updateComeback(dt) {
+  if (!G.started || G.over || G.tutorial || isGuest()) return;
+  // 결전: 중앙 거점을 쥔 쪽이 10초마다 적 본부 포격 · 확보 시간 기록 (시간 종료 판정 1순위)
+  const core = G.sudden && (G.points || []).find(p => p.core);
+  if (core && core.owner >= 0) {
+    const ct = core.owner; G.coreHold[ct] += dt; G.coreShellT[ct] -= dt;
+    if (G.coreShellT[ct] <= 0) {
+      G.coreShellT[ct] = FINAL.shell;
+      const src = G.players.find(p => p.team === ct && p.hq && p.hq.alive);
+      if (src) for (const p of G.players) if (p.team !== ct && p.hq && p.hq.alive) {
+        damage(p.hq, p.hq.T.hp * FINAL.dmg, src.hq);
+        G.fx.push({ k: 'boom', x: p.hq.x + rnd(-18, 18), y: p.hq.y - dzOf(p.hq) + rnd(-10, 6), t: 0, ttl: 0.8, r: 30 }); sfx('boom', p.hq.x, p.hq.y); shake(4, p.hq.x, p.hq.y);
+        if (p.id === ME) toast('💥 적이 중앙에서 본부를 포격합니다 — 중앙을 되찾으세요!');
+      }
+    }
+  }
+  G.cbT -= dt; if (G.cbT > 0) return; G.cbT = 1;
+  const av = [armyVal(0), armyVal(1)];
+  for (const t of [0, 1]) {   // 총동원 (열세 보정)
+    const foe = av[1 - t], low = G.time >= 60 && foe >= 300 && av[t] < foe * ALLOUT.on;   // 첫 60초(오프너 차이)는 제외
+    G.aoLow[t] = low ? G.aoLow[t] + 1 : 0;
+    if (!G.allout[t] && G.aoLow[t] >= ALLOUT.hold) { G.allout[t] = true; alloutNotice(t, true); alloutRally(t, true); }
+    else if (G.allout[t] && av[t] >= foe * ALLOUT.off) { G.allout[t] = false; alloutNotice(t, false); alloutRally(t, false); }
+  }
+  for (const pl of G.players) if (pl.hq && pl.hq.alive && pl.lastStand == null && G.time > 30 && pl.hq.hp < pl.hq.T.hp * LAST_STAND.hp) lastStand(pl, av[1 - pl.team], av[pl.team]);
 }
 
 // ---- ② 국가별 지휘관 스킬
@@ -6306,7 +6434,7 @@ const NATION_SKILL = { ROK: 'barrage', DPRK: 'humanwave', CHN: 'cheap', JPN: 're
 const skillOf = pl => SKILLS[NATION_SKILL[pl.nation] || 'barrage'];
 const skillId = pl => NATION_SKILL[pl.nation] || 'barrage';
 const buff = (pl, k) => pl.buffs && pl.buffs[k] > 0;
-const costOf = (pl, c, type) => { let k = buff(pl, 'cheap') ? 0.7 : 1; if (pl.id === ME && G.pol && G.pol.has('mil2') && type && (['tank', 'mech'].includes(type) || TYPES[type].unique)) k *= 0.85;
+const costOf = (pl, c, type) => { let k = (buff(pl, 'cheap') ? 0.7 : 1) * (G && G.allout && G.allout[pl.team] ? ALLOUT.cost : 1); if (pl.id === ME && G.pol && G.pol.has('mil2') && type && (['tank', 'mech'].includes(type) || TYPES[type].unique)) k *= 0.85;
   return k === 1 ? c : { m: Math.round(c.m * k), i: Math.round(c.i * k) }; };
 let skillAim = false;
 // ================= 포격 예고 조준원 (기획서 §43): 줄어드는 조준원 · 적은 빨강 · 사이렌 · 1배속 복귀 · 피하면 메달 =================
@@ -6381,7 +6509,7 @@ const SALVAGE_RATE = 0.3, SALVAGE_HOT = 2.5, SALVAGE_LIFE = 60;   // 잔해 회�
 function useSkill(pl, x, y) {
   const id = skillId(pl), S = SKILLS[id];
   if (pl.skillCD > 0 || !pl.hq.alive) return false;
-  pl.skillCD = S.cd * (pl.id === ME && G.mods.skillCd ? G.mods.skillCd : 1) * (pl.id === ME && G.pol && G.pol.has('mil3') ? 0.75 : 1);
+  pl.skillCD = pl.skillMax = S.cd * (pl.id === ME && G.mods.skillCd ? G.mods.skillCd : 1) * (pl.id === ME && G.pol && G.pol.has('mil3') ? 0.75 : 1);
   pl.skillUses = (pl.skillUses || 0) + 1; (G.skillLog ||= []).push({ t: G.time, team: pl.team });
   const foe = 1 - pl.team, strike = (sx, sy, delay, r = 42) => G.strikes.push({ x: sx, y: sy, t: delay, r, team: pl.team, src: pl.hq });
   switch (id) {
@@ -6407,13 +6535,13 @@ function useSkill(pl, x, y) {
 }
 function startSkill() {   // 버튼/F키: 지정형 스킬은 지도 클릭 대기
   const pl = me(), S = skillOf(pl);
-  if (pl.skillCD > 0) { toast(`${S.icon} ${S.name} 재사용까지 ${Math.ceil(pl.skillCD)}초`); return; }
+  if (pl.skillCD > 0) { toast(`${S.icon} ${S.name} 지휘 게이지 ${gaugePct(pl)}% — 부대를 잃으면 4배 빨리 찹니다`); return; }
   if (S.target) { skillAim = true; attackMode = false; placing = null; setMode(`${S.icon} ${S.name}: 지도에서 지점을 클릭 (우클릭/Esc 취소)`); return; }
   if (isGuest()) relay({ k: 'cmd', c: 'skill' }); else useSkill(pl);
 }
 function updateSkills(dt) {
   for (const pl of G.players) {
-    pl.skillCD = Math.max(0, (pl.skillCD || 0) - dt);
+    gaugeAdd(pl, dt * GAUGE.rate * (G.points && G.points.some(p => p.core && p.owner === pl.team) ? GAUGE.core : 1));   // 기본 충전은 느리게 (게이지 0.6/초 · 중앙 거점 ×1.5)
     for (const k in pl.buffs) pl.buffs[k] = Math.max(0, pl.buffs[k] - dt);
   }
   for (const s of G.strikes) {   // 포격·폭격 착탄
@@ -7987,7 +8115,7 @@ function update(dt) {
   G.visT -= dt; if (G.visT <= 0) { G.visT = 0.2; updateVisibility(); }
   G.aiT -= dt; if (G.aiT <= 0) { G.aiT = 1; for (const pl of G.players) if (pl.ctrl === 'ai') aiThink(pl); }
   updateEconomy(dt);
-  updatePoints(dt); updateCrates(dt); updateSkills(dt); checkObjective(dt); updateTutorial(); sampleArmy(dt);
+  updatePoints(dt); updateCrates(dt); updateSkills(dt); updateComeback(dt); checkObjective(dt); updateTutorial(); sampleArmy(dt);
   for (const u of G.units) { if (u.dropT > 0) u.dropT -= dt; if (u.alive) updateMorale(u, dt); }
   updateSupply(dt); updateMedics(dt); updateTeller(dt); updateOps(dt); updateCalls(dt); updateTask(dt); updateAirDefense(dt);
   for (const u of G.units) {   // 숲 매복: 숲에서 2초 동안 움직이지도 쏘지도 않으면 매복 상태
@@ -8044,8 +8172,9 @@ function update(dt) {
   }
   else if (G.time >= G.timeLimit) {   // 시간 종료: 본부 피해 → 격파 수 순으로 판정
     const hpOf = t => G.players.filter(p => p.team === t).reduce((a, p) => a + Math.max(0, p.hq.hp), 0);
-    const mine = hpOf(myTeam), foe = hpOf(1 - myTeam), k0 = G.ukills[myTeam], k1 = G.ukills[1 - myTeam];
-    if (mine !== foe) endGame(mine > foe, `시간 종료 — 본부 체력 ${Math.ceil(mine)} : ${Math.ceil(foe)}`);
+    const mine = hpOf(myTeam), foe = hpOf(1 - myTeam), k0 = G.ukills[myTeam], k1 = G.ukills[1 - myTeam], ch = G.coreHold || [0, 0], c0 = Math.floor(ch[myTeam]), c1 = Math.floor(ch[1 - myTeam]);
+    if (c0 !== c1) endGame(c0 > c1, `시간 종료 — 결전 중 중앙 확보 ${c0}초 : ${c1}초`);
+    else if (mine !== foe) endGame(mine > foe, `시간 종료 — 본부 체력 ${Math.ceil(mine)} : ${Math.ceil(foe)}`);
     else if (k0 !== k1) endGame(k0 > k1, `시간 종료 — 격파 ${k0} : ${k1}`);
     else endGame(null, '시간 종료 — 무승부');
   }

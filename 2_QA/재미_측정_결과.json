@@ -1,0 +1,33 @@
+{
+ "about": "기획서 §45.5 재미 지표 기록 (npm run test:fun)",
+ "history": [
+  {
+   "label": "§45 이전 (803fd44)",
+   "games": 240,
+   "seeds": "1~240",
+   "comebackWin": 16.6,
+   "centerDeath": 64.2,
+   "lead3Win": 87.9,
+   "flips": 1.2,
+   "finalFlip": 14.6,
+   "avgLen": 417,
+   "timeout": 26.2,
+   "blueWin": 69.2,
+   "date": "2026-11-04"
+  },
+  {
+   "label": "§45 1단계 (중앙 · 역전)",
+   "games": 240,
+   "seeds": "1~240",
+   "comebackWin": 24.9,
+   "centerDeath": 63.2,
+   "lead3Win": 80.8,
+   "flips": 1.2,
+   "finalFlip": 7.1,
+   "avgLen": 488,
+   "timeout": 43.8,
+   "blueWin": 57.1,
+   "date": "2026-11-04"
+  }
+ ]
+}

@@ -12,6 +12,7 @@
     "dev": "node --watch 4_서버/server.js",
     "test": "node --test 2_QA/서버_테스트/*.test.js",
     "test:auth": "node 2_QA/브라우저_테스트/회원가입_로그인_e2e.mjs",
-    "test:game": "node 2_QA/브라우저_테스트/게임_회귀.mjs"
+    "test:game": "node 2_QA/브라우저_테스트/게임_회귀.mjs",
+    "test:fun": "node 2_QA/브라우저_테스트/재미_측정.mjs"
   }
 }

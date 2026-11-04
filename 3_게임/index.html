@@ -1693,7 +1693,7 @@ function makePlayers(setup) {
 }
 let UID = 1;
 function makeUnit(pl, type, x, y) {
-  let T = TYPES[type]; const a = pl.team ? Math.PI : 0;
+  let T = docType(pl, type); const a = pl.team ? Math.PI : 0;
   if (T.unique && pl.nation && UNIQUE[pl.nation]) T = { ...T, name: UNIQUE[pl.nation][1] };   // 나라별 고유 유닛 이름
   return { id: UID++, owner: pl.id, team: pl.team, type, T, x, y, hp: T.hp, ang: T.building ? 0 : a, tur: a, orders: [], path: null, pi: 0,
     cpath: null, cpi: 0, forced: null, auto: null, reload: Math.random() * (T.reload || 1), acqT: Math.random() * 0.3, repathT: 0, nearT: 0,
@@ -1787,7 +1787,7 @@ function doUnload() {
   if (isGuest()) relay({ k: 'cmd', c: 'unload', id: b.id }); else unloadBunker(b);
 }
 function queueAt(pl, b, type) {
-  const T = TYPES[type];
+  const T = docType(pl, type);
   pay(pl, costOf(pl, T.cost, type)); b.queue.push(type);
   if (b.queue.length === 1) b.prodT = T.build;
 }
@@ -1806,7 +1806,7 @@ function queueUnit(pl, type) {
 function doQueue(t) {   // 생산 주문 (게스트는 호스트에게 요청)
   if (!isGuest()) return queueUnit(me(), t);
   const T = TYPES[t];
-  if (!afford(me(), costOf(me(), T.cost))) return toast(`자원이 부족합니다 (${T.name})`);
+  if (!afford(me(), costOf(me(), T.cost, t))) return toast(`자원이 부족합니다 (${T.name})`);
   relay({ k: 'cmd', c: 'queue', type: t });
 }
 function freeSquad(pl) {   // 보급 상자 보상: 무작위 부대 1개가 본부 앞에 무료 도착
@@ -1835,16 +1835,17 @@ function updateEconomy(dt) {
     const pl = G.players[b.owner];
     b.prodT -= dt * (buff(pl, 'mobilize') ? 2 : 1) * (pl.id === ME && G.pol && G.pol.has('eco3') ? 1.25 : 1); if (b.prodT > 0) continue;
     const type = b.queue.shift(), T = TYPES[type];
-    const base = Math.atan2(pl.rally.y - b.y, pl.rally.x - b.x);
+    const o = (T.move !== 'air' && fwdBase(pl)) || b;   // §45 요새 교리: 가장 앞 벙커(전방 진지)에서 출격
+    const base = Math.atan2(pl.rally.y - o.y, pl.rally.x - o.x);
     for (let k = 0; k < 30; k++) {
-      const a = base + rnd(-1.2, 1.2), r = b.T.r + rnd(22, 36), x = b.x + Math.cos(a) * r, y = b.y + Math.sin(a) * r;
+      const a = base + rnd(-1.2, 1.2), r = o.T.r + rnd(22, 36), x = o.x + Math.cos(a) * r, y = o.y + Math.sin(a) * r;
       if (!passXY(T.move, x, y)) continue;
       const u = makeUnit(pl, type, x, y); u.ang = u.tur = a; G.units.push(u); if (pl.id === ME) bubble(u, 'spawn');
       issue(u, { kind: 'move', x: pl.rally.x + rnd(-25, 25), y: pl.rally.y + rnd(-25, 25) }, false);
       assignCo(u);
       break;
     }
-    if (b.queue.length) b.prodT = TYPES[b.queue[0]].build;
+    if (b.queue.length) b.prodT = docType(pl, b.queue[0]).build;
   }
 }
 
@@ -1886,7 +1887,7 @@ function moveStep(u, tx, ty, dt) {
     u.ang += clamp(df, -turn, turn);
     if (Math.abs(df) > 0.9) { if (mv === 'track') { u.moving = true; if (u.T.indirect) u.dep = 0; return d; } k = 0.35; }   // 궤도차는 제자리 선회
   } else u.ang += clamp(angDiff(u.ang, want), -8 * dt, 8 * dt);
-  const mo = u.orders[0] && u.orders[0].march, blitz = (mv !== 'foot' && buff(G.players[u.owner], 'blitz') ? 1.5 : 1) * (u.carry ? 0.8 : 1) * opSpeed(u) * (mo && !u.returning ? Math.min(1, mo.vcap * 1.05 / u.T.speed) : 1);   // 행군 중엔 가장 느린 부대 속도에 맞춤
+  const mo = u.orders[0] && u.orders[0].march, blitz = (mv !== 'foot' && buff(G.players[u.owner], 'blitz') ? 1.5 : 1) * (u.brkT > G.time ? 1.3 : 1) * (u.carry ? 0.8 : 1) * opSpeed(u) * (mo && !u.returning ? Math.min(1, mo.vcap * 1.05 / u.T.speed) : 1);   // 행군 중엔 가장 느린 부대 속도에 맞춤
   const step = Math.min(u.T.speed * k * blitz * guardSlow(u) * terrainFactor(u, dx / d, dy / d) * dt, d);
   const a = TURN[mv] ? u.ang : want;
   const nx = u.x + Math.cos(a) * step, ny = u.y + Math.sin(a) * step;
@@ -1980,9 +1981,10 @@ function fire(u, t) {
   if (t.moving) p -= 0.1;
   if (t.T.armor === 'soft' && slopeAt(t.x, t.y) > G.THR * 0.6) p -= 0.12;   // 급경사 = 엄폐
   if (t.inTrench) p -= 0.15;   // 참호 안: 맞추기 어려움
+  if (T.indirect && docOf(G.players[u.owner]) === 'fire' && G.units.some(v => v.alive && v.team === u.team && (v.type === 'eng' || v.type === 'mech') && Math.hypot(v.x - t.x, v.y - t.y) < v.T.vision)) p += 0.15;   // §45 화력 교리: 관측 사격
   if (t.T.building) p = 0.95;
   p = clamp(p, 0.1, 0.95);
-  let dmg = T.dmg[t.T.armor] * (1 + clamp(dh / 150, 0, 0.3)) * lvMul(u) * (buff(G.players[u.owner], 'rally') ? 1.3 : 1) * (u.owner === ME && G.mods.dmg ? G.mods.dmg : 1) * (u.noSup ? 0.8 : 1) * (hasPol(u, 'mil1') ? 1.1 : 1) * opDmg(u, t) * ((T.bonus && T.bonus[roleOf(t.type)]) || 1) * counterMul(u.type, t.type);
+  let dmg = T.dmg[t.T.armor] * (1 + clamp(dh / 150, 0, 0.3)) * lvMul(u) * (buff(G.players[u.owner], 'rally') ? 1.3 : 1) * (u.owner === ME && G.mods.dmg ? G.mods.dmg : 1) * (u.noSup ? 0.8 : 1) * (hasPol(u, 'mil1') ? 1.1 : 1) * opDmg(u, t) * docAtk(u, t) * ((T.bonus && T.bonus[roleOf(t.type)]) || 1) * counterMul(u.type, t.type);
   p += 0.03 * (lvOf(u) - 1);
   if (u.ambush) {   // 숲 매복 기습: 첫 사격 피해 ×1.5, 쏘고 나면 위치가 드러남
     dmg *= 1.5; u.ambush = false; u.stillT = 0;
@@ -2018,6 +2020,7 @@ function damage(t, dmg, src) {
   if (!t.T.building && t.T.move !== 'air') { const tl = tileAt(t.x, t.y); if (tl.def) dmg *= tl.def; }   // 숲·언덕·바위 엄폐
   if (t.routing) dmg *= 1.2;
   if (t.T.tough) dmg *= t.T.tough;   // 특수무기: 받는 피해 감소
+  dmg *= docDef(t, src);   // §45 교리: 물량은 포격에 약함 · 항공은 헬기 편대 보호
   if (t.dug >= 3 && !t.moving) dmg *= 0.75;   // 거점 사수: 진지 구축 완료
   if (G.allout && G.allout[t.team]) { const h = G.players[t.owner].hq; if (h && h.alive && Math.hypot(t.x - h.x, t.y - h.y) < ALLOUT.r) dmg *= ALLOUT.def; }   // §45 총동원: 본부 근처 받는 피해 -25%
   if (!(t.hpLagT > 0)) t.hpG = Math.max(t.hp, t.hpG || 0); t.hpLagT = 0.3;   // 깎인 체력이 0.3초 남았다가 빠짐
@@ -2057,6 +2060,7 @@ function damage(t, dmg, src) {
       if (bounty && kp !== owner && kp.id === ME) toast(`💰 현상금! ${unitName(t)} 격파 — 지휘 게이지 +${GAUGE.bounty} · 잔해 2배`);
     }
     if (t.type === 'hq') hqBoom(t);
+    if (!t.T.building && !t.T.flat) docOnKill(t, src);
     if (t.crew) ejectCrew(t, 0.3);
     if (!t.T.building && !t.T.flat) for (const v of G.units) if (v.alive && v.team === t.team && v !== t && !v.T.building && dist(v, t) < 150) moraleHit(v, 12);   // 옆 부대 전멸 → 사기 하락
     if (t.owner === ME && !t.T.flat) notify(`💀 ${unitName(t)} ${t.T.building ? '파괴' : '전멸'}`, t.x, t.y);
@@ -2088,7 +2092,7 @@ function updateUnit(u, dt) {
   if (u.T.jet) { updateJet(u, dt); return; }
   if (u.T.building) {
     if (!u.built) {   // 건설 중
-      const work = (u.T.needEng && !u.selfBuild ? (u.engWork || 0) : dt) * (u.owner === ME && G.mods.build ? G.mods.build : 1); u.engWork = 0;
+      const work = (u.T.needEng && !u.selfBuild ? (u.engWork || 0) : dt) * (u.owner === ME && G.mods.build ? G.mods.build : 1) * (docOf(G.players[u.owner]) === 'fort' ? 2 : 1); u.engWork = 0;
       u.bprog += work / u.T.build; u.hp = Math.min(u.T.hp, u.hp + u.T.hp * 0.85 * work / u.T.build);
       if (u.bprog >= 1) { u.built = true; if (u.type === 'bunker') garrison(u); if (u.T.roadOk) markVB(u, 1); if (G.players[u.owner].ctrl === 'human') { toast(`${u.T.name} 완성!`); sfx('done'); if (u.owner === ME) { dailyAdd('build'); notify(`🏗️ ${u.T.name} 완성`, u.x, u.y); } } }
       return;
@@ -2237,7 +2241,7 @@ function updateVisibility() {
     if (!s) for (const p of us) {
       const dd = dist(p, e), vis = (p.T.vision + (tileAt(p.x, p.y).vision || 0)) * visionMul();
       if (p.team !== t || dd > vis) continue;
-      if (!e.T.building && e.T.move !== 'air' && (e.T.stealth || e.ambush || tileAt(e.x, e.y).conceal) && dd > (e.ambush ? 60 : e.T.stealth ? 90 : 110)) continue;   // 숲·은신·매복: 가까이 와야 보임 (매복은 60)
+      if (!e.T.building && e.T.move !== 'air' && (e.T.stealth || e.ambush || tileAt(e.x, e.y).conceal) && dd > (e.ambush || guerHide(e) ? (guerHide(e) ? 50 : 60) : e.T.stealth ? 90 : 110)) continue;   // §45 게릴라: 숲에서 멈춰 있으면 50 안에서만 보임   // 숲·은신·매복: 가까이 와야 보임 (매복은 60)
       if (canSee(p, e)) { s = true; break; }
     }
     e.seen[t] = s;
@@ -2250,6 +2254,7 @@ function aiRollType(pl, options) {
   const W = { eng: 1, mech: seenHeli ? 4.5 : 2.5, tank: 3, art: 1.2, heli: 1.5, jet: G.time > 180 && !pl.apDown && G.units.filter(v => v.alive && v.owner === pl.id && v.T.jet).length < 3 ? 1.1 : 0 };   // AI 전투기는 3대까지 if (uniqueOf(pl)) W[uniqueOf(pl)] = 2;
   const foes = G.units.filter(e => e.alive && e.team !== pl.team && e.seen[pl.team] && !e.T.building);
   if (foes.length) for (const k in W) W[k] *= 0.5 + foes.reduce((a, e) => a + counterMul(k, e.type), 0) / foes.length;   // 상성 좋은 병종 우대
+  const DW = (DOCTRINES[docOf(pl)] || {}).ai; if (DW) for (const k in DW) if (W[k] != null) W[k] *= DW[k];   // §45 교리별 생산 성향
   let r = Math.random() * options.reduce((a, k) => a + W[k], 0);
   for (const k of options) { r -= W[k]; if (r <= 0) return k; }
   return options[0];
@@ -2268,10 +2273,10 @@ function aiThink(pl) {
   // 1) 생산: 공병 2명 유지, 나머지는 다음 유닛을 정해두고 자원이 모이면 주문
   const engs = own('eng');
   if (hq.queue.length < 2) {
-    if (engs.length < 3 && !hq.queue.includes('eng')) { if (afford(pl, costOf(pl, TYPES.eng.cost))) queueAt(pl, hq, 'eng'); }
+    if (engs.length < 3 && !hq.queue.includes('eng')) { if (afford(pl, costOf(pl, TYPES.eng.cost, 'eng'))) queueAt(pl, hq, 'eng'); }
     else {
       if (!pl.aiNext) pl.aiNext = aiRollType(pl, unitsOf(pl).filter(t => t !== 'eng'));
-      if (afford(pl, costOf(pl, TYPES[pl.aiNext].cost))) { queueAt(pl, hq, pl.aiNext); pl.aiNext = null; }
+      if (afford(pl, costOf(pl, TYPES[pl.aiNext].cost, pl.aiNext))) { queueAt(pl, hq, pl.aiNext); pl.aiNext = null; }
     }
   }
   // 2) 공병: 기지 앞에서 벙커로 변신, 다리에 전차 방어선, 길목에 지뢰
@@ -2279,7 +2284,7 @@ function aiThink(pl) {
   const freeEng = engs.filter(u => !u.orders.length && !u.xformAt);
   if (freeEng.length && G.time > 60) {
     const plan = own('atwall').length < 1 && G.time > 150 && pl.money >= 200 && Math.random() < 0.3 ? 'atwall'
-      : own('bunker').length < 2 && pl.money >= 180 && pl.iron >= 70 ? 'bunker'
+      : own('bunker').length < ((DOCTRINES[docOf(pl)] || {}).bunkers || 2) && pl.money >= 180 && pl.iron >= 70 ? 'bunker'
       : own('landmine').length < 6 && afford(pl, TYPES.landmine.cost) && Math.random() < 0.4 ? 'landmine' : null;
     if (plan) for (let k = 0; k < 25; k++) {
       const a = toE + rnd(-0.9, 0.9), r = plan === 'landmine' ? rnd(320, 520) : rnd(150, 260);
@@ -2758,14 +2763,15 @@ const OPENERS = {
   air:      { icon: '🚁', name: '항공', pitch: '하늘을 잡아라. 헬기는 기갑부대·포병의 천적', units: ['heli'], m: 0, i: 150,
               lines: [['plus', '헬기 1기 즉시 배치'], ['plus', '철광 +150'], ['minus', '방공에 약함']] },
 };
-const OPENER_KEYS = ['blitz', 'industry', 'air'];
+const OPENER_KEYS = ['blitz', 'industry', 'doc'];   // 3번째 = 내 교리 카드 (§45, 예전 '항공')
+OPENERS.doc = { icon: '🎖️', name: '교리', pitch: '', units: [], m: 0, i: 0, lines: [] };   // 자리표시 — 실제 내용은 openerOf()
 const openerOK = () => !G.tutorial && !G.net && !G.story && !(G.obj && G.obj.type === 'survive');
 let openerWasPaused = false;
 function showOpener() {
   G.opener = {}; openerWasPaused = G.paused; G.paused = true;
   for (const pl of G.players) if (pl.ctrl === 'ai') G.opener[pl.id] = aiOpener(pl);   // 적·아군 AI는 바로 고름
-  const foe = G.players.find(p => p.team !== me().team && p.ctrl === 'ai'), fo = foe && OPENERS[G.opener[foe.id]];
-  $('opCards').innerHTML = OPENER_KEYS.map((k, i) => { const O = OPENERS[k];
+  const foe = G.players.find(p => p.team !== me().team && p.ctrl === 'ai'), fo = foe && openerOf(foe, G.opener[foe.id]);
+  $('opCards').innerHTML = OPENER_KEYS.map((k, i) => { const O = openerOf(me(), k);
     return `<button class="op-c" data-op="${k}"><span class="k">${i + 1}</span><div class="ic">${O.icon}</div><h3>${tt(O.name)}</h3><p>${tt(O.pitch)}</p><ul>${O.lines.map(l => `<li class="${l[0]}">${l[0] === 'minus' ? '▼' : '▲'} ${tt(l[1])}</li>`).join('')}</ul></button>`; }).join('');
   $('opFoe').textContent = fo ? `${tt('적은 이미 골랐습니다')} — ${tt('정찰 보고')}: ${fo.icon} ${tt(fo.name)}?` : '';
   if (fo && Math.random() < 0.35) $('opFoe').textContent = `${tt('적의 선택은 아직 알 수 없습니다')}`;   // 정찰이 늘 맞지는 않음: 가끔은 숨김
@@ -2782,18 +2788,18 @@ function pickOpener(k) {
   $('opener').classList.remove('on'); G.paused = openerWasPaused;
   G.opener[ME] = k;
   for (const pl of G.players) if (G.opener[pl.id]) applyOpener(pl, G.opener[pl.id]);
-  const O = OPENERS[k], foe = G.players.find(p => p.team !== me().team && p.ctrl === 'ai'), fo = foe && OPENERS[G.opener[foe.id]];
+  const O = openerOf(me(), k), foe = G.players.find(p => p.team !== me().team && p.ctrl === 'ai'), fo = foe && openerOf(foe, G.opener[foe.id]);
   sfx('levelup'); showMissionFlash();
   setTimeout(() => showBanner(`${O.icon} ${tt(O.name)}`, fo ? `${tt('적의 오프너')}: ${fo.icon} ${tt(fo.name)}` : ''), 4300);   // 작전 개시 화면이 끝난 뒤 공개
 }
 function applyOpener(pl, k) {
-  const O = OPENERS[k], hq = pl.hq; if (!O || !hq) return;
+  const O = openerOf(pl, k), hq = pl.hq; if (!O || !hq) return;
   pl.money = Math.max(0, pl.money + O.m); pl.iron = Math.max(0, pl.iron + O.i);
   const toC = Math.atan2(WH / 2 - hq.y, WW / 2 - hq.x);   // 맵 가운데 쪽 본부 앞에 배치
   O.units.forEach((type, n) => {
     const T = TYPES[type];
     for (let tries = 0; tries < 40; tries++) {
-      const b = toC + (n - (O.units.length - 1) / 2) * 0.45 + rnd(-0.25, 0.25), r = hq.T.r + 70 + rnd(0, 30);
+      const b = toC + (n - (O.units.length - 1) / 2) * (O.fwd ? 0.12 : 0.45) + rnd(-0.25, 0.25) * (O.fwd ? 0.3 : 1), r = O.fwd ? Math.hypot(WW / 2 - hq.x, WH / 2 - hq.y) * O.fwd + rnd(-20, 20) * (tries / 10 + 1) : hq.T.r + 70 + rnd(0, 30);
       const x = hq.x + Math.cos(b) * r, y = hq.y + Math.sin(b) * r;
       if (!passXY(T.move, x, y)) continue;
       const u = makeUnit(pl, type, x, y); u.ang = u.tur = toC; u.built = true; G.units.push(u);
@@ -2935,7 +2941,9 @@ function updateHUD() {
     const n = mineB.reduce((a, b) => a + b.queue.filter(q => q === t).length, 0);
     $('q_' + t).textContent = n ? '×' + n : '';
     const has = mineB.some(b => b.type === TYPES[t].from && b.built);
-    document.querySelector(`.ub[data-t="${t}"]`).classList.toggle('no', !has || raidLocked(t) || !afford(pl, costOf(pl, TYPES[t].cost)));
+    const ubE = document.querySelector(`.ub[data-t="${t}"]`), C = costOf(pl, TYPES[t].cost, t), ct = `💰${C.m}${C.i ? ' ⛏️' + C.i : ''}`, cs = ubE.querySelector('.c');
+    if (cs && cs.textContent !== ct) cs.textContent = ct;   // 교리 · 총동원 · 물량 생산으로 바뀐 비용 표시
+    ubE.classList.toggle('no', !has || raidLocked(t) || !afford(pl, C));
   }
   updateTouchBar();
   const engSel = selected().some(u => u.T.builder);
@@ -5302,7 +5310,9 @@ function natIntro(nat, compact) {   // 국가 소개 카드: 특수무기 그림
   const AR0 = NAT_ARMY[nat], AL = NAT_ARMY_L[nat], li = { en: 0, zh: 2, ja: 4 }[LANG], AR = AR0 && AL && li != null ? [AL[li], AL[li + 1]] : AR0;
   const HE = NAT_HERO[nat], hl = HE && (HE[{ ko: 1, en: 2, zh: 3, ja: 4 }[LANG] || 1]);
   const hero = HE ? `<div class="nhero"><img class="nh-face" src="${heroPortrait(nat)}" alt="${(HERO_LOOK[nat] || [])[7] || ''}"><div><small class="nh-k">${LL('대표 위인 · 지도자', 'Famous figure', '代表人物', '代表的偉人')}</small><b>${hl[0]}</b><small>${hl[1]}</small></div></div>` : '';
-  return (AR ? `<div class="narmy"><b>🎖️ ${tt(N.name + '군')} — ${AR[0]}</b><small>💪 ${tt('장점')}: ${AR[1]}</small></div>` : '') + hero + `<div class="nintro${compact ? ' c' : ''}"><img src="${unitIcon(uq[0], nat)}" alt=""><div><b>${compact ? '' : `${N.flag} ${N.name}군 특수무기 · `}${uq[1]}</b>
+  const D = DOCTRINES[DOC_NAT[nat]];
+  const doc = D ? `<div class="narmy"><b>${D.icon} ${tt('교리')}: ${tt(D.name)} — ${tt(D.line)}</b><small>▲ ${D.plus}</small><small>▼ ${D.minus}</small><small>✦ ${D.special}</small></div>` : '';
+  return doc + (AR ? `<div class="narmy"><b>🎖️ ${tt(N.name + '군')} — ${AR[0]}</b><small>💪 ${tt('장점')}: ${AR[1]}</small></div>` : '') + hero + `<div class="nintro${compact ? ' c' : ''}"><img src="${unitIcon(uq[0], nat)}" alt=""><div><b>${compact ? '' : `${N.flag} ${N.name}군 특수무기 · `}${uq[1]}</b>
     <span class="tr">✦ ${T.trait}</span><small>${T.desc}</small>${compact || !sk ? '' : `<small class="sk">🎖️ 지휘관 스킬: ${sk.icon} ${sk.name} — ${sk.desc}</small>`}</div></div>`;
 }
 function slotNation() { const rec = loadRec(), st = rec.slots[slotSel]; return st ? st.nation : (slotPick || myNation()); }
@@ -6302,6 +6312,92 @@ function updateCrates(dt) {
   if (sd && !G.sudden) { G.sudden = true; showBanner('⚔️ 결전!', FINAL_SUB()); sfx('alert'); notify('⚔️ 결전 — 중앙을 잡아라', WW / 2, WH / 2); }
 }
 
+// ---- §45 원칙 ①: 나라 = 6개 교리 (군대의 성격 · 능력치 · 생산 성향 · 교리 전용 효과 · 오프너 카드). 특수무기는 나라별로 그대로
+const DOCTRINES = {
+  armor: { icon: '⚙️', name: '기갑 돌파', line: '두꺼운 철판으로 정면을 뚫는다', plus: '돌파 효과 · 기갑부대 위주 편성', minus: '기갑부대 철광 +60 · 포병 사거리 -10%', special: '돌파: 기갑부대가 적 부대를 전멸시키면 6초간 속도 +30%',
+    mods: { tank: { costI: 60 }, art: { rangeK: 0.9 } }, ai: { tank: 1.6, heli: 0.8 } },
+  mass: { icon: '🏭', name: '물량', line: '잃어도 또 온다', plus: '보병부대 비용 -20% · 공병 -25% · 모든 생산 시간 -10%', minus: '모든 공격력 -20% · 포격 · 폭격에 받는 피해 +15%', special: '예비군: 부대를 6개 잃을 때마다 보병부대 1개 무료 출격',
+    mods: { mech: { cost: 0.8 }, eng: { cost: 0.75 }, all: { build: 0.9 } }, ai: { mech: 1.8, eng: 1.3, tank: 0.8 }, atk: 0.8, vuln: 1.15 },
+  fire: { icon: '🎯', name: '화력', line: '보이면 맞는다', plus: '포병 전개 시간 절반 · 사거리 +15% · 체력 +40% · 비용 -40% · 기갑부대 체력 +5%', minus: '보병부대 사거리 -10 · 포병 위주 편성', special: '관측 사격: 아군 공병 · 보병부대가 본 적에게 포병 명중 +15%',
+    mods: { art: { deploy: 0.5, rangeK: 1.15, cost: 0.6, hp: 1.4 }, tank: { hp: 1.05 }, mech: { range: -10 } }, ai: { art: 1.6, mech: 1.2 } },
+  air: { icon: '🚁', name: '항공', line: '하늘을 잡는 쪽이 이긴다', plus: '헬기 비용 -30% · 시야 +30% · 전투기 재무장 18 → 12초', minus: '기갑부대 체력 -5%', special: '제공권: 헬기 2기 이상이 함께 있으면 받는 피해 -15%',
+    mods: { heli: { cost: 0.7, vision: 1.3 }, jet: { rearm: 12 }, tank: { hp: 0.95 } }, ai: { heli: 2.2, jet: 1.6, tank: 0.8 }, airsup: 0.85 },
+  guer: { icon: '🌿', name: '기동 게릴라', line: '숨고, 치고, 빠진다', plus: '보병부대 속도 +15% · 공병 +25% · 지뢰 반값 · 숲에서 멈춰 있으면 은신', minus: '기갑부대 비용 +30% · 구조물 체력 -20%', special: '매복: 적에게 보이지 않는 상태에서 쏘면 피해 ×1.3',
+    mods: { mech: { speed: 1.15 }, eng: { speed: 1.25 }, landmine: { cost: 0.5 }, tank: { cost: 1.3 }, bunker: { hp: 0.8 }, atwall: { hp: 0.8 } }, ai: { mech: 1.7, tank: 0.7, heli: 1.2 }, ambush: 1.3 },
+  fort: { icon: '🏰', name: '요새', line: '한 발짝씩 진지를 밀고 나간다', plus: '공병 건설 2배 · 벙커 비용 -40% · 체력 +30% · 대공 2배 · 본부 체력 +20% · 기갑 · 보병부대 체력 +10%', minus: '헬기 비용 +10%', special: '전방 진지: 본부보다 앞에 지은 벙커가 있으면 새 부대가 그곳에서 출격',
+    mods: { bunker: { hp: 1.3, airK: 2, cost: 0.6 }, hq: { hp: 1.2, airK: 1.5 }, heli: { cost: 1.1 }, tank: { hp: 1.1 }, mech: { hp: 1.1 } }, ai: { eng: 1.6, art: 1.3, heli: 0.7 }, bunkers: 2 },
+};
+const DOC_NAT = { DEU: 'armor', POL: 'armor', ITA: 'armor', IND: 'armor', ARG: 'armor', ZAF: 'armor',
+  RUS: 'mass', CHN: 'mass', DPRK: 'mass', MEX: 'mass', BRA: 'mass', NGA: 'mass',
+  ROK: 'fire', UKR: 'fire', SWE: 'fire', NZL: 'fire',
+  JPN: 'air', GBR: 'air', TUR: 'air', USA: 'air', AUS: 'air',
+  VNM: 'guer', IDN: 'guer', MNG: 'guer', KEN: 'guer', MAR: 'guer', PNG: 'guer',
+  FRA: 'fort', GRC: 'fort', ESP: 'fort', SAU: 'fort', CAN: 'fort', EGY: 'fort' };
+const docOf = pl => pl && DOC_NAT[pl.nation];
+const docReset = () => { for (const k in DOC_CACHE) delete DOC_CACHE[k]; };   // 교리 수치를 바꾼 뒤 (측정 실험용)
+const DOC_CACHE = {};
+const baseRole = type => (TYPES[type] && ROLE[TYPES[type].base]) || roleOf(type);
+function docType(pl, type) {   // 교리 보정을 받은 병종 능력치 (교리별로 한 번만 만들어 둠)
+  const T0 = TYPES[type], d = docOf(pl); if (!T0 || !d) return T0;
+  const key = d + ':' + type; if (DOC_CACHE[key]) return DOC_CACHE[key];
+  const M = DOCTRINES[d].mods, m = { ...(!T0.building && M.all || {}), ...(M[type] || (TYPES[type].base ? M[baseRole(type)] : null) || {}) };
+  if (!Object.keys(m).length) return (DOC_CACHE[key] = T0);
+  const T = { ...T0, cost: T0.cost ? { ...T0.cost } : T0.cost };
+  if (m.hp) T.hp = Math.round(T.hp * m.hp);
+  if (m.range && T.range) T.range += m.range; if (m.rangeK && T.range) T.range = Math.round(T.range * m.rangeK);
+  if (m.speed && T.speed) T.speed *= m.speed; if (m.deploy && T.deploy) T.deploy *= m.deploy; if (m.vision) T.vision = Math.round(T.vision * m.vision);
+  if (m.rearm && T.rearm) T.rearm = m.rearm; if (m.build && T.build) T.build *= m.build;
+  if (m.airK && T.dmg) { T.dmg = { ...T.dmg, air: T.dmg.air * m.airK }; T.maxd = Math.max(...Object.values(T.dmg)); }
+  if (T.cost && m.cost) T.cost = { m: Math.round(T.cost.m * m.cost), i: Math.round(T.cost.i * m.cost) }; if (T.cost && m.costI) T.cost.i += m.costI;
+  return (DOC_CACHE[key] = T);
+}
+function docAtk(u, t) {   // 공격하는 쪽 교리 보정
+  const d = docOf(G.players[u.owner]); let k = 1;
+  const D = DOCTRINES[d]; if (!D) return 1;
+  if (D.atk) k *= D.atk;
+  if (D.ambush && !u.T.building && !u.seen[t.team]) k *= D.ambush;   // 매복: 상대에게 안 보일 때 첫 사격
+  return k;
+}
+function docDef(t, src) {   // 맞는 쪽 교리 보정
+  const d = docOf(G.players[t.owner]); let k = 1;
+  const D = DOCTRINES[d]; if (!D) return 1;
+  if (D.vuln && !t.T.building && (G.curBarrage || (src && src.T && (src.T.indirect || src.T.jet)))) k *= D.vuln;
+  if (D.airsup && baseRole(t.type) === 'heli' && G.units.some(v => v !== t && v.alive && v.team === t.team && baseRole(v.type) === 'heli' && Math.hypot(v.x - t.x, v.y - t.y) < 120)) k *= D.airsup;
+  return k;
+}
+const guerHide = e => !e.T.building && e.T.move !== 'air' && !e.moving && !(e.revealT > 0) && docOf(G.players[e.owner]) === 'guer' && tileAt(e.x, e.y).conceal;
+function docOnKill(t, src) {
+  const kp = src && G.players[src.owner];
+  if (kp && docOf(kp) === 'armor' && src.alive && baseRole(src.type) === 'tank') src.brkT = G.time + 6;   // 돌파
+  const op = G.players[t.owner];
+  if (docOf(op) === 'mass' && op.hq && op.hq.alive) {   // 예비군
+    op.resLoss = (op.resLoss || 0) + 1;
+    if (op.resLoss % 6 === 0) for (let k = 0; k < 30; k++) {
+      const a = rnd(0, 6.28), r = op.hq.T.r + rnd(26, 44), x = op.hq.x + Math.cos(a) * r, y = op.hq.y + Math.sin(a) * r;
+      if (!passXY('wheel', x, y)) continue;
+      const u = makeUnit(op, 'mech', x, y); G.units.push(u); assignCo(u); issue(u, { kind: 'move', x: op.rally.x + rnd(-25, 25), y: op.rally.y + rnd(-25, 25) }, false);
+      if (op.id === ME) toast('🏭 예비군 출격! 보병부대 1개 무료 합류'); break;
+    }
+  }
+}
+function fwdBase(pl) {   // 요새: 본부보다 중앙 쪽으로 250 이상 앞선 벙커 중 가장 앞의 것
+  if (docOf(pl) !== 'fort' || !pl.hq) return null;
+  const hd = Math.abs(pl.hq.x - WW / 2);
+  let best = null, bd = hd - 250;
+  for (const b of G.units) if (b.alive && b.owner === pl.id && b.type === 'bunker' && b.built) { const d = Math.abs(b.x - WW / 2); if (d < bd) { bd = d; best = b; } }
+  return best;
+}
+const DOC_OPEN = {   // 교리 오프너 카드 (작전 준비 3번째 카드) — 전투 부대 대신 교리에 맞는 자원 조합 (240판 측정: 부대를 주면 교리 승률이 크게 기움, §45.10)
+  armor: { icon: '⚙️', name: '선봉 정비', pitch: '철광을 쌓아 첫 전차대를 빨리 뽑는다', units: [], m: 50, i: 330, lines: [['plus', '철광 +330 · 돈 +50'], ['plus', '기갑부대 2대를 곧바로 생산 가능'], ['minus', '처음엔 전투 부대 없음']] },
+  mass: { icon: '🏭', name: '동원 첫날', pitch: '사람을 먼저 모은다', units: ['eng', 'eng'], m: 230, i: 0, lines: [['plus', '공병 2 추가'], ['plus', '돈 +230 (싼 보병부대로)'], ['minus', '철광 없음']] },
+  fire: { icon: '🎯', name: '포탄 비축', pitch: '포 두 문을 먼저 세운다', units: [], m: 200, i: 230, lines: [['plus', '돈 +200 · 철광 +230'], ['plus', '포병 2문을 곧바로 생산 가능'], ['minus', '처음엔 전투 부대 없음']] },
+  air: { icon: '🚁', name: '활주로 확장', pitch: '헬기를 먼저 띄운다', units: [], m: 160, i: 260, lines: [['plus', '돈 +160 · 철광 +260'], ['plus', '헬기 2기를 곧바로 생산 가능'], ['minus', '처음엔 전투 부대 없음']] },
+  guer: { icon: '🌿', name: '숲속 잠복', pitch: '정찰병을 먼저 앞에 숨긴다', units: ['eng'], m: 280, i: 90, fwd: 0.45, lines: [['plus', '공병 1을 전선 앞 숲에 배치'], ['plus', '돈 +280 · 철광 +90'], ['minus', '처음엔 전투 부대 없음']] },
+  fort: { icon: '🏰', name: '전진 축성', pitch: '먼저 진지를 세우고 그 뒤에서 싸운다', units: ['eng', 'eng'], m: 170, i: 100, lines: [['plus', '공병 2 추가 (건설 2배)'], ['plus', '돈 +170 · 철광 +100'], ['minus', '처음엔 전투 부대 없음']] },
+};
+const openerOf = (pl, k) => k === 'doc' ? DOC_OPEN[docOf(pl)] || OPENERS.air : OPENERS[k];
+const docTag = nat => { const D = DOCTRINES[DOC_NAT[nat]]; return D ? `${D.icon} ${D.name}` : ''; };
+
 // ---- §45 재미 3원칙: 중앙 거점 · 전선 집결 · 결전 · 지휘 게이지 · 총동원 · 현상금 · 최후의 반격
 const GAUGE = { rate: 0.6, loss: 0.05, kill: 0.012, bounty: 15, core: 1.5 };   // 게이지(0~100) 단위: 초당 · 잃은/잡은 비용 1당 · 현상금 · 중앙 거점 배율
 const ALLOUT = { on: 0.65, off: 0.85, hold: 10, cost: 0.75, inc: 1.25, def: 0.75, r: 450, home: 0.3 };   // 총동원: 병력 65% 미만 10초 → 켜짐, 85% 이상 → 꺼짐 · 생산 비용 -25% · 수입 +25% · 본부 근처 받는 피해 -25% · AI는 본부 앞에 모였다가 반격
@@ -6470,7 +6566,7 @@ const NATION_SKILL = { ROK: 'barrage', DPRK: 'humanwave', CHN: 'cheap', JPN: 're
 const skillOf = pl => SKILLS[NATION_SKILL[pl.nation] || 'barrage'];
 const skillId = pl => NATION_SKILL[pl.nation] || 'barrage';
 const buff = (pl, k) => pl.buffs && pl.buffs[k] > 0;
-const costOf = (pl, c, type) => { let k = (buff(pl, 'cheap') ? 0.7 : 1) * (G && G.allout && G.allout[pl.team] ? ALLOUT.cost : 1); if (pl.id === ME && G.pol && G.pol.has('mil2') && type && (['tank', 'mech'].includes(type) || TYPES[type].unique)) k *= 0.85;
+const costOf = (pl, c, type) => { if (type && TYPES[type]) c = docType(pl, type).cost; let k = (buff(pl, 'cheap') ? 0.7 : 1) * (G && G.allout && G.allout[pl.team] ? ALLOUT.cost : 1); if (pl.id === ME && G.pol && G.pol.has('mil2') && type && (['tank', 'mech'].includes(type) || TYPES[type].unique)) k *= 0.85;
   return k === 1 ? c : { m: Math.round(c.m * k), i: Math.round(c.i * k) }; };
 let skillAim = false;
 // ================= 포격 예고 조준원 (기획서 §43): 줄어드는 조준원 · 적은 빨강 · 사이렌 · 1배속 복귀 · 피하면 메달 =================
@@ -7903,7 +7999,8 @@ function missionPlan() {
   const P1 = near[0], steps = [], marks = [];
   const add = (icon, text, p) => { steps.push({ icon, text }); if (p) marks.push({ x: p.x, y: p.y, n: steps.length }); };
   if (type === 'destroy' || type === 'hold' || type === 'boss' || type === 'raid') {
-    if (P1) add('🚩', P1.hill ? LL('가까운 고지를 확보하라 (수입 +50%)', 'Secure the nearby hill (+50% income)', '占领附近的高地（收入+50%）', '近くの高地を確保せよ（収入+50%）') : LL(`가까운 다리 거점 ${P1.name}를 확보하라 (수입 +50%)`, `Secure bridge point ${P1.name} (+50% income)`, `占领桥梁据点 ${P1.name}（收入+50%）`, `橋の拠点 ${P1.name} を確保せよ（収入+50%）`), P1);
+    if (P1) add('🚩', P1.hill ? LL('가까운 고지를 확보하라 (수입 +20%)', 'Secure the nearby hill (+20% income)', '占领附近的高地（收入+20%）', '近くの高地を確保せよ（収入+20%）') : LL(`가까운 다리 거점 ${P1.name}를 확보하라 (수입 +20%)`, `Secure bridge point ${P1.name} (+20% income)`, `占领桥梁据点 ${P1.name}（收入+20%）`, `橋の拠点 ${P1.name} を確保せよ（収入+20%）`), P1);
+    { const C = (G.points || []).find(p => p.core); if (C) add('⭐', LL('중앙 거점을 잡아라 — 수입 +30% · 마지막 2분 결전의 열쇠', 'Take the center point — +30% income, key to the final 2 minutes', '占领中央据点 — 收入+30%，决战关键', '中央拠点を取れ — 収入+30%・最後の2分の決戦の鍵'), C); }
     if (type === 'boss') add('🦖', LL('거대 전차를 찾아 집중 공격하라', 'Find and focus the giant tank', '找到巨型坦克并集中攻击', '巨大戦車を探して集中攻撃せよ'), null);
     if (type === 'hold') add('🚩', LL('거점 과반을 90초 동안 지켜라', 'Hold most points for 90s', '守住多数据点90秒', '拠点の過半数を90秒守れ'), near[1] || P1);
     if (type === 'raid') add('🚁', LL('헬기로 섬에 상륙해 교두보를 만들어라', 'Land on the island by helicopter', '用直升机登岛建立桥头堡', 'ヘリで島に上陸し橋頭堡を築け'), null);
@@ -7931,7 +8028,7 @@ function showMissionFlash() {
   mfPlan = missionPlan();
   $('mfTitle').textContent = mfPlan.title; $('mfSub').textContent = mfPlan.sub; $('mfGoal').textContent = mfPlan.goal;
   const my = me(), en = G.players.find(p => p.team !== my.team), NM = NATIONS[my.nation], NE = en && NATIONS[en.nation];
-  $('mfVs').innerHTML = NM && NE ? `<div class="sd me">${tt(NM.name + '군')} <span>${NM.flag}</span></div><div class="x">VS</div><div class="sd foe"><span>${NE.flag}</span> ${tt(NE.name + '군')}</div>` : '';
+  $('mfVs').innerHTML = NM && NE ? `<div class="sd me">${tt(NM.name + '군')} <small>${docTag(my.nation)}</small> <span>${NM.flag}</span></div><div class="x">VS</div><div class="sd foe"><span>${NE.flag}</span> ${tt(NE.name + '군')} <small>${docTag(en.nation)}</small></div>` : '';
   const cd = $('mfCd'); cd.style.animation = 'none'; void cd.offsetWidth; cd.style.animation = '';
   $('mfSteps').innerHTML = mfPlan.steps.map((s, i) => `<li style="animation-delay:${0.45 + i * 0.28}s"><b>${i + 1}</b>${s.icon} ${s.text}</li>`).join('');
   const c = $('mfMap'), w = 400, h = Math.round(400 * WH / WW); c.width = w * DPR; c.height = h * DPR; c.style.aspectRatio = `${w} / ${h}`;
@@ -8292,7 +8389,7 @@ function reportHTML(win) {
   const card = (u, cls, ttl) => `<div class="${cls}"><small>${ttl}</small><br>${u ? `<b class="n">${u.vname ? '🎖️' + u.vname + ' · ' : ''}${tt(u.T.name)}</b> Lv.${lvOf(u)}<br>${tt('격파')} ${u.kills} · ${u.alive ? tt('생존') : '✝ ' + tt('전사')}` : `<small>${tt('격파 기록 없음')}</small>`}</div>`;
   const byTeam = (team, f) => G.players.filter(p => p.team === team).reduce((a, p) => a + (f(p) || 0), 0);
   const peak = t => Math.max(0, ...log.map(e => e.a[t]));
-  const op = t => { const p = G.players.find(p => p.team === t && G.opener && G.opener[p.id]); const O = p && OPENERS[G.opener[p.id]]; return O ? `${O.icon} ${tt(O.name)}` : '—'; };
+  const op = t => { const p = G.players.find(p => p.team === t && G.opener && G.opener[p.id]); const O = p && openerOf(p, G.opener[p.id]); return O ? `${O.icon} ${tt(O.name)}` : '—'; };
   const rows = [[tt('격파한 부대'), G.ukills[my] || 0, G.ukills[foe] || 0, 1], [tt('잃은 부대'), G.ukills[foe] || 0, G.ukills[my] || 0, -1], [tt('최대 병력'), peak(my), peak(foe), 1, fmtK],
     [tt('잔해 회수'), byTeam(my, p => p.salvage), byTeam(foe, p => p.salvage), 1], [tt('지휘관 스킬'), byTeam(my, p => p.skillUses), byTeam(foe, p => p.skillUses), 0]];
   const tr = rows.map(([n, a, b, dir, f]) => { const la = dir && a !== b && (dir > 0 ? a > b : a < b), lb = dir && a !== b && !la;
@@ -8474,13 +8571,14 @@ function newGame(cfg = DEFAULT_CFG) {
     }
   }
   // 국가와 지휘관 스킬: 나는 지휘관 국적, 상대는 스토리 지역 주인 / PVP 상대 국적 / 연습은 무작위
-  const myN = (cfg.story && (loadRec().story || {}).nation) || myNation();   // 스토리: 그 슬롯의 나라로 싸움
+  const myN = cfg.myNation || (cfg.story && (loadRec().story || {}).nation) || myNation();   // 스토리: 그 슬롯의 나라로 싸움
   const playable = Object.keys(NATIONS).filter(k => NATIONS[k].ready && k !== myN);
   for (const pl of players) {
     pl.nation = pl.id === ME ? myN : pl.team === me().team ? playable[(Math.random() * playable.length) | 0]
       : cfg.enemyNation || cfg.oppNation || playable[(Math.random() * playable.length) | 0];
     pl.skillCD = 25; pl.buffs = { blitz: 0, mobilize: 0, cheap: 0, rally: 0, radar: 0 }; pl.opCD = {}; pl.coTarget = 0;
   }
+  for (const u of G.units) { const T = docType(G.players[u.owner], u.type); if (T && T !== u.T && !u.T.unique) { u.T = T; u.hp = T.hp; } }   // §45: 나라가 정해진 뒤 본부 · 공병에 교리 보정
   G.pol = cfg.story && rec0.story && rec0.story.policy ? new Set(rec0.story.policy.owned) : null; G.weather = null; G.tellerT = rnd(55, 80); G_FEED = [];
   G.hat = cfg.pvp ? 'none' : rec0.hat; G.mods = {}; G.shakeA = 0; G.hitStop = 0; G.pendingEnd = null; G.streakN = 0;
   makePoints();

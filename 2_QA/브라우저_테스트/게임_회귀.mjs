@@ -13,8 +13,8 @@ ok('clock frozen while opener open', (await ev(`G.time`))===0);
 for (const [code,k] of [['Digit4',null],['KeyQ',null]]) { await send('Input.dispatchKeyEvent',{type:'keyDown',code,key:code.slice(-1)}); await send('Input.dispatchKeyEvent',{type:'keyUp',code,key:code.slice(-1)}); }
 ok('other keys ignored while open', await ev(`$('opener').classList.contains('on') && G.units.filter(u=>u.owner===ME && u.type==='eng').length===3`));
 await send('Input.dispatchKeyEvent',{type:'keyDown',code:'Digit3',key:'3'}); await send('Input.dispatchKeyEvent',{type:'keyUp',code:'Digit3',key:'3'}); await sleep(200);
-r = await J(`JSON.stringify({on:$('opener').classList.contains('on'), pick:G.opener[ME], heli:G.units.filter(u=>u.owner===ME&&u.type==='heli').length, mf:$('mflash').classList.contains('on'), co:Object.keys(G.groups||{}).length})`);
-ok('key 3 picks air: heli placed, mission flash follows', !r.on && r.pick==='air' && r.heli===1 && r.mf, JSON.stringify(r));
+r = await J(`(()=>{ const D=DOC_OPEN[docOf(me())]; const got=D.units.every(t=>G.units.filter(u=>u.owner===ME&&u.type===t).length>=D.units.filter(x=>x===t).length); return JSON.stringify({on:$('opener').classList.contains('on'), pick:G.opener[ME], doc:docOf(me()), got, mf:$('mflash').classList.contains('on')}) })()`);
+ok('key 3 picks my doctrine card (§45): its units placed, mission flash follows', !r.on && r.pick==='doc' && r.got && r.mf, JSON.stringify(r));
 await ev(`hideMissionFlash()`);
 r = await J(`(()=>{ const t=G.time; for(let i=0;i<60;i++) update(1/30); return JSON.stringify({adv:G.time-t, paused:G.paused}) })()`);
 ok('game resumes after pick', r.adv>1.9 && !r.paused, JSON.stringify(r));
@@ -30,13 +30,13 @@ await ev(`hideMissionFlash()`);
 // ---- 2. Salvage
 r = await J(`(()=>{ newGame(); G.started=true; const a=me(), b=G.players.find(p=>p.team!==a.team);
   const x=WW/2, y=WH/2; const t=makeUnit(b,'tank',x,y); t.built=true; G.units.push(t); const k=makeUnit(a,'mech',x-300,y); k.built=true; G.units.push(k);
-  damage(t, 99999, k); const w=G.wrecks.at(-1); const v0=w.val;
+  damage(t, 99999, k); const w=G.wrecks.at(-1); const v0=w.val, want=Math.round((t.T.cost.m+t.T.cost.i)*0.3);
   const m0=a.money; const pick=makeUnit(a,'mech',x,y); pick.built=true; G.units.push(pick);
   for(let i=0;i<30;i++) update(1/30); const early=w.val;   // 1s: still hot
   for(let i=0;i<60;i++) update(1/30); const later=w.val;
-  return JSON.stringify({v0, early, later, gained:a.money-m0, sal:a.salvage}) })()`);
-ok('wreck worth 30% of tank (108)', r.v0===108, JSON.stringify(r));
-ok('wreck hot for 2.5s then collected by ground unit', r.early===108 && r.later===0 && r.sal===108, JSON.stringify(r));
+  return JSON.stringify({v0, want, early, later, gained:a.money-m0, sal:a.salvage}) })()`);
+ok('wreck worth 30% of tank (교리 보정 비용 기준)', r.v0===r.want, JSON.stringify(r));
+ok('wreck hot for 2.5s then collected by ground unit', r.early===r.want && r.later===0 && r.sal===r.want, JSON.stringify(r));
 r = await J(`(()=>{ newGame(); G.started=true; const a=me(), b=G.players.find(p=>p.team!==a.team); const x=WW/2,y=WH/2;
   const t=makeUnit(a,'tank',x,y); t.built=true; G.units.push(t); damage(t,99999,b.hq); const w=G.wrecks.at(-1);
   w.t=G.time-3; const e=makeUnit(b,'mech',x,y); e.built=true; G.units.push(e); updateCrates(1/30);
@@ -55,8 +55,8 @@ ok('command gauge (§45): tank lost → loser +18% (16.2s of 90s), killer +4.3% 
 // ---- 4. Juice
 r = await J(`(()=>{ newGame(); G.started=true; const a=me(), b=G.players.find(p=>p.team!==a.team); const t=makeUnit(a,'tank',WW/2,WH/2); t.built=true; G.units.push(t); const k=makeUnit(b,'tank',WW/2-2000,WH/2); k.built=true; G.units.push(k);
   damage(t,100,k); const g0=t.hpG, h=t.hp, ring=G.time-t.combatT<3; for(let i=0;i<5;i++) updateUnit(t,1/30); const g1=t.hpG; for(let i=0;i<60;i++) updateUnit(t,1/30);
-  return JSON.stringify({g0,h,g1,g2:t.hpG, ring, hit:t.hitT>=0}) })()`);
-ok('HP ghost holds 0.3s then drains to hp', r.g0===540 && r.g1===540 && r.g2===r.h && r.ring, JSON.stringify(r));
+  return JSON.stringify({g0,h,g1,g2:t.hpG, ring, hit:t.hitT>=0, max:t.T.hp}) })()`);
+ok('HP ghost holds 0.3s then drains to hp', r.g0===r.max && r.g1===r.max && r.g2===r.h && r.ring, JSON.stringify(r));
 r = await J(`(()=>{ const n0=G.fx.length; const a=me(), b=G.players.find(p=>p.team!==a.team); const t=makeUnit(b,'mech',WW/2,WH/2); t.built=true; G.units.push(t); damage(t,1e5,a.hq); return JSON.stringify({kring:G.fx.some(f=>f.k==='kring')}) })()`);
 ok('kill ring fx spawned', r.kring);
 // ---- 5. Battle report
@@ -157,10 +157,10 @@ ok('§45 time-out judged by core hold first', r.res && r.res[0]===true && /중�
 r = await J(`(()=>{ newGame({map:'plains'}); G.started=true; G.tutorial=false; const a=me(), b=G.players.find(p=>p.team!==a.team); const o={};
   G.crateT=0; updateCrates(1/30); o.n=G.crates.length; o.mirror=G.crates.length===2 && Math.abs(G.crates[0].x+G.crates[1].x-WW)<1 && G.crates[0].y===G.crates[1].y;
   const v=makeUnit(b,'tank',WW/2,WH/2); v.built=true; v.kills=5; G.units.push(v); const k=makeUnit(a,'tank',WW/2+40,WH/2); k.built=true; G.units.push(k); a.skillCD=60; o.lv=lvOf(v);
-  damage(v,1e5,k); o.wreck=G.wrecks.at(-1).val; o.gain=+(60-a.skillCD).toFixed(2); o.gwant=+((360*0.012+15)*gaugeMax(a)/100).toFixed(2); o.lvMul=+lvMul({kills:5}).toFixed(2);
+  damage(v,1e5,k); o.wreck=G.wrecks.at(-1).val; o.gain=+(60-a.skillCD).toFixed(2); const vw=v.T.cost.m+v.T.cost.i; o.wwant=Math.round(vw*0.3*2); o.gwant=+((vw*0.012+15)*gaugeMax(a)/100).toFixed(2); o.lvMul=+lvMul({kills:5}).toFixed(2);
   return JSON.stringify(o) })()`);
 ok('§45 symmetric crates (2, mirrored)', r.n===2 && r.mirror, JSON.stringify(r));
-ok('§45 bounty: Lv.3+ kill → wreck ×2 (216), gauge +15', r.lv>=3 && r.wreck===216 && r.gain===r.gwant, JSON.stringify(r));
+ok('§45 bounty: Lv.3+ kill → wreck ×2, gauge +15', r.lv>=3 && r.wreck===r.wwant && r.gain===r.gwant, JSON.stringify(r));
 r = await J(`(()=>{ newGame({map:'plains'}); G.started=true; G.tutorial=false; const a=me(), b=G.players.find(p=>p.team!==a.team); const o={};
   const mk=(pl,t,x,y)=>{ const u=makeUnit(pl,t,x,y); u.built=true; G.units.push(u); return u; };
   const mine=[0,1,2,3].map(i=>mk(b,'tank',b.hq.x-150,b.hq.y+i*30)); const foes=[0,1,2,3,4,5].map(i=>mk(a,'tank',WW/2,WH/2+i*25));
@@ -172,6 +172,37 @@ r = await J(`(()=>{ newGame({map:'plains'}); G.started=true; G.tutorial=false; c
   return JSON.stringify(o) })()`);
 ok('§45 loser AI counterattacks to center when enemy push breaks (once per 35s)', r.counter && r.cT && r.toCore && !r.again, JSON.stringify(r));
 ok('§45 loser AI saves targeted skill for the most valuable enemy cluster', r.held && r.skillUsed, JSON.stringify(r));
+// ---- 5e. 6개 교리 (기획서 §45.1)
+r = await J(`(()=>{ const P=n=>({nation:n}); const o={};
+  o.all=Object.keys(NATIONS).filter(n=>NATIONS[n].ready).every(n=>DOC_NAT[n]); o.count=Object.keys(DOCTRINES).length;
+  o.deuTank=[docType(P('DEU'),'tank').hp, docType(P('DEU'),'tank').cost.i, docType(P('DEU'),'tank').range]; o.rusMech=[docType(P('RUS'),'mech').hp, docType(P('RUS'),'mech').cost.m, +docType(P('RUS'),'mech').build.toFixed(1)];
+  o.rokArt=[docType(P('ROK'),'art').deploy, docType(P('ROK'),'art').range, docType(P('ROK'),'art').cost.m]; o.jpnJet=docType(P('JPN'),'jet').rearm; o.fraHq=docType(P('FRA'),'hq').hp; o.vnmMine=docType(P('VNM'),'landmine').cost.m;
+  o.k9=docType(P('ROK'),'w_ROK').deploy; o.base=TYPES.tank.hp===540 && TYPES.mech.cost.m===140;
+  o.cache=docType(P('DEU'),'tank')===docType(P('POL'),'tank');
+  newGame({map:'plains', myNation:'FRA'}); o.myHq=me().hq.hp===1920 && me().hq.T.hp===1920; o.btn=costOf(me(), TYPES.heli.cost, 'heli').m;
+  return JSON.stringify(o) })()`);
+ok('§45 every playable nation has one of 6 doctrines', r.all && r.count===6, JSON.stringify(r));
+ok('§45 doctrine stats: 기갑 tank iron +60 · 물량 mech 112/build×0.9 · 화력 art deploy×0.5/range×1.15/cost×0.6 · 항공 jet 12s · 요새 HQ 1920', JSON.stringify(r.deuTank)==='[540,240,220]' && JSON.stringify(r.rusMech)==='[280,112,10.8]' && r.rokArt[0]===1.75 && r.rokArt[1]===506 && r.rokArt[2]===66 && r.jpnJet===12 && r.fraHq===1920 && r.vnmMine===13, JSON.stringify(r));
+ok('§45 special weapons get doctrine by role (K9 deploy 0.6), base TYPES untouched, per-doctrine cache, new game HQ & cost use doctrine', r.k9===0.6 && r.base && r.cache && r.myHq && r.btn===138, JSON.stringify(r));
+r = await J(`(()=>{ newGame({map:'plains', myNation:'RUS'}); G.started=true; G.tutorial=false; const a=me(), b=G.players.find(p=>p.team!==a.team); b.nation='DEU'; const o={};
+  const n0=G.units.filter(u=>u.alive&&u.owner===a.id&&u.type==='mech').length;
+  for (let i=0;i<6;i++) { const u=makeUnit(a,'eng',WW/2,WH/2+i*20); u.built=true; G.units.push(u); damage(u,1e5,b.hq); }
+  o.reserve=G.units.filter(u=>u.alive&&u.owner===a.id&&u.type==='mech').length-n0;
+  const tk=makeUnit(b,'tank',WW/2+200,WH/2); tk.built=true; G.units.push(tk); const v=makeUnit(a,'mech',WW/2+230,WH/2); v.built=true; G.units.push(v); damage(v,1e5,tk); o.brk=tk.brkT>G.time;
+  const e=makeUnit(a,'mech',WW/2,WH/2); o.massVsArt=+docDef(e,{T:TYPES.art}).toFixed(2); o.massAtk=docAtk(e,tk);
+  return JSON.stringify(o) })()`);
+ok('§45 물량 예비군: 6 losses → 1 free mech · 포격에 피해 +15% · 공격 -20%', r.reserve===1 && r.massVsArt===1.15 && r.massAtk===0.8, JSON.stringify(r));
+ok('§45 기갑 돌파: tank kill → 6s speed buff', r.brk, JSON.stringify(r));
+r = await J(`(()=>{ newGame({map:'jungle', myNation:'VNM'}); G.started=true; G.tutorial=false; const a=me(), b=G.players.find(p=>p.team!==a.team); const o={};
+  let spot=null; for (let y=200;y<WH-200 && !spot;y+=22) for (let x=WW*0.35;x<WW*0.65;x+=22) if (tileAt(x,y).conceal && passXY('wheel',x,y)) { spot={x,y}; break; }
+  o.forest=!!spot; const g=makeUnit(a,'mech',spot.x,spot.y); g.built=true; g.moving=false; G.units.push(g); o.hide=guerHide(g);
+  const s=makeUnit(b,'mech',spot.x+80,spot.y); s.built=true; G.units.push(s); updateVisibility(); o.seen80=g.seen[b.team]; s.x=spot.x+40; updateVisibility(); o.seen40=g.seen[b.team];
+  g.seen[b.team]=false; o.ambush=docAtk(g,s);
+  newGame({map:'plains', myNation:'FRA'}); G.started=true; const f=me(); o.noFwd=fwdBase(f)===null;
+  const bk=placeBuilding(f,'bunker',WW/2-200,WH/2,null); bk.built=true; o.fwd=fwdBase(f)===bk;
+  return JSON.stringify(o) })()`);
+ok('§45 게릴라: stationary in forest → seen only within 50 · ambush ×1.3', r.forest && r.hide && r.seen80===false && r.seen40===true && r.ambush===1.3, JSON.stringify(r));
+ok('§45 요새 전방 진지: forward bunker becomes spawn point', r.noFwd && r.fwd, JSON.stringify(r));
 // ---- 6. PvP snapshot carries wreck value
 r = await J(`(()=>{ newGame(); G.started=true; const a=me(), b=G.players.find(p=>p.team!==a.team); const t=makeUnit(b,'tank',WW/2,WH/2); t.built=true; G.units.push(t); damage(t,1e5,a.hq); const s=makeSnap(); const w=s.w.find(w=>w.val!==undefined); return JSON.stringify({has:!!w, val:w&&w.val}) })()`);
 ok('PvP snapshot includes wreck val', r.has, JSON.stringify(r));

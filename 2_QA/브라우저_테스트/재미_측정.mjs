@@ -13,13 +13,15 @@ await ev(`try{localStorage.clear()}catch(e){}`);
 const SETUP = process.env.FUN_SETUP || '', LABEL = process.env.FUN_LABEL || '';   // 실험: 게임 수치를 바꿔 보는 JS (예: FUN_SETUP="ALLOUT.inc=1.5")
 if (SETUP) await ev(SETUP);
 const maps = await J(`JSON.stringify(Object.keys(MAPS).filter(k => !MAPS[k].forceObj && !MAPS[k].hard))`);
+const BYDOC = await J(`JSON.stringify(Object.keys(DOCTRINES).map(d => Object.keys(NATIONS).filter(n => NATIONS[n].ready && DOC_NAT[n] === d)))`);   // 교리별 나라 목록 — 교리를 고르게 뽑고 그 안에서 나라를 고름
+const natPick = (k, j) => { const L = BYDOC[k % BYDOC.length]; return L[j % L.length]; };
 const games = [];
 const t0 = Date.now();
 for (let i = 0; i < N; i++) {
-  const m = maps[i % maps.length], seed = SEED0 + i, diff = ['t6', 't8', 't10'][i % 3];
+  const m = maps[i % maps.length], seed = SEED0 + i, diff = ['t6', 't8', 't10'][i % 3], n0 = natPick(seed, seed >> 2), n1 = natPick(Math.floor(seed / 6) + seed * 5 + 1, seed >> 3);   // 36가지 교리 대진을 고르게
   const g = await J(`(()=>{ try {
     $('ceremony').style.display='none'; $('over').style.display='none';
-    newGame({ map:'${m}', obj:'destroy', diff:'${diff}', seed:${seed} }); startBattle(); pickOpener(OPENER_KEYS[${i}%3]); hideMissionFlash();
+    newGame({ map:'${m}', obj:'destroy', diff:'${diff}', seed:${seed}, myNation:'${n0}', enemyNation:'${n1}' }); startBattle(); pickOpener(OPENER_KEYS[${i}%3]); hideMissionFlash();
     me().ctrl = 'ai'; let res = null; const fe = finishBattle, ee = endGame;
     finishBattle = (w, why) => { res ??= [w, why]; fe(w, why); }; endGame = (w, why) => { res ??= [w, why]; ee(w, why); };
     const aoN = [0, 0], an = typeof alloutNotice === 'function' ? alloutNotice : null; if (an) alloutNotice = (t, on) => { if (on) aoN[t]++; an(t, on); };   // (예전 버전 비교 시엔 없음)
@@ -29,7 +31,7 @@ for (let i = 0; i < N; i++) {
     const center = G.fallen.filter(u => Math.abs(u.x - WW/2) < WW * 0.2).length;
     me().ctrl = 'human';
     return JSON.stringify({ map:'${m}', diff:'${diff}', seed:${seed}, win: res ? res[0] : null, why: res ? res[1] : 'cap', t: Math.round(G.time),
-      log: G.armyLog.map(e => [Math.round(e.t), Math.round(e.a[0]), Math.round(e.a[1])]), deaths: G.fallen.length, center, ao: aoN, ls: G.players.map(p => p.lastStand == null ? -1 : Math.round(p.lastStand)), ch: (G.coreHold || [0, 0]).map(Math.round), ctr: G.players.map(p => p.counters || 0), core: (G.points || []).some(p => p.core), lv: G.fallen.filter(u => lvOf(u) >= 3).length, opener: [G.opener[0], G.opener[1]] });
+      log: G.armyLog.map(e => [Math.round(e.t), Math.round(e.a[0]), Math.round(e.a[1])]), deaths: G.fallen.length, center, ao: aoN, ls: G.players.map(p => p.lastStand == null ? -1 : Math.round(p.lastStand)), ch: (G.coreHold || [0, 0]).map(Math.round), ctr: G.players.map(p => p.counters || 0), core: (G.points || []).some(p => p.core), lv: G.fallen.filter(u => lvOf(u) >= 3).length, opener: [G.opener[0], G.opener[1]], doc: G.players.map(p => docOf(p)) });
   } catch (e) { return JSON.stringify({ err: String(e.stack || e).slice(0, 300) }) } })()`);
   if (g.err) { console.log('❌', m, g.err); continue; }
   games.push(g);
@@ -73,6 +75,17 @@ for (const [k, name, goal, f] of GOAL) {
 }
 let hist = []; try { hist = JSON.parse(fs.readFileSync(OUT, 'utf8')).history; } catch {}
 if (!SETUP || LABEL) hist.push(M); fs.writeFileSync(OUT, JSON.stringify({ about: '기획서 §45.5 재미 지표 기록 (npm run test:fun)', history: hist.slice(-30) }, null, 1));
+// ---- 교리 균형 (§45.5: 교리별 승률 45~55%, 어떤 대진도 60:40 넘지 않음)
+const DW = {}, MU = {};
+for (const g of games) { if (g.win == null || !g.doc) continue; const w = g.win ? 0 : 1;
+  for (const t of [0, 1]) { const d = g.doc[t], o = g.doc[1 - t]; (DW[d] ||= [0, 0]); DW[d][1]++; if (w === t) DW[d][0]++;
+    if (d !== o) { const k = d + '>' + o; (MU[k] ||= [0, 0]); MU[k][1]++; if (w === t) MU[k][0]++; } } }
+M.doctrine = Object.fromEntries(Object.entries(DW).map(([d, [w, n]]) => [d, { win: pct(w, n), n }]));
+console.log('\n🎖️ 교리별 승률 (목표 45~55%)');
+for (const [d, v] of Object.entries(M.doctrine).sort((a, b) => b[1].win - a[1].win)) console.log(`${v.win >= 45 && v.win <= 55 ? '✅' : '⚠️'} ${d.padEnd(6)} ${String(v.win).padStart(5)}%  (${v.n}회)`);
+const worst = Object.entries(MU).filter(([, [, n]]) => n >= 6).map(([k, [w, n]]) => [k, pct(w, n), n]).sort((a, b) => b[1] - a[1]).slice(0, 5);
+if (worst.length) console.log('가장 한쪽으로 기운 대진: ' + worst.map(([k, p, n]) => `${k} ${p}% (${n})`).join(' · '));
+fs.writeFileSync(OUT, JSON.stringify({ about: '기획서 §45.5 재미 지표 기록 (npm run test:fun)', history: hist.slice(-30) }, null, 1));
 if (errs.length) console.log('\nJS 오류:', errs.slice(0, 3).join(' | '));
 console.log(`\n기록: ${path.relative(process.cwd(), OUT)}`);
 ok(`측정 완료 ${M.games}/${N}판`, M.games === N);

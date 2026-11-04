@@ -5,12 +5,13 @@
   "author": "휴먼에이드 (HumanAid)",
   "private": true,
   "license": "UNLICENSED",
-  "main": "server/server.js",
+  "main": "4_서버/server.js",
   "engines": { "node": ">=22.5" },
   "scripts": {
-    "start": "node server/server.js",
-    "dev": "node --watch server/server.js",
-    "test": "node --test",
-    "test:auth": "node tests/auth.e2e.mjs"
+    "start": "node 4_서버/server.js",
+    "dev": "node --watch 4_서버/server.js",
+    "test": "node --test 2_QA/서버_테스트/*.test.js",
+    "test:auth": "node 2_QA/브라우저_테스트/회원가입_로그인_e2e.mjs",
+    "test:game": "node 2_QA/브라우저_테스트/게임_회귀.mjs"
   }
 }

@@ -97,6 +97,20 @@
   table.wg small, .mvp small, .board small { color: #a7ad92; }
   .nb { background: #b3a35e; color: #fff; border-radius: 6px; padding: 0 5px; font-size: 11px; }
   .mvp { margin-top: 8px; font-size: 13px; line-height: 1.7; }
+  .rpt { margin: 10px auto 4px; max-width: 580px; text-align: left; }
+  .rpt h3 { margin: 0 0 4px; font-size: 14px; color: #7fd6ff; letter-spacing: .04em; }
+  .rpt .rpt-sum { font-size: 13px; color: #eef2ff; margin-bottom: 6px; line-height: 1.5; }
+  .rpt canvas { display: block; width: 100%; height: auto; aspect-ratio: 560 / 170; border: 1px solid rgba(127,214,255,.3); border-radius: 6px; background: rgba(8,14,30,.55); touch-action: none; cursor: crosshair; }
+  .rpt .rpt-read { min-height: 18px; font-size: 12px; color: #c9d3ff; margin-top: 3px; }
+  .rpt .rpt-lg { font-size: 12px; color: #a9b6d6; } .rpt .rpt-lg i { display: inline-block; width: 14px; height: 3px; vertical-align: middle; margin: 0 4px 0 8px; border-radius: 2px; }
+  .rpt .rpt-mo { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 4px; } .rpt .rpt-mo span { font-size: 12px; padding: 3px 8px; border-radius: 12px; background: rgba(255,210,90,.12); border: 1px solid rgba(255,210,90,.35); color: #ffe9a8; } .rpt .rpt-mo small { color: #c9b98a; }
+  .rpt .mv { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+  .rpt .mv > div { flex: 1 1 200px; padding: 8px 10px; border-radius: 6px; background: rgba(28,44,82,.7); border-left: 4px solid #50a0ff; font-size: 13px; line-height: 1.5; }
+  .rpt .mv > div.foe { border-left-color: #ff5a4a; } .rpt .mv small { color: #a9b6d6; } .rpt .mv b.n { font-size: 15px; }
+  .rpt table.vs { width: 100%; margin-top: 10px; border-collapse: collapse; font-size: 13px; }
+  .rpt table.vs td, .rpt table.vs th { padding: 3px 8px; border-bottom: 1px solid rgba(127,214,255,.15); }
+  .rpt table.vs td:nth-child(2), .rpt table.vs th:nth-child(2) { color: #8cc4ff; text-align: right; } .rpt table.vs td:nth-child(3), .rpt table.vs th:nth-child(3) { color: #ff9a8c; text-align: right; }
+  .rpt table.vs td.lead { font-weight: 900; }
   .boards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
   .board { background: #353c2d; border-radius: 10px; padding: 8px 10px; font-size: 13px; line-height: 1.7; }
   .skins { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
@@ -226,6 +240,25 @@
   /* ===== 전투 시작 전 미션 플래시 ===== */
   #mflash { position: fixed; inset: 0; z-index: 40; display: none; align-items: center; justify-content: center; cursor: pointer;
     background: repeating-linear-gradient(-45deg, rgba(14,18,10,.88) 0 22px, rgba(24,30,18,.88) 22px 44px); }
+  #opener { position: fixed; inset: 0; z-index: 41; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 16px;
+    background: radial-gradient(ellipse at center, rgba(14,24,48,.72), rgba(6,10,22,.92)); color: #eef2ff; }
+  #opener.on { display: flex; animation: mfin .25s ease-out; }
+  #opener .op-h { text-align: center; } #opener .op-h small { display: block; font-size: 12px; letter-spacing: .18em; color: #7fd6ff; font-weight: 800; }
+  #opener .op-h b { font-size: clamp(22px, 3.4vh, 30px); font-weight: 900; }
+  #opener .op-foe { font-size: 13px; color: #ffb3a8; }
+  #opener .op-cards { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; max-width: 900px; }
+  #opener .op-c { position: relative; width: min(250px, 90vw); padding: 16px 16px 14px; text-align: left; cursor: pointer; color: #eef2ff; font: inherit;
+    background: linear-gradient(180deg, #1c2c52, #121c36); border: 2px solid #3b6fb0; border-radius: 6px; box-shadow: 0 8px 24px rgba(0,0,0,.45);
+    transition: transform .12s, border-color .12s, box-shadow .12s; animation: opIn .35s both; }
+  #opener .op-c:nth-child(2) { animation-delay: .08s; } #opener .op-c:nth-child(3) { animation-delay: .16s; }
+  @keyframes opIn { from { opacity: 0; transform: translateY(18px) scale(.96); } }
+  #opener .op-c:hover, #opener .op-c:focus-visible { transform: translateY(-4px); border-color: #ff9a3c; box-shadow: 0 10px 28px rgba(255,140,40,.3); outline: none; }
+  #opener .op-c .k { position: absolute; top: 10px; right: 12px; font-size: 12px; font-weight: 900; color: #0d1730; background: #7fd6ff; border-radius: 4px; padding: 1px 7px; }
+  #opener .op-c .ic { font-size: 34px; line-height: 1; } #opener .op-c h3 { margin: 6px 0 2px; font-size: 20px; font-weight: 900; }
+  #opener .op-c p { margin: 0 0 10px; font-size: 13px; color: #b9c6e4; min-height: 34px; }
+  #opener .op-c ul { margin: 0; padding: 8px 0 0; list-style: none; border-top: 1px solid rgba(127,214,255,.25); font-size: 13px; font-weight: 700; }
+  #opener .op-c li { padding: 2px 0; } #opener .op-c li.minus { color: #ffb3a8; } #opener .op-c li.plus { color: #b8f0a0; }
+  #opener .op-tip { font-size: 12px; color: #8e9cc0; }
   #mflash.on { display: flex; animation: mfin .25s ease-out; } @keyframes mfin { 0% { background-color: #fff; opacity: 0; } 100% { opacity: 1; } }
   #mflash::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle, rgba(255,255,230,.35), rgba(255,255,230,0) 60%); animation: mfflash .6s ease-out forwards; pointer-events: none; }
   @keyframes mfflash { 0% { opacity: 1; } 100% { opacity: 0; } }
@@ -530,6 +563,13 @@
   /* 약관 · 개인정보 · 개발사 */
   .lg-item { margin: 12px 0; padding: 10px 14px; background: rgba(30,42,96,.6); border-left: 3px solid #4fd8ff; } .lg-item b { color: #fff; } .lg-item p { margin: 4px 0 0; font-size: 13px; line-height: 1.7; color: #d8def5; }
   .agree { display: flex; align-items: center; gap: 8px; margin: 12px 0 0; font-size: 13px; color: #d8def5; cursor: pointer; } .agree input { width: 18px; height: 18px; accent-color: #ff6a2a; }
+  .lgsteps { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 13px; font-weight: 800; color: #6f7ca8; }
+  .lgsteps span { padding: 2px 10px; border-radius: 12px; border: 1px solid #34407a; } .lgsteps span.on { color: #0f1638; background: #4fd8ff; border-color: #4fd8ff; } .lgsteps span.done { color: #9fe3ff; border-color: #4fd8ff; }
+  .lgsteps i { font-style: normal; color: #4a5cb0; }
+  #login .regp { max-height: calc(100vh - 28vh - 12px); overflow-y: auto; }
+  #login [hidden] { display: none !important; }
+  .lgacc { font-size: 13px; color: #c9d3ff; margin: 0 0 8px; } .lgacc b { color: #fff; }
+  .ov .regp .lgback { position: static; display: inline-block; background: transparent; border: 0; color: #9fb0e0; font-size: 13px; padding: 2px 0; margin: 0 0 6px; cursor: pointer; }
   .agree a, .ver a { color: #7fe3ff; } .agree.need { animation: shk .4s 2; color: #ffb0a0; }
   .menu .ver a { pointer-events: auto; } .devcredit { margin-top: 14px; text-align: center; font-size: 12px; color: #9fb0e8; letter-spacing: 1px; }
   .ov #legal .actbar { justify-content: flex-start; }
@@ -644,6 +684,7 @@
 <div id="ceremony"></div>
 <div id="conquest"></div>
 <div id="wipe"><div class="p"></div><div class="l"><small>MINI WAR ZONE</small><b id="wipeT"></b><i></i></div></div>
+<div id="opener" role="dialog" aria-label="오프너 선택"><div class="op-h"><small>OPENER · 시작 전략</small><b>어떻게 시작할까요?</b></div><div class="op-cards" id="opCards"></div><div class="op-foe" id="opFoe"></div><div class="op-tip">카드를 누르거나 <kbd class="hk">1</kbd><kbd class="hk">2</kbd><kbd class="hk">3</kbd> 키 · 고를 때까지 시계가 멈춰 있습니다</div></div>
 <div id="mflash"><i class="mf-lb t"></i><i class="mf-lb b"></i><div class="mf-in"><div class="mf-stamp">OPERATION · 작전 개시</div><div id="mfVs"></div><h1 id="mfTitle"></h1><div id="mfSub"></div>
   <div class="mf-body"><canvas id="mfMap"></canvas><ol id="mfSteps"></ol></div><div id="mfGoal"></div><div class="mf-cd"><i id="mfCd"></i></div><small class="mf-skip">클릭하거나 아무 키나 누르면 바로 시작</small></div></div>
 <canvas id="titleArt"></canvas>
@@ -750,19 +791,29 @@
       <details class="recov" id="lgRecov"><summary>🔑 아이디 없이 만든 기록 불러오기 (복구 코드)</summary><div class="form" style="display:flex;gap:6px;margin-top:6px"><input id="lgCode" maxlength="16" placeholder="XXXX-XXXX-XXXX" style="flex:1"><button id="lgRecover" class="sec" style="width:auto;margin:0">불러오기</button></div></details>
       <small class="dim">회원은 어느 기기에서든 아이디로 로그인해 이어 합니다 · 기록은 서버에 자동 저장</small>
     </div>
-    <div class="lgp" data-p="new">
+    <div class="lgp" data-p="acc">
+      <div class="lgsteps"><span data-st="1">① 계정 만들기</span><i>›</i><span data-st="2">② 지휘관 등록</span></div>
       <div class="form" id="suAcc">
         <div class="lgrow"><input id="suId" maxlength="20" placeholder="아이디 (영문 소문자 + 숫자 6~20자)" autocomplete="username" autocapitalize="off"><button id="suChk" class="sec">중복확인</button></div>
         <input id="suPw" type="password" maxlength="64" placeholder="비밀번호 (영문 · 숫자 · 특수문자 6자 이상)" autocomplete="new-password">
         <input id="suPw2" type="password" maxlength="64" placeholder="비밀번호 확인" autocomplete="new-password">
       </div>
+      <label class="agree"><input type="checkbox" id="lgAgree"> <span>(필수) <a href="#" data-legal="terms">이용약관</a>과 <a href="#" data-legal="privacy">개인정보 처리방침</a>에 동의합니다</span></label>
+      <div id="suMsg" class="msg"></div>
+      <button id="suNext" class="mbtn go" data-primary>다음: 지휘관 등록 ▶</button>
+      <small class="dim">아이디로 어느 기기에서든 로그인 · 기록은 서버에 자동 저장</small>
+    </div>
+    <div class="lgp" data-p="new">
+      <div class="lgsteps" id="lgSteps2"><span data-st="1">① 계정 만들기</span><i>›</i><span data-st="2">② 지휘관 등록</span></div>
+      <div class="lgacc" id="lgAccShow"></div>
       <div class="form"><input id="lgName" maxlength="12" placeholder="지휘관 이름을 입력하세요"></div>
       <label class="natlbl">소속 국가</label><div id="lgNation" class="natgrid"></div>
-      <div id="lgIntro"></div>
+      <label class="agree" id="lgAgreeGW"><input type="checkbox" id="lgAgreeG"> <span>(필수) <a href="#" data-legal="terms">이용약관</a>과 <a href="#" data-legal="privacy">개인정보 처리방침</a>에 동의합니다</span></label>
       <div id="lgMsg" class="msg"></div>
-      <label class="agree"><input type="checkbox" id="lgAgree"> <span>(필수) <a href="#" data-legal="terms">이용약관</a>과 <a href="#" data-legal="privacy">개인정보 처리방침</a>에 동의합니다</span></label>
       <button id="lgGo" class="mbtn go" data-primary>가입하고 시작 ▶</button>
-      <small class="dim" id="lgNote"></small>
+      <button id="lgBack" class="lgback">↩ 계정 정보 고치기</button>
+      <small class="dim" id="lgNote" style="display:block"></small>
+      <div id="lgIntro" style="margin-top:8px"></div>
     </div>
     <div id="lgLocal" class="lglocal"></div>
   </div>
@@ -1801,7 +1852,7 @@ function fire(u, t) {
   const blen = { tank: 16, mech: 10, art: 21, heli: 8, hq: 16, aa: 13, bunker: 14 }[u.type] || 6;
   const bz = { tank: 10, mech: 9, art: 13, hq: 22, aa: 14, bunker: 10 }[u.type] || 3;
   const mx = u.x + Math.cos(aim) * blen, my = u.y + Math.sin(aim) * blen * SQ - bz - altOf(u) - dzOf(u);
-  u.flash = 0.09; u.revealT = 1.5;
+  u.flash = 0.09; u.revealT = 1.5; u.combatT = G.time;
   if (u.seen[me().team]) sfx(T.proj === 'arty' ? 'arty' : T.proj === 'rocket' ? 'rocket' : T.proj ? 'shell' : T.flak ? 'flak' : 'mg', u.x, u.y);
   if (T.proj === 'arty') {
     if (t.team === me().team && G.time - (G.incT ?? -99) > 3) { G.incT = G.time; sfx('incoming', t.x, t.y); radio(t, 'arty'); }   // 적 포격 예고음 + 무전
@@ -1857,7 +1908,8 @@ function damage(t, dmg, src) {
   if (t.routing) dmg *= 1.2;
   if (t.T.tough) dmg *= t.T.tough;   // 특수무기: 받는 피해 감소
   if (t.dug >= 3 && !t.moving) dmg *= 0.75;   // 거점 사수: 진지 구축 완료
-  t.hp -= dmg; t.hitT = 0.25;
+  if (!(t.hpLagT > 0)) t.hpG = Math.max(t.hp, t.hpG || 0); t.hpLagT = 0.3;   // 깎인 체력이 0.3초 남았다가 빠짐
+  t.hp -= dmg; t.hitT = 0.25; t.combatT = G.time;
   if (!t.T.building && t.hp > 0) {   // 사기: 피해 비율 + 측후방 피격
     const rear = src && !src.T.building && Math.abs(angDiff(t.ang, Math.atan2(src.y - t.y, src.x - t.x))) > 2.0;
     moraleHit(t, dmg / t.T.hp * 55 + (rear ? 6 : 0));
@@ -1880,6 +1932,16 @@ function damage(t, dmg, src) {
     G.players[src.owner].kills++; owner.losses++;
     if (!t.T.building) { G.ukills[src.team]++; G.fallen.push(t); }
     onKill(t, src); hlTrack(t, src);
+    if (!t.T.flat) G.fx.push({ k: 'kring', x: t.x, y: t.y - altOf(t) - dzOf(t), t: 0, ttl: 0.55, r: (t.T.r || 10) * (t.T.building ? 3.2 : 2.6), c: owner.col.main });   // 처치: 죽은 쪽 색의 고리
+    const worth = t.T.cost ? t.T.cost.m + t.T.cost.i : 0;
+    if (worth && !t.T.building && !t.T.flat) {   // 전투 보고서: 구간별 손실 · 첫 격파
+      (G.lostAcc ||= [0, 0])[t.team] += worth;
+      if (!G.firstBlood && src.team !== t.team) G.firstBlood = { t: G.time, team: src.team };
+    }
+    if (worth && !t.T.flat) {   // 역전의 길: 잃은 쪽 지휘관 스킬이 잡은 쪽보다 4배 빨리 충전
+      owner.skillCD = Math.max(0, (owner.skillCD || 0) - worth * 0.02);
+      const kp = G.players[src.owner]; if (kp !== owner) kp.skillCD = Math.max(0, (kp.skillCD || 0) - worth * 0.005);
+    }
     if (t.type === 'hq') hqBoom(t);
     if (t.crew) ejectCrew(t, 0.3);
     if (!t.T.building && !t.T.flat) for (const v of G.units) if (v.alive && v.team === t.team && v !== t && !v.T.building && dist(v, t) < 150) moraleHit(v, 12);   // 옆 부대 전멸 → 사기 하락
@@ -1893,7 +1955,7 @@ function damage(t, dmg, src) {
       }
     }
     if (t.T.building) { if (t.dep) t.dep.mine = null; else if (t.T.roadOk) { if (t.built) markVB(t, -1); } else if (!t.T.flat) markBlock(t.x, t.y, t.T.r, -1); }
-    G.wrecks.push({ x: t.x, y: t.y, ang: t.ang, type: t.type, r: t.T.r, t: Math.round(G.time * 10) / 10 });
+    G.wrecks.push({ x: t.x, y: t.y, ang: t.ang, type: t.type, r: t.T.r, t: Math.round(G.time * 10) / 10, val: !t.T.building && !t.T.flat && worth ? Math.round(worth * SALVAGE_RATE) : 0 });   // 잔해: 값의 30%를 회수 가능
     if (!t.T.flat && t.type !== 'eng') fxBlast(t.x, t.y - altOf(t) - dzOf(t), t.T.building ? t.T.r * 1.4 : t.T.r, t.T.building || t.T.armor === 'heavy' || t.T.move === 'air');
     if (t.seen[me().team]) sfx(t.type === 'eng' || t.T.flat ? 'small' : 'boom', t.x, t.y);
     G.fx.push({ k: 'boom', x: t.x, y: t.y - altOf(t) - dzOf(t), t: 0, ttl: t.T.building ? 1.2 : 0.7, r: t.T.building ? t.T.r * 2 : t.type === 'eng' || t.T.flat ? 12 : 24 });
@@ -1904,6 +1966,7 @@ function updateUnit(u, dt) {
   G.pathTeam = u.team;   // 길찾기·이동 판정에 쓸 팀 (적 전차 방어선만 막힘)
   u.reload -= dt; u.acqT -= dt; u.repathT -= dt; if (u.repairT > 0) u.repairT -= dt;
   if (u.flash > 0) u.flash -= dt; if (u.revealT > 0) u.revealT -= dt; if (u.hitT > 0) u.hitT -= dt;
+  if (u.hpLagT > 0) u.hpLagT -= dt; else if (u.hpG > u.hp) u.hpG = Math.max(u.hp, u.hpG - u.T.hp * dt * 1.6);
   u.moving = false; u.working = false;
   if (u.T.indirect) u.dep = Math.min(1, (u.dep || 0) + dt / (u.T.deploy || 2));   // 포 전개: 멈춰 있으면 차오르고, 움직이면 0으로
   if (u.forced && !u.forced.alive) u.forced = null;
@@ -2568,7 +2631,61 @@ function applyLoadout() {   // 상점에서 산 보너스를 이번 전투에 �
   saveRec(rec);
   if (used.length) toast(`보너스 사용: ${used.join(', ')}`);
 }
-function startBattle() { hideScreens(); G.time = 0; G.stats = []; G.started = true; applyLoadout(); musicPlay('battle'); showMissionFlash(); }
+function startBattle() { hideScreens(); G.time = 0; G.stats = []; G.started = true; applyLoadout(); musicPlay('battle'); if (openerOK()) showOpener(); else showMissionFlash(); }
+// ================= 오프너: 전투 시작 전 3택 (gameplan §31) =================
+// 시계는 고를 때까지 멈춤 · 적 AI도 하나를 골라 공개 · 연습 전투·재대결에만 (스토리·튜토리얼·PVP·생존 모드 제외)
+const OPENERS = {
+  blitz:    { icon: '⚡', name: '기습', pitch: '먼저 친다. 적이 준비되기 전에 몰아붙여라', units: ['tank', 'mech'], m: -100, i: 0,
+              lines: [['plus', '기갑부대 1 · 보병부대 1 즉시 배치'], ['minus', '돈 -100']] },
+  industry: { icon: '🏭', name: '산업', pitch: '지금은 모으고, 나중에 압도한다', units: ['eng'], m: 250, i: 150,
+              lines: [['plus', '돈 +250 · 철광 +150'], ['plus', '공병 1 추가 (벙커·수리)'], ['minus', '전투 부대 없음']] },
+  air:      { icon: '🚁', name: '항공', pitch: '하늘을 잡아라. 헬기는 기갑부대·포병의 천적', units: ['heli'], m: 0, i: 150,
+              lines: [['plus', '헬기 1기 즉시 배치'], ['plus', '철광 +150'], ['minus', '방공에 약함']] },
+};
+const OPENER_KEYS = ['blitz', 'industry', 'air'];
+const openerOK = () => !G.tutorial && !G.net && !G.story && !(G.obj && G.obj.type === 'survive');
+let openerWasPaused = false;
+function showOpener() {
+  G.opener = {}; openerWasPaused = G.paused; G.paused = true;
+  for (const pl of G.players) if (pl.ctrl === 'ai') G.opener[pl.id] = aiOpener(pl);   // 적·아군 AI는 바로 고름
+  const foe = G.players.find(p => p.team !== me().team && p.ctrl === 'ai'), fo = foe && OPENERS[G.opener[foe.id]];
+  $('opCards').innerHTML = OPENER_KEYS.map((k, i) => { const O = OPENERS[k];
+    return `<button class="op-c" data-op="${k}"><span class="k">${i + 1}</span><div class="ic">${O.icon}</div><h3>${tt(O.name)}</h3><p>${tt(O.pitch)}</p><ul>${O.lines.map(l => `<li class="${l[0]}">${l[0] === 'minus' ? '▼' : '▲'} ${tt(l[1])}</li>`).join('')}</ul></button>`; }).join('');
+  $('opFoe').textContent = fo ? `${tt('적은 이미 골랐습니다')} — ${tt('정찰 보고')}: ${fo.icon} ${tt(fo.name)}?` : '';
+  if (fo && Math.random() < 0.35) $('opFoe').textContent = `${tt('적의 선택은 아직 알 수 없습니다')}`;   // 정찰이 늘 맞지는 않음: 가끔은 숨김
+  for (const b of $('opCards').querySelectorAll('.op-c')) b.onclick = () => pickOpener(b.dataset.op);
+  $('opener').classList.add('on'); sfx('alert');
+}
+function aiOpener(pl) {   // 난이도가 높을수록 기습을 자주, 쉬움은 산업 위주
+  const ai = (DIFFS[G.diff] || DIFFS.t8).ai, hard = ai > 1, easy = ai < 1;   // t6 쉬움 · t8 보통 · t10 어려움
+  const w = hard ? [0.45, 0.25, 0.3] : easy ? [0.2, 0.55, 0.25] : [1 / 3, 1 / 3, 1 / 3];
+  let r = Math.random(); for (let i = 0; i < 3; i++) { r -= w[i]; if (r <= 0) return OPENER_KEYS[i]; } return 'industry';
+}
+function pickOpener(k) {
+  if (!$('opener').classList.contains('on') || !OPENERS[k]) return;
+  $('opener').classList.remove('on'); G.paused = openerWasPaused;
+  G.opener[ME] = k;
+  for (const pl of G.players) if (G.opener[pl.id]) applyOpener(pl, G.opener[pl.id]);
+  const O = OPENERS[k], foe = G.players.find(p => p.team !== me().team && p.ctrl === 'ai'), fo = foe && OPENERS[G.opener[foe.id]];
+  sfx('levelup'); showMissionFlash();
+  setTimeout(() => showBanner(`${O.icon} ${tt(O.name)}`, fo ? `${tt('적의 오프너')}: ${fo.icon} ${tt(fo.name)}` : ''), 4300);   // 작전 개시 화면이 끝난 뒤 공개
+}
+function applyOpener(pl, k) {
+  const O = OPENERS[k], hq = pl.hq; if (!O || !hq) return;
+  pl.money = Math.max(0, pl.money + O.m); pl.iron = Math.max(0, pl.iron + O.i);
+  const toC = Math.atan2(WH / 2 - hq.y, WW / 2 - hq.x);   // 맵 가운데 쪽 본부 앞에 배치
+  O.units.forEach((type, n) => {
+    const T = TYPES[type];
+    for (let tries = 0; tries < 40; tries++) {
+      const b = toC + (n - (O.units.length - 1) / 2) * 0.45 + rnd(-0.25, 0.25), r = hq.T.r + 70 + rnd(0, 30);
+      const x = hq.x + Math.cos(b) * r, y = hq.y + Math.sin(b) * r;
+      if (!passXY(T.move, x, y)) continue;
+      const u = makeUnit(pl, type, x, y); u.ang = u.tur = toC; u.built = true; G.units.push(u);
+      if (pl.id === ME) G.fx.push({ k: 'kring', x, y, t: 0, ttl: 0.7, r: 40, c: '#7fd6ff' });
+      break;
+    }
+  });
+}
 $('again').onclick = () => { newGame({ ...G.cfg, seed: undefined }); startBattle(); };
 $('toTitle').onclick = () => { newGame(); showScreen('station'); };
 function updateTitleGold() { if ($('station').style.display === 'flex') renderStation(); }
@@ -3436,8 +3553,16 @@ function drawEntity(u) {
       else if (!u.moving && dp > 0) { ctx.beginPath(); ctx.ellipse(u.x, u.y, u.T.r + 6, (u.T.r + 6) * SQ, 0, -Math.PI / 2, -Math.PI / 2 + dp * Math.PI * 2); ctx.strokeStyle = '#ffd25a'; ctx.lineWidth = 2.4; ctx.stroke();
         if (u.seen[me().team]) { ctx.font = '800 8px -apple-system, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#ffe9a0'; ctx.strokeStyle = 'rgba(30,35,25,.85)'; ctx.lineWidth = 2.5; ctx.strokeText(tt('포 전개 중'), u.x, u.y + u.T.r * SQ + 12); ctx.fillText(tt('포 전개 중'), u.x, u.y + u.T.r * SQ + 12); } }
     }
+    const ca = !u.T.building && u.built !== false ? 1 - (G.time - (u.combatT ?? -99)) / 3 : 0;
+    if (ca > 0) {   // 교전 중인 유닛 발밑 팀 고리 (난전에서 피아 구분: 아군 파랑 · 적 빨강)
+      ctx.beginPath(); ctx.ellipse(u.x, u.y + 1, u.T.r + 4, (u.T.r + 4) * SQ, 0, 0, 7);
+      ctx.strokeStyle = u.team === me().team ? `rgba(80,160,255,${0.85 * Math.min(1, ca * 2)})` : `rgba(255,80,64,${0.85 * Math.min(1, ca * 2)})`; ctx.lineWidth = 2.2; ctx.stroke();
+    }
+    const wf = (u.hitT || 0) > 0.18 && ctx.filter !== undefined;   // 피격 직후 0.07초 하얗게 번쩍
+    if (wf) ctx.filter = u.T.building ? 'brightness(1.8)' : 'brightness(2.6) saturate(0.3)';
     if (rk || bob) { ctx.save(); ctx.translate(-Math.cos(aim) * rk, -Math.sin(aim) * rk * SQ + bob); drawBody(u, C, moodOf(u)); ctx.restore(); }
     else drawBody(u, C, moodOf(u));
+    if (wf) ctx.filter = 'none';
   }
   if (G.players[u.owner].sparkle && Math.sin(G.time * 3 + u.id * 1.7) > 0.93) flashAt(u.x + 6, u.y - u.T.top - altOf(u), 2.4);   // 황금 부대 반짝임
   ctx.globalAlpha = 1;
@@ -3456,7 +3581,10 @@ function drawEntity(u) {
   if (showBar) {
     const f = !u.built ? u.bprog : u.hp / u.T.hp, w = u.T.building ? 40 : u.T.members ? 26 : 20, y = u.y - altOf(u) - u.T.top - 6;
     ctx.fillStyle = 'rgba(90,70,40,.25)'; rr(u.x - w / 2, y, w, 3.5, 1.75); ctx.fill();
+    if (u.built && u.hpG > u.hp) { ctx.fillStyle = 'rgba(255,246,220,.9)'; rr(u.x - w / 2, y, Math.max(3.5, w * Math.min(1, u.hpG / u.T.hp)), 3.5, 1.75); ctx.fill(); }   // 방금 깎인 체력 잔상
+    if (u.built && f < 0.25 && u.team !== me().team && Math.sin(G.time * 16) < 0) ctx.globalAlpha = 0.35;   // 빈사 상태 적 체력바 깜빡임
     ctx.fillStyle = !u.built ? '#e2ad3a' : f > 0.6 ? '#4fb06a' : f > 0.3 ? '#e2ad3a' : '#e0614f'; rr(u.x - w / 2, y, Math.max(3.5, w * f), 3.5, 1.75); ctx.fill();
+    ctx.globalAlpha = 1;
     if (u.T.members > 1) for (let i = 1; i < u.T.members; i++) { const lx = u.x - w / 2 + w * i / u.T.members; line([lx, y], [lx, y + 3.5], 0.8, 'rgba(30,35,25,.8)'); }
     if (!u.T.building && (u.morale ?? 100) < 100) { ctx.fillStyle = 'rgba(30,35,25,.5)'; ctx.fillRect(u.x - w / 2, y + 4.5, w, 2); ctx.fillStyle = (u.morale ?? 100) < ROUT_AT ? '#e0614f' : '#7fb0e0'; ctx.fillRect(u.x - w / 2, y + 4.5, w * (u.morale ?? 100) / 100, 2); }
   }
@@ -3645,6 +3773,16 @@ function drawFX2() {
       circ(w.x + Math.sin(ph * 5 + s) * 5 + ph * 8, gy - 6 - rise, 3 + ph * 7); ctx.fillStyle = `rgba(55,52,46,${0.4 * (1 - ph) * fade})`; ctx.fill();
     }
   }
+  for (const w of G.wrecks) {   // 회수 가능한 잔해: 금빛 반짝임 (마지막 10초 동안 흐려짐)
+    if (!w.val) continue;
+    const age = G.time - (w.t ?? -99); if (age < SALVAGE_HOT || age > SALVAGE_LIFE) continue;
+    const gy = w.y - Zs(w.x, w.y), fa = Math.min(1, (SALVAGE_LIFE - age) / 10), pu = 0.55 + 0.45 * Math.sin(G.time * 5 + w.x);
+    ctx.beginPath(); ctx.ellipse(w.x, gy, (w.r || 9) + 4, ((w.r || 9) + 4) * SQ, 0, 0, 7); ctx.strokeStyle = `rgba(255,210,90,${0.55 * fa * pu})`; ctx.lineWidth = 1.6; ctx.stroke();
+    const sx = w.x + Math.sin(G.time * 1.3 + w.y) * 4, sy = gy - 6;
+    ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = fa * pu;
+    line([sx - 4, sy], [sx + 4, sy], 1.3, '#ffe39a'); line([sx, sy - 4], [sx, sy + 4], 1.3, '#ffe39a');
+    ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
+  }
   for (const f of G.fx) {
     const a = 1 - f.t / f.ttl, p = f.t / f.ttl;
     if (f.k === 'boom') {   // 섬광(가산 혼합) + 불덩이
@@ -3655,6 +3793,9 @@ function drawFX2() {
       circ(f.x, f.y, R * 1.4); ctx.fillStyle = g; ctx.fill();
       ctx.globalCompositeOperation = 'source-over';
       if (p > 0.3) { circ(f.x, f.y - p * 6, R * 0.8); ctx.fillStyle = `rgba(70,62,52,${a * 0.35})`; ctx.fill(); }
+    } else if (f.k === 'kring') {   // 처치 고리: 죽은 유닛 색으로 퍼짐
+      const R = f.r * (0.3 + 0.7 * Math.sqrt(p));
+      ctx.beginPath(); ctx.ellipse(f.x, f.y + 2, R, R * SQ, 0, 0, 7); ctx.globalAlpha = a; ctx.strokeStyle = f.c; ctx.lineWidth = 1 + 3.5 * a; ctx.stroke(); ctx.globalAlpha = 1;
     } else if (f.k === 'ring') {   // 충격파 고리
       const R = f.r * Math.sqrt(p);
       ctx.beginPath(); ctx.ellipse(f.x, f.y + 3, R, R * SQ, 0, 0, 7); ctx.strokeStyle = `rgba(255,236,190,${a * 0.85})`; ctx.lineWidth = 0.5 + 3 * a; ctx.stroke();
@@ -4187,7 +4328,7 @@ const LOGIN_RE = /^(?=.*[a-z])(?=.*\d)[a-z\d]{6,20}$/, PW_RE = /^(?=.*[A-Za-z])(
 const OUT_KEY = 'miniwarzone.loggedOut';   // 로그아웃하면 다음에 열 때 자동 입장하지 않음
 const setOut = v => { try { if (v) localStorage.setItem(OUT_KEY, '1'); else localStorage.removeItem(OUT_KEY); } catch (e) {} };
 const isOut = () => { try { return localStorage.getItem(OUT_KEY) === '1'; } catch (e) { return false; } };
-let lgTab = 'signup', suChecked = null;
+let lgTab = 'signup', suChecked = null, suStep = 1;   // 회원가입: ① 계정 만들기 → ② 지휘관 등록 (기획서 §33)
 const lgMsg = (id, t, ok) => { $(id).textContent = t; $(id).className = 'msg' + (ok ? ' ok' : ''); };
 async function papi(method, path, body) {   // 토큰 없이 부르는 API (로그인 · 회원가입 · 중복확인)
   return fetch(path, { method, headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined })
@@ -4198,12 +4339,16 @@ function lgSet(t) {
   if (!serverOn()) t = 'guest';
   lgTab = t;
   for (const b of document.querySelectorAll('#login [data-lt]')) { b.classList.toggle('on', b.dataset.lt === t); b.disabled = !serverOn() && b.dataset.lt !== 'guest'; }
-  for (const el of document.querySelectorAll('#login .lgp')) el.hidden = el.dataset.p !== (t === 'login' ? 'login' : 'new');
-  $('suAcc').hidden = t !== 'signup';
+  const pane = t === 'login' ? 'login' : t === 'signup' && suStep === 1 ? 'acc' : 'new';
+  for (const el of document.querySelectorAll('#login .lgp')) el.hidden = el.dataset.p !== pane;
+  for (const el of document.querySelectorAll('#login .lgsteps span')) { const k = +el.dataset.st, n = pane === 'acc' ? 1 : 2; el.className = k === n ? 'on' : k < n ? 'done' : ''; }
+  $('lgSteps2').hidden = $('lgBack').hidden = t !== 'signup'; $('lgAgreeGW').hidden = t !== 'guest';
+  $('lgAccShow').innerHTML = t === 'signup' ? `👤 아이디 <b>${esc($('suId').value.trim())}</b> — 이제 전장에 나설 지휘관을 정하세요` : '';
+  setTimeout(() => { const f = pane === 'login' ? 'liId' : pane === 'acc' ? 'suId' : 'lgName'; if ($('login').style.display === 'flex') $(f).focus(); }, 50);
   $('lgGo').textContent = t === 'signup' ? '가입하고 시작 ▶' : '게스트로 시작 ▶';
-  $('lgNote').textContent = t === 'signup' ? '아이디로 어느 기기에서든 로그인 · 기록은 서버에 자동 저장 · 스토리는 저장 슬롯마다 나라를 따로 고를 수 있어요'
+  $('lgNote').textContent = t === 'signup' ? '스토리는 저장 슬롯마다 나라를 따로 고를 수 있어요'
     : serverOn() ? '기록은 이 브라우저에만 저장됩니다 · 나중에 프로필 → 설정에서 회원가입하면 기록을 그대로 옮겨요' : '서버 없이 파일로 열면 게스트로만 플레이합니다 (회원가입 · 로그인은 node server.js 로 실행)';
-  lgMsg('lgMsg', ''); lgMsg('liMsg', '');
+  lgMsg('lgMsg', ''); lgMsg('liMsg', ''); lgMsg('suMsg', '');
   renderLgLocal();
 }
 function renderLgLocal() {   // 이 기기의 게스트 지휘관은 비밀번호 없이 바로 이어 하기
@@ -4244,30 +4389,39 @@ $('liGo').onclick = async () => {
 };
 for (const id of ['liId', 'liPw']) $(id).onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); $('liGo').click(); } };
 $('suId').oninput = () => { suChecked = null; };
-$('suChk').onclick = async () => {
+async function suCheck() {   // 아이디 중복확인 (다음 버튼을 누르면 자동으로도 함)
   const id = $('suId').value.trim();
-  if (!LOGIN_RE.test(id)) return lgMsg('lgMsg', '아이디는 6~20자 영문 소문자 + 숫자 조합입니다');
+  if (!LOGIN_RE.test(id)) { lgMsg('suMsg', '아이디는 6~20자 영문 소문자 + 숫자 조합입니다'); return false; }
+  if (suChecked === id) return true;
   const r = await papi('GET', '/api/signup/check?login=' + encodeURIComponent(id));
-  if (r.status !== 200) return lgMsg('lgMsg', netMsg(r));
-  if (!r.body.available) return lgMsg('lgMsg', '이미 사용 중인 아이디입니다');
-  suChecked = id; lgMsg('lgMsg', '✅ 사용할 수 있는 아이디입니다', true);
+  if (r.status !== 200) { lgMsg('suMsg', netMsg(r)); return false; }
+  if (!r.body.available) { lgMsg('suMsg', '이미 사용 중인 아이디입니다'); return false; }
+  suChecked = id; lgMsg('suMsg', '✅ 사용할 수 있는 아이디입니다', true); return true;
+}
+$('suChk').onclick = () => suCheck();
+$('suNext').onclick = async () => {   // ① → ②: 아이디 · 비밀번호 · 약관을 확인한 뒤 지휘관 등록으로
+  const pw = $('suPw').value;
+  $('suNext').disabled = true; const okId = await suCheck(); $('suNext').disabled = false; if (!okId) return;
+  if (!PW_RE.test(pw)) return lgMsg('suMsg', '비밀번호는 영문 · 숫자 · 특수문자 조합 6자리 이상입니다');
+  if (pw !== $('suPw2').value) return lgMsg('suMsg', '비밀번호 확인이 일치하지 않습니다');
+  if (!$('lgAgree').checked) { lgMsg('suMsg', '이용약관과 개인정보 처리방침에 동의해 주세요'); $('lgAgree').parentNode.classList.add('need'); return; }
+  sfx('click'); suStep = 2; lgSet('signup');
 };
+for (const id of ['suId', 'suPw', 'suPw2']) $(id).onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); $('suNext').click(); } };
+$('lgBack').onclick = () => { suStep = 1; lgSet('signup'); };
 $('lgGo').onclick = async () => {   // 회원가입 또는 게스트 등록
   const name = $('lgName').value.trim();
   if (lgTab === 'signup') {
     const id = $('suId').value.trim(), pw = $('suPw').value;
-    if (!LOGIN_RE.test(id)) return lgMsg('lgMsg', '아이디는 6~20자 영문 소문자 + 숫자 조합입니다');
-    if (suChecked !== id) return lgMsg('lgMsg', '아이디 중복확인을 해 주세요');
-    if (!PW_RE.test(pw)) return lgMsg('lgMsg', '비밀번호는 영문 · 숫자 · 특수문자 조합 6자리 이상입니다');
-    if (pw !== $('suPw2').value) return lgMsg('lgMsg', '비밀번호 확인이 일치하지 않습니다');
+    if (suStep !== 2 || suChecked !== id || !PW_RE.test(pw) || pw !== $('suPw2').value) { suStep = 1; lgSet('signup'); return lgMsg('suMsg', '계정 정보를 다시 확인해 주세요'); }
   }
   if (!name) { lgMsg('lgMsg', '지휘관 이름을 입력하세요'); return; }
-  if (!$('lgAgree').checked) { lgMsg('lgMsg', '이용약관과 개인정보 처리방침에 동의해 주세요'); $('lgAgree').parentNode.classList.add('need'); return; }
+  if (lgTab === 'guest' && !$('lgAgreeG').checked) { lgMsg('lgMsg', '이용약관과 개인정보 처리방침에 동의해 주세요'); $('lgAgreeG').parentNode.classList.add('need'); return; }
   if (lgTab === 'signup') {
     $('lgGo').disabled = true; const r = await papi('POST', '/api/signup', { login: $('suId').value.trim(), password: $('suPw').value, name, nation: pickNation }); $('lgGo').disabled = false;
-    if (r.status === 409) { suChecked = null; return lgMsg('lgMsg', '이미 사용 중인 아이디입니다'); }
+    if (r.status === 409) { suChecked = null; suStep = 1; lgSet('signup'); return lgMsg('suMsg', '이미 사용 중인 아이디입니다'); }
     if (r.status !== 201) return lgMsg('lgMsg', netMsg(r));
-    $('suPw').value = $('suPw2').value = ''; lgMsg('lgMsg', '');
+    $('suPw').value = $('suPw2').value = ''; suStep = 1; lgMsg('lgMsg', '');
     toast(`${NATIONS[pickNation].flag} ${name} 지휘관 회원가입 완료!`);
     return enterMember(r.body, true);
   }
@@ -4278,7 +4432,7 @@ $('lgGo').onclick = async () => {   // 회원가입 또는 게스트 등록
   $('lgMsg').textContent = ''; toast(`${NATIONS[pickNation].flag} ${name} 지휘관 등록!`);
   setOut(false); enterAs(name);
 };
-$('lgName').onkeydown = e => { if (e.key === 'Enter') $('lgGo').click(); };
+$('lgName').onkeydown = e => { if (e.key === 'Enter') { e.stopPropagation(); $('lgGo').click(); } };
 $('lgRecover').onclick = () => cloudRecover($('lgCode').value); $('lgCode').onkeydown = e => { if (e.key === 'Enter') { e.stopPropagation(); cloudRecover($('lgCode').value); } };
 // --- 계급: 누적 워게임 점수로 진급
 // ---- 계정 계급 (한국군 체계): 스토리 모드 승리로 경험치(XP)를 쌓아 훈련병 → 4성 장군(대장)까지 진급
@@ -4362,6 +4516,12 @@ for (const b of document.querySelectorAll('.tile, .mode, .mmb')) b.onclick = () 
 for (const b of document.querySelectorAll('.back')) b.onclick = () => { pvpCancel(); showScreen('station'); };
 // ---- 메뉴 키보드 조작: Enter = 그 화면의 주 행동(주황 버튼) · Esc = 뒤로/닫기 · ↑↓·숫자 = 메인 메뉴 이동 · 1~3 = 브리핑 카드 · 플래시는 아무 키로 넘김
 const visEl = el => !!el && el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden';
+window.addEventListener('keydown', e => {   // 오프너 화면: 1·2·3으로 고름 (전투 단축키보다 먼저)
+  if (!$('opener').classList.contains('on')) return;
+  const i = { Digit1: 0, Digit2: 1, Digit3: 2, Numpad1: 0, Numpad2: 1, Numpad3: 2 }[e.code];
+  e.preventDefault(); e.stopImmediatePropagation();
+  if (i != null) pickOpener(OPENER_KEYS[i]);
+}, true);
 window.addEventListener('keydown', e => {
   if (['Shift', 'Control', 'Alt', 'Meta'].includes(e.key) || e.repeat) return;
   if ($('mflash').classList.contains('on')) { e.preventDefault(); e.stopImmediatePropagation(); hideMissionFlash(); return; }
@@ -5929,6 +6089,22 @@ function updateCrates(dt) {
     if (pl.id === ME) { toast(`📦 보급 상자 획득: ${txt}`); sfx('merc'); dailyAdd('crate'); } else if (u.team !== me().team) toast(`적이 보급 상자를 가져갔습니다 (${txt})`);
   }
   G.crates = G.crates.filter(c => !c.taken);
+  for (const w of G.wrecks) {   // 잔해 회수: 식은 뒤(2.5초) 60초 안에 지상 유닛이 지나가면 통째로 회수 (양쪽 누구나)
+    if (!w.val) continue;
+    const age = G.time - (w.t ?? -99);
+    if (age > SALVAGE_LIFE) { w.val = 0; continue; }
+    if (age < SALVAGE_HOT) continue;
+    const u = G.units.find(u => u.alive && u.built !== false && !u.T.building && u.T.move !== 'air' && !u.T.jet && Math.abs(u.x - w.x) < 22 && Math.hypot(u.x - w.x, u.y - w.y) < (w.r || 9) + 12);
+    if (!u) continue;
+    const pl = G.players[u.owner]; pl.money += w.val; pl.salvage = (pl.salvage || 0) + w.val;
+    G.fx.push({ k: 'pop', x: w.x, y: w.y - Zs(w.x, w.y) - 10, txt: '+' + w.val, c: '#ffd25a', sz: 12, t: 0, ttl: 1.1 });
+    if (pl.id === ME) {
+      sfx('merc', w.x, w.y);
+      pl.haul = (pl.haul || []).filter(h => G.time - h[0] < 9); pl.haul.push([G.time, w.val]);
+      if (pl.haul.reduce((a, h) => a + h[1], 0) >= 300 && G.time - (pl.haulT ?? -99) > 15) { pl.haulT = G.time; showBanner('💰 잔해 대량 회수!', '9초 안에 300 이상 회수'); }
+    }
+    w.val = 0;
+  }
   const sd = G.time >= G.timeLimit - SUDDEN && !(G.obj && G.obj.type === 'survive');
   if (sd && !G.sudden) { G.sudden = true; showBanner('⚠️ 서든데스!', '본부 방어 기관총 정지 · 수입 2배'); sfx('alert'); }
 }
@@ -5957,10 +6133,12 @@ const buff = (pl, k) => pl.buffs && pl.buffs[k] > 0;
 const costOf = (pl, c, type) => { let k = buff(pl, 'cheap') ? 0.7 : 1; if (pl.id === ME && G.pol && G.pol.has('mil2') && type && (['tank', 'mech'].includes(type) || TYPES[type].unique)) k *= 0.85;
   return k === 1 ? c : { m: Math.round(c.m * k), i: Math.round(c.i * k) }; };
 let skillAim = false;
+const SALVAGE_RATE = 0.3, SALVAGE_HOT = 2.5, SALVAGE_LIFE = 60;   // 잔해 회수: 유닛 값의 30% · 2.5초 식힘 · 60초 유지
 function useSkill(pl, x, y) {
   const id = skillId(pl), S = SKILLS[id];
   if (pl.skillCD > 0 || !pl.hq.alive) return false;
   pl.skillCD = S.cd * (pl.id === ME && G.mods.skillCd ? G.mods.skillCd : 1) * (pl.id === ME && G.pol && G.pol.has('mil3') ? 0.75 : 1);
+  pl.skillUses = (pl.skillUses || 0) + 1; (G.skillLog ||= []).push({ t: G.time, team: pl.team });
   const foe = 1 - pl.team, strike = (sx, sy, delay, r = 42) => G.strikes.push({ x: sx, y: sy, t: delay, r, team: pl.team, src: pl.hq });
   switch (id) {
     case 'barrage': for (let i = 0; i < 6; i++) { const a = rnd(0, 6.28), d = rnd(0, 55); strike(x + Math.cos(a) * d, y + Math.sin(a) * d, 1.2 + i * 0.28); } break;
@@ -7128,7 +7306,7 @@ function statDraw(hi) {
   const W = cv.clientWidth, H = cv.clientHeight, dpr = window.devicePixelRatio || 1;
   if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
   const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
-  const { L, my, kind } = S, pad = { l: 40, r: 84, t: 10, b: 22 }, T = Math.max(1, L[L.length - 1].t);
+  const { L, my, kind } = S, pad = { l: 40, r: 84, t: G.rptM ? 30 : 10, b: 22 }, T = Math.max(1, L[L.length - 1].t);
   let max = Math.max(1, ...L.map(p => Math.max(p[kind][0], p[kind][1])));
   { const q = max / 4, e = Math.pow(10, Math.floor(Math.log10(q))), m = q / e; const st = (m <= 1 ? 1 : m <= 2 ? 2 : m <= 2.5 ? 2.5 : m <= 5 ? 5 : 10) * e; max = 4 * (kind === 'k' ? Math.max(1, Math.ceil(st)) : st); }   // 눈금 간격이 1·2·2.5·5 단위가 되도록 (격파는 정수)
   const X = t => pad.l + t / T * (W - pad.l - pad.r), Y = v => H - pad.b - v / max * (H - pad.t - pad.b);
@@ -7143,6 +7321,11 @@ function statDraw(hi) {
     L.forEach((p, i) => { const x = X(p.t), y = Y(p[kind][team]); i ? g.lineTo(x, y) : g.moveTo(x, y); }); g.stroke();
   }
   g.setLineDash([]);
+  if (G.rptM) { let lx = -99, row = 0;   // 전투 요약의 핵심 순간(첫 격파 · 최대 교전 · 전환점)을 그래프 위에 점선으로
+    for (const m of G.rptM.list) { const x = Math.round(X(Math.min(m.t, T))) + 0.5; row = x - lx < 26 ? 1 - row : 0; lx = x;
+      g.strokeStyle = 'rgba(255,210,90,.5)'; g.lineWidth = 1; g.setLineDash([3, 3]); g.beginPath(); g.moveTo(x, pad.t - 4); g.lineTo(x, H - pad.b); g.stroke(); g.setLineDash([]);
+      g.font = '12px system-ui, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'top'; g.fillText(m.icon, x, 2 + row * 13); } }
+  g.font = '11px system-ui, sans-serif';
   const end = L[L.length - 1], ex = X(end.t); let ly = [Y(end[kind][my]), Y(end[kind][1 - my])];
   if (Math.abs(ly[0] - ly[1]) < 14) { const m = (ly[0] + ly[1]) / 2, d = end[kind][my] >= end[kind][1 - my] ? -7 : 7; ly = [m + d, m - d]; }   // 끝 라벨 겹침 방지
   [0, 1].forEach(side => { const team = side ? 1 - my : my; dot(ex, Y(end[kind][team]), ST_COL[side]); g.fillStyle = '#e8ecff'; g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillText(`${tt(side ? '적군' : '아군')} ${stShort(end[kind][team])}`, ex + 9, ly[side]); });
@@ -7567,7 +7750,7 @@ function update(dt) {
   G.visT -= dt; if (G.visT <= 0) { G.visT = 0.2; updateVisibility(); }
   G.aiT -= dt; if (G.aiT <= 0) { G.aiT = 1; for (const pl of G.players) if (pl.ctrl === 'ai') aiThink(pl); }
   updateEconomy(dt);
-  updatePoints(dt); updateCrates(dt); updateSkills(dt); checkObjective(dt); updateTutorial();
+  updatePoints(dt); updateCrates(dt); updateSkills(dt); checkObjective(dt); updateTutorial(); sampleArmy(dt);
   for (const u of G.units) { if (u.dropT > 0) u.dropT -= dt; if (u.alive) updateMorale(u, dt); }
   updateSupply(dt); updateMedics(dt); updateTeller(dt); updateOps(dt); updateTask(dt); updateAirDefense(dt);
   for (const u of G.units) {   // 숲 매복: 숲에서 2초 동안 움직이지도 쏘지도 않으면 매복 상태
@@ -7656,6 +7839,67 @@ function scoreBattle(win) {
   return { raw, pts, total };
 }
 const WHY_SWAP = { '적 본부를 파괴했습니다!': '본부가 파괴되었습니다.', '본부가 파괴되었습니다.': '적 본부를 파괴했습니다!', '항복했습니다.': '상대가 항복했습니다.', '상대가 항복했습니다.': '항복했습니다.' };
+// ================= 전투 보고서: 병력 그래프 · 핵심 순간 · MVP · 양측 비교 (gameplan §32) =================
+const ARMY_DT = 2;   // 병력 기록 간격(초)
+function armyVal(team) {   // 병력 가치 = 살아 있는 유닛 비용(돈+철광) × 남은 체력 비율
+  let v = 0;
+  for (const u of G.units) if (u.alive && u.team === team && !u.T.building && !u.T.flat && u.T.cost && u.built !== false) v += (u.T.cost.m + u.T.cost.i) * Math.max(0, u.hp) / u.T.hp;
+  return Math.round(v);
+}
+function sampleArmy(dt) {
+  if (!G.started || G.over) return;
+  G.armyT = (G.armyT ?? 0) - dt; if (G.armyT > 0) return; G.armyT = ARMY_DT;
+  (G.armyLog ||= []).push({ t: G.time, a: [armyVal(0), armyVal(1)], l: G.lostAcc || [0, 0] }); G.lostAcc = [0, 0];
+}
+const fmtK = v => v >= 1000 ? (v / 1000).toFixed(1).replace(/\.0$/, '') + 'k' : String(Math.round(v));
+const fmtT = t => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
+function reportMoments(log, my) {   // 첫 격파 · 최대 교전 · 전환점(또는 우세 굳히기)
+  const out = [], foe = 1 - my;
+  if (G.firstBlood) out.push({ t: G.firstBlood.t, k: 'fb', icon: '🩸', name: tt('첫 격파'), sub: G.firstBlood.team === my ? tt('아군이 먼저') : tt('적이 먼저') });
+  const W = Math.max(1, Math.round(16 / ARMY_DT)); let best = 0, bi = -1;   // 16초 창에서 양쪽 손실 합이 가장 큰 구간
+  for (let i = 0; i < log.length; i++) { let s = 0; for (let j = Math.max(0, i - W + 1); j <= i; j++) s += log[j].l[0] + log[j].l[1]; if (s > best) { best = s; bi = i; } }
+  if (bi >= 0 && best > 0) out.push({ t: log[Math.max(0, bi - (W >> 1))].t, k: 'bb', icon: '💥', name: tt('최대 교전'), sub: `${fmtK(best)} ${tt('손실')}` });
+  // 앞선 쪽: 차이가 큰 쪽 병력의 12% 이하이면 "비슷함"으로 보고 무시
+  const side = e => { const d = e.a[my] - e.a[foe], m = Math.max(e.a[0], e.a[1], 200); return Math.abs(d) <= m * 0.12 ? 0 : Math.sign(d); };
+  let last = 0, flips = [], firstLead = null;
+  for (const e of log) { const sd = side(e); if (!sd) continue; if (last && sd !== last) flips.push(e); last = sd; }
+  if (last) {   // 우세 확보: 첫 교전 이후, 최종 우세 쪽이 끝까지 밀리지 않기 시작한 시점 (시작 병력 차이는 제외)
+    const t0 = G.firstBlood ? G.firstBlood.t : 0;
+    for (let i = log.length - 1; i >= 0 && log[i].t >= t0; i--) { if (side(log[i]) === -last) break; if (side(log[i]) === last) firstLead = log[i]; }
+  }
+  if (flips.length) { const e = flips[flips.length - 1]; out.push({ t: e.t, k: 'tp', icon: '🔄', name: tt('전환점'), sub: side(e) > 0 ? tt('아군 역전') : tt('적 역전'), e }); }
+  else if (firstLead) out.push({ t: firstLead.t, k: 'pa', icon: '📈', name: tt('우세 확보'), sub: side(firstLead) > 0 ? tt('아군이 앞서기 시작') : tt('적이 앞서기 시작'), e: firstLead });
+  return { list: out.sort((a, b) => a.t - b.t), flips: flips.length };
+}
+function reportSummary(log, my, M) {   // 한 줄 총평: 언제 누가 앞섰고, 무엇이 흐름을 바꿨나
+  const tp = M.list.find(m => m.k === 'tp' || m.k === 'pa'); if (!tp) return tt('양쪽 병력이 끝까지 팽팽했습니다');
+  const e = tp.e, up = e.a[my] > e.a[1 - my], vs = `${fmtK(e.a[my])} vs ${fmtK(e.a[1 - my])}`;
+  const sk = (G.skillLog || []).filter(x => x.t <= tp.t && tp.t - x.t <= 20 && (x.team === my) === up).pop();
+  const cause = sk ? (sk.team === my ? tt('지휘관 스킬 직후') : tt('적 지휘관 스킬 직후')) + ' ' : '';
+  const kept = log.slice(log.indexOf(e)).every(x => (x.a[my] - x.a[1 - my]) * (up ? 1 : -1) >= -Math.max(x.a[0], x.a[1], 200) * 0.12);
+  const who = up ? tt('아군 병력이 적을 앞질렀고') : tt('적 병력이 아군을 앞질렀고');
+  return `${fmtT(tp.t)} ${cause}${who} (${vs}) ${kept ? tt('끝까지 우세를 지켰습니다') : tt('이후에도 승부가 출렁였습니다')}${M.flips > 1 ? ` · ${tt('역전')} ${M.flips}${tt('회')}` : ''}`;
+}
+function reportHTML(win) {
+  const log = G.armyLog || [], my = me().team, foe = 1 - my;
+  if (log.length < 3 || G.tutorial) return '';
+  const M = reportMoments(log, my); G.rptM = M;
+  const all = [...G.units, ...G.fallen.filter(u => !G.units.includes(u))].filter(u => !u.T.building && !u.T.flat && (u.kills || 0) > 0);
+  const top = team => all.filter(u => u.team === team).sort((a, b) => (b.kills || 0) - (a.kills || 0) || lvOf(b) - lvOf(a))[0];
+  const card = (u, cls, ttl) => `<div class="${cls}"><small>${ttl}</small><br>${u ? `<b class="n">${u.vname ? '🎖️' + u.vname + ' · ' : ''}${tt(u.T.name)}</b> Lv.${lvOf(u)}<br>${tt('격파')} ${u.kills} · ${u.alive ? tt('생존') : '✝ ' + tt('전사')}` : `<small>${tt('격파 기록 없음')}</small>`}</div>`;
+  const byTeam = (team, f) => G.players.filter(p => p.team === team).reduce((a, p) => a + (f(p) || 0), 0);
+  const peak = t => Math.max(0, ...log.map(e => e.a[t]));
+  const op = t => { const p = G.players.find(p => p.team === t && G.opener && G.opener[p.id]); const O = p && OPENERS[G.opener[p.id]]; return O ? `${O.icon} ${tt(O.name)}` : '—'; };
+  const rows = [[tt('격파한 부대'), G.ukills[my] || 0, G.ukills[foe] || 0, 1], [tt('잃은 부대'), G.ukills[foe] || 0, G.ukills[my] || 0, -1], [tt('최대 병력'), peak(my), peak(foe), 1, fmtK],
+    [tt('잔해 회수'), byTeam(my, p => p.salvage), byTeam(foe, p => p.salvage), 1], [tt('지휘관 스킬'), byTeam(my, p => p.skillUses), byTeam(foe, p => p.skillUses), 0]];
+  const tr = rows.map(([n, a, b, dir, f]) => { const la = dir && a !== b && (dir > 0 ? a > b : a < b), lb = dir && a !== b && !la;
+    return `<tr><td>${n}</td><td class="${la ? 'lead' : ''}">${f ? f(a) : a.toLocaleString()}</td><td class="${lb ? 'lead' : ''}">${f ? f(b) : b.toLocaleString()}</td></tr>`; }).join('')
+    + (G.opener && Object.keys(G.opener).length ? `<tr><td>${tt('오프너')}</td><td>${op(my)}</td><td>${op(foe)}</td></tr>` : '');
+  return `<div class="rpt"><h3>📋 ${tt('전투 요약')}</h3><div class="rpt-sum">${reportSummary(log, my, M)}</div>
+    <div class="rpt-mo">${M.list.map(m => `<span>${m.icon} <b>${fmtT(m.t)}</b> ${m.name} <small>${m.sub}</small></span>`).join('')}</div>
+    <div class="mv">${card(top(my), '', '🏅 ' + tt('우리 MVP'))}${card(top(foe), 'foe', '🎯 ' + tt('적 에이스'))}</div>
+    <table class="vs"><tr><th></th><th>${tt('아군')}</th><th>${tt('적')}</th></tr>${tr}</table></div>`;
+}
 function endGame(win, why) {
   if (G.over) return;
   G.over = true; bannerT = 0; contactT = 0; $('banner').style.display = $('contact').style.display = 'none';
@@ -7683,10 +7927,10 @@ function endGame(win, why) {
       <td><b>${sc.pts[e.id].toLocaleString()}</b>${best ? ' <span class="nb">신기록</span>' : ''}${rank ? `<br><small>개인 ${rank}위</small>` : ''}</td></tr>`;
   }).join('');
   $('overP').innerHTML = `${why}<br><small>${MAPS[G.mapType].name} 지도 · 워게임 ${DIFFS[G.diff].name} (점수 ×${DIFFS[G.diff].mult}) · ${Math.floor(t / 60)}분 ${t % 60}초</small>
-    <table class="wg"><tr><th>종목</th><th>기록</th><th>점수</th></tr>${rows}<tr><td><b>합계</b></td><td></td><td><b>${sc.total.toLocaleString()}</b></td></tr></table>
+    ${reportHTML(win)}${statResultHTML()}<table class="wg"><tr><th>종목</th><th>기록</th><th>점수</th></tr>${rows}<tr><td><b>합계</b></td><td></td><td><b>${sc.total.toLocaleString()}</b></td></tr></table>
     <div>🪙 보상 <b>${gold.toLocaleString()} 골드</b> <small>(누적 ${rec.gold.toLocaleString()})</small></div>` +
     (roster.length ? `<div class="mvp"><b>공로 부대</b> (격파 기여도에 따라 골드 분배)<br>` + roster.map((u, i) =>
-      `${i === 0 ? '🏅' : '·'} ${u.T.name} Lv.${lvOf(u)} — 격파 ${u.kills} · ${Math.round(u.kills / sumK * 100)}% · ${Math.floor(gold * u.kills / sumK)}골드${u.alive ? '' : ' (전사)'}`).join('<br>') + '</div>' : '') + statResultHTML() + hlResultHTML();
+      `${i === 0 ? '🏅' : '·'} ${u.T.name} Lv.${lvOf(u)} — 격파 ${u.kills} · ${Math.round(u.kills / sumK * 100)}% · ${Math.floor(gold * u.kills / sumK)}골드${u.alive ? '' : ' (전사)'}`).join('<br>') + '</div>' : '') + hlResultHTML();
   setTimeout(hlPlay, 30); setTimeout(statBind, 0);
   $('toTheater').style.display = 'none'; $('again').style.display = G.net ? 'none' : 'inline-block';
   if (G.story) $('overP').innerHTML += storyResult(win);

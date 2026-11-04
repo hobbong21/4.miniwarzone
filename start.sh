@@ -4,4 +4,4 @@ cd "$(dirname "$0")" || exit 1
 command -v node >/dev/null || { echo "Node.js 22.5 이상이 필요합니다: https://nodejs.org"; exit 1; }
 PORT="${PORT:-8080}"; export PORT
 ( sleep 1; command -v open >/dev/null && open "http://localhost:$PORT" || xdg-open "http://localhost:$PORT" ) >/dev/null 2>&1 &
-exec node server/server.js
+exec node 4_서버/server.js

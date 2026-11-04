@@ -5,11 +5,11 @@ import { writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..'), OUT = join(tmpdir(), 'mwz-auth-test'), PORT = 8190 + Math.floor(Math.random() * 300), CDP = PORT + 400;
-const CHROME = process.env.CHROME || 'C:/Program Files/Google/Chrome/Application/chrome.exe';
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..'), OUT = join(tmpdir(), 'mwz-auth-test'), PORT = 8190 + Math.floor(Math.random() * 300), CDP = PORT + 400;
+const CHROME = process.env.CHROME || (process.platform === 'darwin' ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' : process.platform === 'win32' ? 'C:/Program Files/Google/Chrome/Application/chrome.exe' : 'google-chrome');
 rmSync(OUT, { recursive: true, force: true }); mkdirSync(OUT + '/prof', { recursive: true });
 const wait = ms => new Promise(r => setTimeout(r, ms));
-const srv = spawn(process.execPath, ['server/server.js'], { cwd: ROOT, env: { ...process.env, PORT: String(PORT), DB_PATH: join(OUT, 'test.db'), MWZ_CREATE_PER_MIN: '1000' }, stdio: 'ignore' });
+const srv = spawn(process.execPath, ['4_서버/server.js'], { cwd: ROOT, env: { ...process.env, PORT: String(PORT), DB_PATH: join(OUT, 'test.db'), MWZ_CREATE_PER_MIN: '1000' }, stdio: 'ignore' });
 const BASE = `http://127.0.0.1:${PORT}`;
 for (let i = 0; i < 50; i++) { try { if ((await fetch(BASE + '/api/health')).ok) break; } catch {} await wait(150); }
 const chrome = spawn(CHROME, ['--headless=new', `--remote-debugging-port=${CDP}`, `--user-data-dir=${OUT}/prof`, '--window-size=1400,900', 'about:blank'], { stdio: 'ignore' });
@@ -31,15 +31,22 @@ await go(BASE + '/member/signup.html'); await wait(800);
 R.redirect = await ev(`[location.search, ${vis('login')}, lgTab, !$('suAcc').hidden]`);
 await shot('1_signup_tab');
 // 2) 회원가입 입력 오류
-const sg = (o) => `(async () => { for (const [k, v] of Object.entries(${JSON.stringify(o)})) { const el = $(k); if (el.type === 'checkbox') el.checked = v; else { el.value = v; el.dispatchEvent(new Event('input')); } } $('lgGo').click(); await new Promise(r => setTimeout(r, 400)); return $('lgMsg').textContent; })()`;
-R.e_id = await ev(sg({ suId: 'Bad', suPw: 'abc123!x', suPw2: 'abc123!x', lgName: '철수', lgAgree: true }));
-R.e_chk = await ev(sg({ suId: 'player01' }));
-R.chk = await ev(`(async () => { $('suChk').click(); await new Promise(r => setTimeout(r, 500)); return $('lgMsg').textContent; })()`);
+const sg = (o) => `(async () => { for (const [k, v] of Object.entries(${JSON.stringify(o)})) { const el = $(k); if (el.type === 'checkbox') el.checked = v; else { el.value = v; el.dispatchEvent(new Event('input')); } } $('suNext').click(); await new Promise(r => setTimeout(r, 600)); return $('suMsg').textContent; })()`;   // ① 계정 만들기 → [다음]
+R.step1 = await ev(`[!document.querySelector('#login .lgp[data-p=acc]').hidden, document.querySelector('#login .lgp[data-p=new]').hidden, document.querySelector('#login .lgsteps span.on').textContent]`);
+R.e_id = await ev(sg({ suId: 'Bad', suPw: 'abc123!x', suPw2: 'abc123!x', lgAgree: true }));
+R.chk = await ev(`(async () => { $('suId').value = 'player01'; $('suId').dispatchEvent(new Event('input')); $('suChk').click(); await new Promise(r => setTimeout(r, 500)); return $('suMsg').textContent; })()`);
 R.e_pw = await ev(sg({ suPw: 'abc', suPw2: 'abc' }));
+R.autoChk = await ev(`(async () => { suChecked = null; $('suNext').click(); await new Promise(r => setTimeout(r, 600)); return [suChecked, $('suMsg').textContent]; })()`);   // [다음]이 중복확인을 대신 함
 R.e_pw2 = await ev(sg({ suPw: 'abc123!x', suPw2: 'abc123!y' }));
 R.e_agree = await ev(sg({ suPw2: 'abc123!x', lgAgree: false }));
+// 2-1) ① 통과 → ② 지휘관 등록 (이름 · 국가만), 이름 필수, ↩로 돌아가도 입력 유지
+R.step2 = await ev(`(async () => { $('lgAgree').checked = true; $('suNext').click(); await new Promise(r => setTimeout(r, 700));
+  return [document.querySelector('#login .lgp[data-p=acc]').hidden, !document.querySelector('#login .lgp[data-p=new]').hidden, $('lgAccShow').textContent, document.querySelector('#login .lgsteps:not([hidden]) span.on')?.textContent, $('lgAgreeGW').hidden, $('lgNation').children.length]; })()`);
+await shot('1b_signup_step2');
+R.e_name = await ev(`(async () => { $('lgName').value = ''; $('lgGo').click(); await new Promise(r => setTimeout(r, 300)); return $('lgMsg').textContent; })()`);
+R.back = await ev(`(async () => { $('lgBack').click(); await new Promise(r => setTimeout(r, 200)); const a = [!document.querySelector('#login .lgp[data-p=acc]').hidden, $('suId').value]; $('suNext').click(); await new Promise(r => setTimeout(r, 600)); return a.concat(!document.querySelector('#login .lgp[data-p=new]').hidden); })()`);
 // 3) 가입 성공 → 메인 화면 (첫 훈련은 건너뜀)
-await ev(`(() => { $('lgAgree').checked = true; $('lgGo').click(); })()`); await wait(1500);
+await ev(`(() => { $('lgName').value = '철수'; $('lgGo').click(); })()`); await wait(1500);
 await ev(`(() => { if (G.tutorial) skipTutorial(); })()`); await wait(500);
 R.signedUp = await ev(`[profile, ${vis('station')}, !!(cloudMeta() && cloudMeta().token), cloudMeta() && cloudMeta().login]`);
 R.dupSignup = await (await fetch(BASE + '/api/signup/check?login=player01')).json();
@@ -86,8 +93,8 @@ await clickWait(`$('stLogout').click()`, 2500);   // 메인 화면 카드의 로
 R.stOut = await ev(`[profile, ${vis('login')}]`);
 // 8) 게스트 → 설정에서 회원가입 (지금 기록 그대로 서버로)
 await clickWait(`lgSet('guest')`, 300);
-R.guestTab = await ev(`[$('suAcc').hidden, $('lgGo').textContent]`);
-await ev(`(() => { $('lgName').value = '게스트군'; $('lgAgree').checked = true; $('lgGo').click(); })()`); await wait(1200);
+R.guestTab = await ev(`[document.querySelector('#login .lgp[data-p=acc]').hidden, $('lgGo').textContent, !$('lgAgreeGW').hidden, $('lgSteps2').hidden]`);
+await ev(`(() => { $('lgName').value = '게스트군'; $('lgAgreeG').checked = true; $('lgGo').click(); })()`); await wait(1200);
 await ev(`(() => { if (G.tutorial) skipTutorial(); const r = loadRec(); r.gold = 999; saveRec(r); })()`); await wait(300);
 await clickWait(`showScreen('profile')`, 600);
 R.guestAcct = await ev(`[$('pfAcct').textContent, !!$('pfJoin')]`);
@@ -104,19 +111,23 @@ await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, devi
 await go(BASE + '/?auth=signup'); R.mobile = await ev('document.documentElement.scrollWidth <= innerWidth'); await shot('5_mobile_signup');
 await send('Emulation.clearDeviceMetricsOverride');
 // 10) 파일로 열면 게스트만
-await ev(`localStorage.clear()`); await go('file:///' + ROOT.replace(/\\/g, '/') + '/game/index.html');
+await ev(`localStorage.clear()`); await go('file:///' + ROOT.replace(/\\/g, '/') + '/3_게임/index.html');
 R.file = await ev(`[lgTab, [...document.querySelectorAll('#login [data-lt]')].map(b => b.disabled).join(',')]`);
 await shot('6_file_guest');
 
 const ok = (n, c) => [n, !!c];
 const checks = [
   ok('/member/signup.html → 게임 안 회원가입 탭', R.redirect[0] === '?auth=signup' && R.redirect[1] && R.redirect[2] === 'signup' && R.redirect[3]),
+  ok('회원가입은 ① 계정 만들기부터 (지휘관 칸 숨김)', R.step1[0] && R.step1[1] && R.step1[2].includes('계정 만들기')),
   ok('잘못된 아이디 거부', R.e_id.startsWith('아이디는')),
-  ok('중복확인 안 하면 거부', R.e_chk === '아이디 중복확인을 해 주세요'),
   ok('중복확인 통과', R.chk.includes('사용할 수 있는')),
   ok('약한 비밀번호 거부', R.e_pw.startsWith('비밀번호는')),
+  ok('[다음]이 중복확인을 자동으로', R.autoChk[0] === 'player01' && R.autoChk[1].startsWith('비밀번호는')),
   ok('비밀번호 확인 불일치 거부', R.e_pw2 === '비밀번호 확인이 일치하지 않습니다'),
   ok('약관 동의 필요', R.e_agree.includes('동의')),
+  ok('① 통과 → ② 지휘관 등록 (아이디 표시 · 국가 목록 · 게스트용 동의칸 숨김)', R.step2[0] && R.step2[1] && R.step2[2].includes('player01') && R.step2[3].includes('지휘관 등록') && R.step2[4] && R.step2[5] > 0),
+  ok('② 지휘관 이름 필수', R.e_name.includes('지휘관 이름')),
+  ok('↩ 계정 정보 고치기 → ①로, 입력 유지 · 다시 ②로', R.back[0] && R.back[1] === 'player01' && R.back[2]),
   ok('가입 → 메인 화면 · 서버 토큰 · 아이디', R.signedUp[0] === '철수' && R.signedUp[1] && R.signedUp[2] && R.signedUp[3] === 'player01'),
   ok('가입한 아이디는 중복 처리', R.dupSignup.available === false),
   ok('프로필에 회원 · 아이디 표시', R.acct.includes('player01') && R.acct.includes('로그아웃')),
@@ -135,7 +146,7 @@ const checks = [
   ok('세계 지도: 국경 · 바탕 그림 · 모든 나라 땅 · 국기 배지', R.world[0] && R.world[1] > 150 && R.world[2] && R.world[3] && R.world[4] >= 30),
   ok('메인 화면 카드에서 로그아웃', R.stOut[0] === null && R.stOut[1]),
   ok('설정에서 로그아웃', R.setOut[0] === null && R.setOut[1]),
-  ok('게스트 탭: 아이디 칸 숨김 · 게스트로 시작', R.guestTab[0] && R.guestTab[1].startsWith('게스트로 시작')),
+  ok('게스트 탭: 계정 단계 없이 지휘관 등록 · 동의칸 · 게스트로 시작', R.guestTab[0] && R.guestTab[1].startsWith('게스트로 시작') && R.guestTab[2] && R.guestTab[3]),
   ok('게스트 프로필: 게스트 표시 · 회원가입 버튼', R.guestAcct[0].includes('게스트') && R.guestAcct[1] && R.joinForm),
   ok('설정에서 회원가입 → 아이디 연결 · 기록 업로드', R.join[0] === 'guest777' && R.join[1] === false && R.join[2]),
   ok('게스트 기록이 서버 계정으로 옮겨짐', R.joinServer[0] === '게스트군' && R.joinServer[1] === 999),

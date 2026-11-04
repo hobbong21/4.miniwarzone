@@ -1,9 +1,9 @@
 node_modules
 data
 archive
-docs
-tests
-deploy
+1_기획서
+2_QA
+5_배포
 .git
 .github
 .claude

@@ -28,6 +28,19 @@
    "timeout": 43.8,
    "blueWin": 57.1,
    "date": "2026-11-04"
+  },
+  {
+   "label": "§45 진 쪽 AI 역전 행동",
+   "games": 240,
+   "seeds": "1~240",
+   "comebackWin": 28.8,
+   "lead3Win": 74.0,
+   "flips": 1.8,
+   "finalFlip": 12.3,
+   "avgLen": 524,
+   "timeout": 54.2,
+   "blueWin": 60.0,
+   "date": "2026-11-04"
   }
  ]
 }

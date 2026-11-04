@@ -152,7 +152,7 @@ r = await J(`(()=>{ newGame({map:'plains'}); G.started=true; G.tutorial=false; c
   const h0=b.hq.hp; for (let i=0;i<30*10.2;i++) { updatePoints(1/30); updateComeback(1/30); } o.shell=Math.round(h0-b.hq.hp); o.hold=Math.round(G.coreHold[a.team]); o.edgeFrozen=G.points.filter(p=>!p.core).every(p=>p.prog===0);
   G.time=G.timeLimit+1; let res=null; const ee=endGame; endGame=(w,why)=>{res=[w,why]}; G.units.filter(u=>u.alive).forEach(u=>{}); update(1/30); endGame=ee; o.res=res;
   return JSON.stringify(o) })()`);
-ok('§45 final battle: core holder shells enemy HQ 3%/10s, edge points frozen', r.final && r.shell>=48 && r.hold>=10 && r.edgeFrozen, JSON.stringify(r));
+ok('§45 final battle: core holder shells enemy HQ 6%/10s, edge points frozen', r.final && r.shell>=96 && r.hold>=10 && r.edgeFrozen, JSON.stringify(r));
 ok('§45 time-out judged by core hold first', r.res && r.res[0]===true && /중앙 확보/.test(r.res[1]), JSON.stringify(r));
 r = await J(`(()=>{ newGame({map:'plains'}); G.started=true; G.tutorial=false; const a=me(), b=G.players.find(p=>p.team!==a.team); const o={};
   G.crateT=0; updateCrates(1/30); o.n=G.crates.length; o.mirror=G.crates.length===2 && Math.abs(G.crates[0].x+G.crates[1].x-WW)<1 && G.crates[0].y===G.crates[1].y;
@@ -161,6 +161,17 @@ r = await J(`(()=>{ newGame({map:'plains'}); G.started=true; G.tutorial=false; c
   return JSON.stringify(o) })()`);
 ok('§45 symmetric crates (2, mirrored)', r.n===2 && r.mirror, JSON.stringify(r));
 ok('§45 bounty: Lv.3+ kill → wreck ×2 (216), gauge +15', r.lv>=3 && r.wreck===216 && r.gain===r.gwant, JSON.stringify(r));
+r = await J(`(()=>{ newGame({map:'plains'}); G.started=true; G.tutorial=false; const a=me(), b=G.players.find(p=>p.team!==a.team); const o={};
+  const mk=(pl,t,x,y)=>{ const u=makeUnit(pl,t,x,y); u.built=true; G.units.push(u); return u; };
+  const mine=[0,1,2,3].map(i=>mk(b,'tank',b.hq.x-150,b.hq.y+i*30)); const foes=[0,1,2,3,4,5].map(i=>mk(a,'tank',WW/2,WH/2+i*25));
+  G.time=100; G.avHist=[[80,armyVal(0),armyVal(1)],[85,armyVal(0),armyVal(1)],[90,armyVal(0),armyVal(1)],[95,armyVal(0),armyVal(1)]];
+  foes.slice(0,3).forEach(u=>u.alive=false); G.avHist.push([100,armyVal(0),armyVal(1)]); G.allout[b.team]=true;
+  o.counter=aiCounter(b, mine); o.cT=b.counterT>G.time; const core=G.points.find(p=>p.core); o.toCore=mine.every(u=>u.orders.length && Math.hypot(u.orders.at(-1).x-core.x,u.orders.at(-1).y-core.y)<160);
+  o.again=aiCounter(b, mine);
+  b.skillCD=0; b.nation=Object.keys(NATIONS).find(n=>(NATION_SKILL[n]||'')==='barrage'); const n0=(G.calls||[]).length; foes.forEach(u=>u.alive=true); foes.forEach(u=>u.seen[b.team]=1); o.held=aiComebackSkill(b, foes); o.skillUsed=(G.calls||[]).length>n0;
+  return JSON.stringify(o) })()`);
+ok('§45 loser AI counterattacks to center when enemy push breaks (once per 35s)', r.counter && r.cT && r.toCore && !r.again, JSON.stringify(r));
+ok('§45 loser AI saves targeted skill for the most valuable enemy cluster', r.held && r.skillUsed, JSON.stringify(r));
 // ---- 6. PvP snapshot carries wreck value
 r = await J(`(()=>{ newGame(); G.started=true; const a=me(), b=G.players.find(p=>p.team!==a.team); const t=makeUnit(b,'tank',WW/2,WH/2); t.built=true; G.units.push(t); damage(t,1e5,a.hq); const s=makeSnap(); const w=s.w.find(w=>w.val!==undefined); return JSON.stringify({has:!!w, val:w&&w.val}) })()`);
 ok('PvP snapshot includes wreck val', r.has, JSON.stringify(r));

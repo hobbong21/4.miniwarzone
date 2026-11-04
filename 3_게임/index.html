@@ -2303,11 +2303,13 @@ function aiThink(pl) {
   const army = G.units.filter(u => u.alive && u.owner === pl.id && !u.T.building && !u.T.builder);
   const seen = G.units.filter(e => e.alive && e.team !== pl.team && e.seen[pl.team] && !e.T.building);
   const threat = seen.find(e => dist(e, hq) < 480);
+  const cbk = aiComebackSkill(pl, seen);
   if (threat) {   // 기지 방어
     for (const u of army) if (!u.forced && dist(u, hq) < 1000 && !(u.orders[0] && u.orders[0].tag === 'def'))
       issue(u, { kind: 'amove', x: threat.x, y: threat.y, tag: 'def' }, false);
     return;
   }
+  if (aiCounter(pl, army)) return;   // §45: 적 공세가 꺾이면 반격
   pl.waveT -= 1;
   const enemyHQ = G.players.filter(p => p.team !== pl.team && p.hq.alive).map(p => p.hq)[0];
   if (enemyHQ && pl.waveT <= 0 && army.length >= 8 + 3 * pl.waves && (G.tutorial || G.obj && G.obj.type === 'survive' || armyVal(pl.team) >= armyVal(1 - pl.team) * AI45.push)) {   // 총공격 (회차마다 더 크게 모아서) · §45: 확실히 앞설 때만 본부로, 아니면 중앙 다툼
@@ -2315,14 +2317,14 @@ function aiThink(pl) {
     for (const u of army) if (!u.forced) issue(u, { kind: 'amove', x: enemyHQ.x + rnd(-60, 60), y: enemyHQ.y + rnd(-60, 60), tag: 'atk' }, false);
     return;
   }
-  aiSkill(pl, army, seen); aiMode(pl, army);
+  if (!cbk) aiSkill(pl, army, seen); aiMode(pl, army);
   for (const u of army) if (lvOf(u) >= 3 && !u.T.upg && UPGRADES[u.type] && pl.money >= UPG_COST + 100) doUpgrade(u, (Math.random() * 2) | 0);
   const ground = army.filter(u => u.T.move !== 'air' && !u.orders.length && !u.forced && !u.auto);
   for (const c of G.crates) if (c.fall < 1.5 && ground.length) {   // 보급 상자는 가장 가까운 유닛이 주우러
     const u = ground.sort((a, b) => dist(a, c) - dist(b, c))[0]; if (dist(u, c) < 900) { issue(u, { kind: 'move', x: c.x, y: c.y }, false); ground.splice(0, 1); }
   }
   const tgtPts = (G.points || []).filter(p => p.owner !== pl.team);
-  if (tgtPts.length && ground.length >= 3) {   // 놀고 있는 병력은 가까운 거점부터 점령
+  if (tgtPts.length && ground.length >= 3 && !(G.allout && G.allout[pl.team] && !(pl.counterT > G.time))) {   // 놀고 있는 병력은 가까운 거점부터 점령 (§45: 총동원 중엔 흩어지지 않고 본부 앞에서 버팀)
     const p = tgtPts.sort((a, b) => (dist(a, hq) - (a.core ? 450 : 0) + (G.sudden && !a.core && !a.hill ? 1e5 : 0)) - (dist(b, hq) - (b.core ? 450 : 0) + (G.sudden && !b.core && !b.hill ? 1e5 : 0)))[0];   // 중앙 거점 우선 · 결전엔 중앙만
     for (const u of ground) { const a = rnd(0, 6.28), r = rnd(0, 45); issue(u, { kind: 'amove', x: p.x + Math.cos(a) * r, y: p.y + Math.sin(a) * r }, false); }
     return;
@@ -6305,11 +6307,11 @@ const GAUGE = { rate: 0.6, loss: 0.05, kill: 0.012, bounty: 15, core: 1.5 };   /
 const ALLOUT = { on: 0.65, off: 0.85, hold: 10, cost: 0.75, inc: 1.25, def: 0.75, r: 450, home: 0.3 };   // 총동원: 병력 65% 미만 10초 → 켜짐, 85% 이상 → 꺼짐 · 생산 비용 -25% · 수입 +25% · 본부 근처 받는 피해 -25% · AI는 본부 앞에 모였다가 반격
 const LAST_STAND = { hp: 0.4, share: 0.5, min: 300, max: 900, pvp: 500, fireT: 10 };
 const AI45 = { push: 1.3 };   // AI 총공격 조건: 내 병력 가치 ≥ 상대 × 1.3
-const FINAL = { shell: 10, dmg: 0.03 }, GUARD = { t: 60, r: 450, k: 0.6 };
+const FINAL = { shell: 10, dmg: 0.06 }, GUARD = { t: 60, r: 450, k: 0.6 };
 const gaugeMax = pl => pl.skillMax || (skillOf(pl) || {}).cd || 90;
 function gaugeAdd(pl, pts) { if (!pl) return; pl.skillCD = Math.max(0, (pl.skillCD || 0) - pts * gaugeMax(pl) / 100); }
 const gaugePct = pl => clamp(Math.floor(100 * (1 - (pl.skillCD || 0) / gaugeMax(pl))), 0, 100);
-const FINAL_SUB = () => (G.points || []).some(p => p.core) ? '중앙 거점만 남습니다 — 잡은 쪽이 10초마다 적 본부 포격 · 수입 2배 · 본부 기관총 정지' : '본부 방어 기관총 정지 · 수입 2배';
+const FINAL_SUB = () => (G.points || []).some(p => p.core) ? '중앙 거점만 남습니다 — 잡은 쪽이 10초마다 적 본부 포격(6%) · 수입 2배 · 본부 기관총 정지' : '본부 방어 기관총 정지 · 수입 2배';
 const finalHoldTxt = () => { const ch = G.coreHold || [0, 0], my = me().team; return (G.points || []).some(p => p.core) ? `중앙 확보 아군 ${Math.floor(ch[my])}초 · 적 ${Math.floor(ch[1 - my])}초` : ''; };
 const capMul = team => {   // 점수 모드: 뒤진 쪽은 점령 속도 +50%
   const sc = G.obj && (G.obj.type === 'dom' ? G.modeScore : G.obj.type === 'koth' ? G.kothT : null);
@@ -6404,6 +6406,7 @@ function updateComeback(dt) {
   }
   G.cbT -= dt; if (G.cbT > 0) return; G.cbT = 1;
   const av = [armyVal(0), armyVal(1)];
+  (G.avHist ||= []).push([G.time, av[0], av[1]]); if (G.avHist.length > 30) G.avHist.shift();   // 진 쪽 AI 반격 판단용 (최근 30초)
   for (const t of [0, 1]) {   // 총동원 (열세 보정)
     const foe = av[1 - t], low = G.time >= 60 && foe >= 300 && av[t] < foe * ALLOUT.on;   // 첫 60초(오프너 차이)는 제외
     G.aoLow[t] = low ? G.aoLow[t] + 1 : 0;
@@ -6411,6 +6414,39 @@ function updateComeback(dt) {
     else if (G.allout[t] && av[t] >= foe * ALLOUT.off) { G.allout[t] = false; alloutNotice(t, false); alloutRally(t, false); }
   }
   for (const pl of G.players) if (pl.hq && pl.hq.alive && pl.lastStand == null && G.time > 30 && pl.hq.hp < pl.hq.T.hp * LAST_STAND.hp) lastStand(pl, av[1 - pl.team], av[pl.team]);
+}
+
+// ---- §45 진 쪽 AI의 역전 행동: 게이지 스킬은 가장 비싼 적 무리에 · 총동원 중엔 본부 앞에서 버팀 · 적 공세가 꺾이면 중앙으로 반격
+const AI_CB = { behind: 0.85, clusterR: 90, minVal: 450, broken: 0.2, peakMin: 400, window: 20, counterT: 35, minRatio: 0.5 };   // 적 병력이 20초 안에 최고치의 20% 이상 줄면 '공세가 꺾임'
+const aiBehind = pl => { const a = armyVal(pl.team), f = armyVal(1 - pl.team); return f >= 300 && a < f * AI_CB.behind; };
+function valueCluster(list) {   // 반경 90 안 적 부대 값(비용 × 체력) 합이 가장 큰 곳
+  let best = null, bv = 0;
+  for (const e of list) { let v = 0; for (const o of list) if (Math.hypot(o.x - e.x, o.y - e.y) < AI_CB.clusterR && o.T.cost) v += (o.T.cost.m + o.T.cost.i) * Math.max(0, o.hp) / o.T.hp; if (v > bv) { bv = v; best = e; } }
+  return best && { x: best.x, y: best.y, v: bv };
+}
+function aiComebackSkill(pl, seen) {   // 뒤질 때: 게이지 스킬 · 포격 지원을 아껴 두었다가 큰 무리에 (true = 이번엔 일반 스킬 판단 생략)
+  if (G.tutorial || !aiBehind(pl)) return false;
+  const ground = seen.filter(e => e.T.move !== 'air' && !e.T.flat), c = valueCluster(ground);
+  const S = skillOf(pl);
+  if (S.target && !(pl.skillCD > 0) && c && c.v >= AI_CB.minVal) useSkill(pl, c.x, c.y);
+  if (!(pl.opCD.fire > 0) && c && c.v >= AI_CB.minVal * 0.8) useOp(pl, 'fire', [], c.x, c.y);
+  return !!S.target;   // 지정형 스킬은 큰 무리가 올 때까지 아낌 (비지정형은 평소대로)
+}
+function aiCounter(pl, army) {
+  if (G.tutorial || !G.avHist || G.avHist.length < 5) return false;
+  const my = pl.team, foe = 1 - my, now = G.avHist.at(-1), recent = G.avHist.filter(h => now[0] - h[0] <= AI_CB.window);
+  if (pl.counterT > G.time) return false;   // 반격 중: 이미 내린 명령대로
+  const peak = Math.max(...recent.map(h => h[1 + foe])), drop = peak - now[1 + foe];
+  const broken = peak >= AI_CB.peakMin && drop >= peak * AI_CB.broken;
+  if (!broken || !(G.allout && G.allout[my] || aiBehind(pl) || pl.lastStand != null) || armyVal(my) < armyVal(foe) * AI_CB.minRatio) return false;
+  const units = army.filter(u => !u.forced && !u.routing && !u.T.jet); if (units.length < 3) return false;
+  const core = (G.points || []).find(p => p.core), foePl = G.players.find(p => p.team === foe);
+  const tgt = core && core.owner !== my ? core : foePl ? foePl.rally : null; if (!tgt) return false;
+  pl.counterT = G.time + AI_CB.counterT; pl.counters = (pl.counters || 0) + 1;
+  if (pl.rallyFront) { pl.rally = pl.rallyFront; pl.rallyFront = null; }   // 본부 앞에서 버티던 병력을 다시 전선으로
+  if (!useOp(pl, 'assault', units, tgt.x, tgt.y)) for (const u of units) issue(u, { kind: 'amove', x: tgt.x + rnd(-40, 40), y: tgt.y + rnd(-40, 40) }, false);
+  if (pl.team !== me().team) { toast('⚠️ 적의 반격! 적이 전열을 정비해 중앙으로 몰려옵니다'); notify('⚠️ 적 반격', tgt.x, tgt.y); }
+  return true;
 }
 
 // ---- ② 국가별 지휘관 스킬

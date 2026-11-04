@@ -29,11 +29,11 @@ for (let i = 0; i < N; i++) {
     const center = G.fallen.filter(u => Math.abs(u.x - WW/2) < WW * 0.2).length;
     me().ctrl = 'human';
     return JSON.stringify({ map:'${m}', diff:'${diff}', seed:${seed}, win: res ? res[0] : null, why: res ? res[1] : 'cap', t: Math.round(G.time),
-      log: G.armyLog.map(e => [Math.round(e.t), Math.round(e.a[0]), Math.round(e.a[1])]), deaths: G.fallen.length, center, ao: aoN, ls: G.players.map(p => p.lastStand == null ? -1 : Math.round(p.lastStand)), ch: (G.coreHold || [0, 0]).map(Math.round), core: (G.points || []).some(p => p.core), lv: G.fallen.filter(u => lvOf(u) >= 3).length, opener: [G.opener[0], G.opener[1]] });
+      log: G.armyLog.map(e => [Math.round(e.t), Math.round(e.a[0]), Math.round(e.a[1])]), deaths: G.fallen.length, center, ao: aoN, ls: G.players.map(p => p.lastStand == null ? -1 : Math.round(p.lastStand)), ch: (G.coreHold || [0, 0]).map(Math.round), ctr: G.players.map(p => p.counters || 0), core: (G.points || []).some(p => p.core), lv: G.fallen.filter(u => lvOf(u) >= 3).length, opener: [G.opener[0], G.opener[1]] });
   } catch (e) { return JSON.stringify({ err: String(e.stack || e).slice(0, 300) }) } })()`);
   if (g.err) { console.log('❌', m, g.err); continue; }
   games.push(g);
-  process.stdout.write(`${i + 1}/${N} ${m.padEnd(9)} ${diff} ${g.win === true ? '파랑 승' : g.win === false ? '빨강 승' : '무승부'} ${Math.floor(g.t / 60)}:${String(g.t % 60).padStart(2, '0')}  ${g.why}  총동원 ${g.ao} 최후 ${g.ls} 중앙 ${g.core ? g.ch : '없음'}\n`);
+  process.stdout.write(`${i + 1}/${N} ${m.padEnd(9)} ${diff} ${g.win === true ? '파랑 승' : g.win === false ? '빨강 승' : '무승부'} ${Math.floor(g.t / 60)}:${String(g.t % 60).padStart(2, '0')}  ${g.why}  총동원 ${g.ao} 최후 ${g.ls} 중앙 ${g.core ? g.ch : '없음'} 반격 ${g.ctr}\n`);
 }
 
 // ---- 지표 계산 (기획서 §45.5)

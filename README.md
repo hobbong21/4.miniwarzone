@@ -20,6 +20,10 @@
 - **회원 · 순위 · PVP**: `start.bat` / `./start.sh` 더블클릭, 또는 `npm start` → http://localhost:8080 (Node.js 22.5 이상)
 - **테스트**: `npm test`(서버) · `npm run test:auth`(회원가입 · 로그인) · `npm run test:game`(게임 회귀) · `npm run test:fun`(재미 측정, AI 대 AI)
 
+## 지금 할 일
+
+기획서 [§45.11 할 일](1_기획서/미니워존_기획서.md) 표를 위에서부터 진행 (교리 균형 → 시간 종료 줄이기 → 역전 지표 → 그림 → PVP · 스토리 → 사람 플레이 테스트)
+
 ## 관리 원칙
 
 - 브랜치는 `main` 하나만 씁니다. 버전 백업 파일(`index_v*.html`)은 만들지 않고 git 기록으로 관리

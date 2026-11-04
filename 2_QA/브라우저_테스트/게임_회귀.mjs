@@ -75,8 +75,48 @@ r = await J(`(()=>{ const log=[{t:0,a:[1000,1000],l:[0,0]},{t:30,a:[1500,800],l:
   G.firstBlood={t:10,team:0}; G.skillLog=[{t:80,team:me().team}]; const M=reportMoments(log, me().team);
   return JSON.stringify({m:M.list.map(x=>x.k+'@'+x.t), flips:M.flips, sum:reportSummary(log, me().team, M)}) })()`);
 ok('turning point = last lead change, flips counted, skill cause named', r.m.includes('tp@90') && r.flips===2 && /지휘관 스킬 직후/.test(r.sum) && /역전 2회/.test(r.sum), JSON.stringify(r));
+// ---- 5b. 포격 예고 조준원 (기획서 §43)
+const natOf = k => `Object.keys(NATIONS).find(n => (NATION_SKILL[n] || 'barrage') === '${k}')`;
+r = await J(`(()=>{ $('ceremony').style.display='none'; $('over').style.display='none'; newGame(); G.started=true; G.tutorial=false;
+  const a=me(), b=G.players.find(p=>p.team!==a.team); b.nation=${natOf('barrage')}; const x=WW/2, y=WH/2;
+  const u1=makeUnit(a,'tank',x,y), u2=makeUnit(a,'mech',x+30,y); for (const u of [u1,u2]) { u.built=true; G.units.push(u); }
+  SETTINGS.speed=3; const p0=(G.pings||[]).length, n0=$('feed') ? $('feed').textContent.length : 0;
+  b.skillCD=0; useSkill(b, x, y); const c=G.calls[0];
+  const res={n:G.calls.length, kind:c.kind, team:c.team===b.team, inside:c.inside, t1:+(c.t1-G.time).toFixed(2), strikesLinked:G.strikes.filter(q=>q.call===c).length, speed:SETTINGS.speed, ping:(G.pings||[]).length>p0};
+  render(); res.drawOk=true;
+  return JSON.stringify(res) })()`);
+ok('enemy skill barrage → one reticle call (2 units inside, 6 shells linked)', r.n===1 && r.kind==='barrage' && r.team && r.inside===2 && r.strikesLinked===6 && r.t1===1.2, JSON.stringify(r));
+ok('threat warning: speed back to 1×, minimap ping, render ok', r.speed===1 && r.ping && r.drawOk, JSON.stringify(r));
+await ev(`(()=>{ const c=G.calls[0]; cam.zoom=1.6; cam.x=c.x-VW/cam.zoom/2; cam.y=c.y-VH/cam.zoom/2; for(let i=0;i<12;i++) update(1/30); })()`); await sleep(300); await shot('조준원_적포격.png');
+r = await J(`(()=>{ for(let i=0;i<30*4;i++) update(1/30); return JSON.stringify({dodges:G.dodges||0, calls:G.calls.length}) })()`);
+ok('units stayed inside → hit, no dodge credit, call cleaned up', r.dodges===0 && r.calls===0, JSON.stringify(r));
+r = await J(`(()=>{ newGame(); G.started=true; G.tutorial=false; const a=me(), b=G.players.find(p=>p.team!==a.team); b.nation=${natOf('barrage')}; const x=WW/2, y=WH/2;
+  let got=[];
+  for (let k=0;k<3;k++) { const us=[makeUnit(a,'tank',x,y), makeUnit(a,'mech',x+20,y+10)]; for (const u of us) { u.built=true; G.units.push(u); }
+    b.skillCD=0; useSkill(b, x, y); for (const u of us) { u.x += 260; u.y += 0; }   // 바로 원 밖으로
+    for(let i=0;i<30*4;i++) update(1/30); got.push(G.dodges||0); for (const u of us) u.alive=false; }
+  const rec0=loadRec().stats.dodgeBest||0; endGame(true,'회피 테스트'); const rec=loadRec();
+  return JSON.stringify({got, best:rec.stats.dodgeBest, medal:MEDALS.find(m=>m[1]==='침착한 손')[3](rec)}) })()`);
+ok('dodge 3 enemy barrages → G.dodges 1,2,3 → stats.dodgeBest 3 → 침착한 손 medal', JSON.stringify(r.got)==='[1,2,3]' && r.best===3 && r.medal===true, JSON.stringify(r));
+r = await J(`(()=>{ $('ceremony').style.display='none'; $('over').style.display='none'; newGame({diff:'t10'}); G.started=true; G.tutorial=false; const a=me(), b=G.players.find(p=>p.team!==a.team); a.nation=${natOf('barrage')}; const x=WW/2, y=WH/2;
+  const e=[makeUnit(b,'tank',x,y), makeUnit(b,'mech',x+20,y)]; for (const u of e) { u.built=true; G.units.push(u); }
+  a.skillCD=0; useSkill(a, x, y); const c=G.calls[0];
+  for(let i=0;i<9;i++) update(1/30); const before=e.map(u=>u.orders.length);
+  for(let i=0;i<6;i++) update(1/30); const after=e.map(u=>u.orders.length ? Math.round(Math.hypot(u.orders[0].x-x,u.orders[0].y-y)) : 0);
+  return JSON.stringify({mine:c.team===a.team, before, after, r:c.r}) })()`);
+ok('AI dodges my reticle after reaction time (hard 0.4s): move orders outside the circle', r.mine && r.before.every(n=>n===0) && r.after.every(d=>d>r.r), JSON.stringify(r));
+r = await J(`(()=>{ newGame(); G.started=true; G.tutorial=false; const a=me(), b=G.players.find(p=>p.team!==a.team); const x=WW/2, y=WH/2;
+  const us=[makeUnit(a,'tank',x,y), makeUnit(a,'tank',x+25,y)]; for (const u of us) { u.built=true; G.units.push(u); }
+  b.opCD={}; useOp(b,'fire',[],x,y); const c=G.calls.find(q=>q.kind==='fire'); for(let i=0;i<30*4.2;i++) update(1/30);
+  const shotsLinked = true; return JSON.stringify({kind:c&&c.kind, inside:c&&c.inside, hit:c&&c.hit, oldDrawGone: !/포격 지원 예고: 붉은 표적/.test(document.documentElement.innerHTML)}) })()`);
+ok('op "포격 지원" uses the same reticle; staying units are hit (call.hit)', r.kind==='fire' && r.inside===2 && r.hit===true && r.oldDrawGone, JSON.stringify(r));
+r = await J(`(()=>{ newGame(); G.started=true; const a=me(), b=G.players.find(p=>p.team!==a.team); b.nation=${natOf('airstrike')}; const x=WW/2, y=WH/2; b.skillCD=0; useSkill(b,x,y); const c=G.calls[0];
+  return JSON.stringify({kind:c.kind, capsule:c.x0!=null, inLine:inCall(c,x+110,y), outEnd:inCall(c,x+200,y), outSide:inCall(c,x,y+60)}) })()`);
+ok('airstrike reticle is a capsule along the bomb line', r.kind==='airstrike' && r.capsule && r.inLine && !r.outEnd && !r.outSide, JSON.stringify(r));
+r = await J(`(()=>{ const S=makeSnap(); const n=G.calls.length; G.calls=[]; const t=G.time; netApply(S); return JSON.stringify({sent:S.cl.length, back:G.calls.length, n, kind:G.calls[0]&&G.calls[0].kind}) })()`);
+ok('PvP snapshot carries reticles to the guest', r.sent===1 && r.back===1 && r.kind==='airstrike', JSON.stringify(r));
 // ---- 6. PvP snapshot carries wreck value
-r = await J(`(()=>{ const s=makeSnap(); const w=s.w.find(w=>w.val!==undefined); return JSON.stringify({has:!!w}) })()`);
+r = await J(`(()=>{ newGame(); G.started=true; const a=me(), b=G.players.find(p=>p.team!==a.team); const t=makeUnit(b,'tank',WW/2,WH/2); t.built=true; G.units.push(t); damage(t,1e5,a.hq); const s=makeSnap(); const w=s.w.find(w=>w.val!==undefined); return JSON.stringify({has:!!w, val:w&&w.val}) })()`);
 ok('PvP snapshot includes wreck val', r.has, JSON.stringify(r));
 // ---- 7. Regression: long AI-vs-AI across maps/modes
 const maps = await J(`JSON.stringify(Object.keys(MAPS))`);

@@ -3876,6 +3876,7 @@ function drawModeMarks() {
   }
 }
 function drawCratesStrikes() {
+  if (!CAPTURE) G.worldTf = ctx.getTransform();   // 조준원은 안개 위에 다시 그리므로 월드 변환을 기억
   drawModeMarks();
   for (const c of G.crates || []) {   // 낙하산 보급 상자
     const gy = c.y - Zs(c.x, c.y), z = Math.max(0, c.fall) * 30;
@@ -3934,6 +3935,10 @@ function drawMinimap() {
   }
   if (G.task && G.task.x != null) { ctx.font = '12px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('🚨', MM.x + G.task.x * sx, MM.y + G.task.y * sy + 4); }
   for (const c of G.crates || []) { ctx.font = '10px sans-serif'; ctx.textAlign = 'center'; ctx.fillText('📦', MM.x + c.x * sx, MM.y + c.y * sy + 4); }
+  for (const c of G.calls || []) { if (G.time > c.t2) continue;   // 포격 예고: 아군 파랑 · 적 빨강 깜빡임
+    const mine = c.team === me().team, a = 0.55 + 0.45 * Math.sin(G.time * 14), w = c.x0 != null ? (c.x1 - c.x0) * sx / 2 : 0;
+    ctx.beginPath(); ctx.ellipse(MM.x + c.x * sx, MM.y + c.y * sy, Math.max(4, c.r * sx) + w, Math.max(4, c.r * sy), 0, 0, 7);
+    ctx.fillStyle = mine ? `rgba(80,160,255,${0.35 * a})` : `rgba(255,60,45,${0.45 * a})`; ctx.fill(); ctx.strokeStyle = mine ? '#8cc4ff' : '#ff5a4a'; ctx.lineWidth = 1.5; ctx.stroke(); }
   ctx.strokeStyle = '#4a3d2a'; ctx.lineWidth = 1;
   ctx.strokeRect(MM.x + Math.max(0, cam.x) * sx, MM.y + Math.max(0, cam.y) * sy, Math.min(WW, VW / cam.zoom) * sx, Math.min(WH, VH / cam.zoom) * sy);
 }
@@ -3946,6 +3951,7 @@ function render() {
   drawWorldLayer(z, ox, oy);
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   drawFog();
+  if (G.worldTf && G.calls && G.calls.length) { ctx.setTransform(G.worldTf); drawCalls(); ctx.setTransform(DPR, 0, 0, DPR, 0, 0); }
   drawWeather();
   drawVignette();
   if (mouse.down === 0 && mouse.drag) {
@@ -5996,7 +6002,7 @@ function makeSnap() {
   return { k: 'snap', time: r1(G.time), uk: G.ukills,
     pl: G.players.map(p => ({ money: p.money | 0, iron: p.iron | 0, earned: p.earned | 0, kills: p.kills, losses: p.losses, skillCD: p.skillCD, buffs: p.buffs, nation: p.nation, opCD: p.opCD, coTarget: p.coTarget, adDown: !!p.adDown, apDown: !!p.apDown })),
     pts: G.points.map(p => [p.owner, Math.round(p.prog), p.contested ? 1 : 0]), cr: G.crates.map(c => [c.x | 0, c.y | 0, Math.round(c.fall * 10) / 10]),
-    st: G.strikes.map(q => [q.x | 0, q.y | 0, q.r]), br: G.barrages.map(b => [b.x | 0, b.y | 0, r1(b.t0), b.team]), sd: G.sudden ? 1 : 0,
+    st: G.strikes.map(q => [q.x | 0, q.y | 0, q.r]), cl: (G.calls || []).map(c => [c.x | 0, c.y | 0, c.r | 0, c.x0 == null ? -1 : c.x0 | 0, c.x1 == null ? -1 : c.x1 | 0, r1(c.t0), r1(c.t1), r1(c.t2), c.team, c.kind]), br: G.barrages.map(b => [b.x | 0, b.y | 0, r1(b.t0), b.team]), sd: G.sudden ? 1 : 0,
     md: { s: G.modeScore, k: G.kothT, b: G.baseProg, c: G.ctfScore, n: G.crateCount, f: (G.flags || []).map(f => [f.x | 0, f.y | 0, f.carrier ? f.carrier.id : 0, f.atHome ? 1 : 0]) },
     u: G.units.filter(u => u.alive).map(u => [u.id, u.type, u.owner, r1(u.x), r1(u.y), Math.round(u.hp), r2(u.ang), r2(u.tur),
       (u.built ? 1 : 0) | (u.moving ? 2 : 0) | (u.working ? 4 : 0) | (u.flash > 0 ? 8 : 0) | (u.crew ? 16 : 0) | (u.seen[0] ? 32 : 0) | (u.seen[1] ? 64 : 0) | (u.inTrench ? 128 : 0) | (u.hitT > 0 ? 256 : 0) | (u.resting ? 512 : 0) | (u.repairT > 0 ? 1024 : 0),
@@ -6030,7 +6036,9 @@ function netApply(S) {   // 게스트: 호스트가 보낸 상태로 화면 갱�
   if (S.pts) S.pts.forEach((a, i) => { if (G.points[i]) Object.assign(G.points[i], { owner: a[0], prog: a[1], contested: !!a[2] }); });
   if (S.md) { G.modeScore = S.md.s; G.kothT = S.md.k; G.baseProg = S.md.b; G.ctfScore = S.md.c; G.crateCount = S.md.n;
     (S.md.f || []).forEach((a, i) => { if (G.flags && G.flags[i]) Object.assign(G.flags[i], { x: a[0], y: a[1], carrier: a[2] ? { id: a[2] } : null, atHome: !!a[3] }); }); }
-  G.crates = (S.cr || []).map(a => ({ x: a[0], y: a[1], fall: a[2] })); G.strikes = (S.st || []).map(a => ({ x: a[0], y: a[1], r: a[2] })); G.barrages = (S.br || []).map(a => ({ x: a[0], y: a[1], t0: a[2], team: a[3], k: 0, n: 1 }));
+  G.crates = (S.cr || []).map(a => ({ x: a[0], y: a[1], fall: a[2] })); G.strikes = (S.st || []).map(a => ({ x: a[0], y: a[1], r: a[2] }));
+  { const known = new Set((G.calls || []).map(c => c.t0 + ':' + c.x)); G.calls = (S.cl || []).map(a => ({ x: a[0], y: a[1], r: a[2], x0: a[3] < 0 ? null : a[3], x1: a[4] < 0 ? null : a[4], t0: a[5], t1: a[6], t2: a[7], team: a[8], kind: a[9] }));
+    for (const c of G.calls) if (!known.has(c.t0 + ':' + c.x) && c.team !== me().team) warnCall(c); }   // 게스트: 새 적 포격 예고 경고 G.barrages = (S.br || []).map(a => ({ x: a[0], y: a[1], t0: a[2], team: a[3], k: 0, n: 1 }));
   if (S.sd && !G.sudden) { G.sudden = true; showBanner('⚠️ 서든데스!', '본부 방어 기관총 정지 · 수입 2배'); }
   if (S.fx.some(f => f.k === 'boom' && f.t < 0.06 && f.r >= 20)) shake(3);
 }
@@ -6133,6 +6141,74 @@ const buff = (pl, k) => pl.buffs && pl.buffs[k] > 0;
 const costOf = (pl, c, type) => { let k = buff(pl, 'cheap') ? 0.7 : 1; if (pl.id === ME && G.pol && G.pol.has('mil2') && type && (['tank', 'mech'].includes(type) || TYPES[type].unique)) k *= 0.85;
   return k === 1 ? c : { m: Math.round(c.m * k), i: Math.round(c.i * k) }; };
 let skillAim = false;
+// ================= 포격 예고 조준원 (기획서 §43): 줄어드는 조준원 · 적은 빨강 · 사이렌 · 1배속 복귀 · 피하면 메달 =================
+const CALL_INFO = { barrage: ['💥', '정밀 포격'], airstrike: ['✈️', '폭격'], fire: ['💥', '포격 지원'] };
+const CALL_REACT = { t6: 1.1, t8: 0.6, t10: 0.4 };   // AI가 조준원을 보고 피하기까지 걸리는 시간(초)
+function inCall(c, x, y, pad = 0) { const cx = c.x0 != null ? clamp(x, c.x0, c.x1) : c.x; return Math.hypot(x - cx, y - c.y) < c.r + pad; }
+function addCall(pl, kind, x, y, delay, dur, shape) {   // delay: 첫 착탄까지 · dur: 마지막 착탄까지 더 걸리는 시간
+  const c = { kind, team: pl.team, owner: pl.id, x, y, r: shape.r, x0: shape.x0 ?? null, x1: shape.x1 ?? null, t0: G.time, t1: G.time + delay, t2: G.time + delay + dur, hit: false };
+  c.inside = G.units.filter(u => u.alive && u.team !== pl.team && !u.T.building && u.T.move !== 'air' && inCall(c, u.x, u.y)).length;   // 부를 때 원 안에 있던 표적 부대 수
+  (G.calls ||= []).push(c);
+  if (pl.team !== me().team) warnCall(c);
+  return c;
+}
+function warnCall(c) {   // 적 포격이 내 부대·건물을 노리면: 사이렌 · 알림(누르면 이동) · 미니맵 · 1배속 복귀
+  const my = me().team, hit = G.units.filter(u => u.alive && u.team === my && u.T.move !== 'air' && inCall(c, u.x, u.y, (u.T.r || 8) + 10));
+  if (!hit.length) return;
+  const [ic, nm] = CALL_INFO[c.kind] || CALL_INFO.fire, sec = Math.max(0, c.t1 - G.time).toFixed(1);
+  sfx('incoming', c.x, c.y); sfx('alert');
+  notify(`🎯 적 ${nm} 예고! ${sec}초 뒤 착탄 — 붉은 원 밖으로 피하세요`, c.x, c.y);
+  (G.pings ||= []).push({ x: c.x, y: c.y, t: G.time, c: 0 });
+  if (!G.net && SETTINGS.speed > 1) { SETTINGS.speed = 1; toast('⏬ 1× 속도로 돌아갑니다 — 적 포격 예고'); }
+}
+function updateCalls(dt) {
+  for (const c of G.calls || []) {
+    if (!c.aiDone && G.time >= c.t0 + (CALL_REACT[G.diff] ?? 0.6)) {   // AI 부대: 원 밖으로 대피
+      c.aiDone = true;
+      for (const u of G.units) {
+        if (!u.alive || u.team === c.team || u.T.building || u.T.move === 'air' || G.players[u.owner].ctrl !== 'ai' || !inCall(c, u.x, u.y, 10)) continue;
+        const cx = c.x0 != null ? clamp(u.x, c.x0, c.x1) : c.x, d = Math.hypot(u.x - cx, u.y - c.y), a0 = d > 1 ? Math.atan2(u.y - c.y, u.x - cx) : Math.atan2(G.players[u.owner].hq.y - c.y, G.players[u.owner].hq.x - cx), go = c.r + 40;
+        for (const da of [0, 0.6, -0.6, 1.2, -1.2, 1.9, -1.9, Math.PI]) {   // 바깥쪽(정중앙이면 자기 본부 쪽)부터, 막히면 옆으로 돌려 봄
+          const tx = clamp(cx + Math.cos(a0 + da) * go, 20, WW - 20), ty = clamp(c.y + Math.sin(a0 + da) * go, 20, WH - 20);
+          if (passXY(u.T.move, tx, ty) && !inCall(c, tx, ty)) { issue(u, { kind: 'move', x: tx, y: ty }, false); break; }
+        }
+      }
+    }
+    if (!c.done && G.time > c.t2 + 0.5) {   // 회피 판정: 부를 때 부대 2개 이상이 원 안에 있었는데 아무도 맞지 않음
+      c.done = true;
+      if (c.team !== me().team && c.inside >= 2 && !c.hit) {
+        G.dodges = (G.dodges || 0) + 1;
+        G.fx.push({ k: 'text', x: c.x, y: c.y - Zs(c.x, c.y) - 20, txt: `🧘 회피 성공! ${Math.min(G.dodges, 3)}/3`, c: '#9fe3ff', t: 0, ttl: 1.8 });
+        if (G.dodges === 3) { showBanner('🧘 침착한 손', '적 포격 3번 회피 — 메달 획득 조건 달성'); sfx('levelup'); } else sfx('done');
+      }
+    }
+  }
+  if (G.calls) G.calls = G.calls.filter(c => G.time < c.t2 + 0.8);
+}
+function callPath(c, R, gy) {   // 원(정밀 포격 · 포격 지원) 또는 옆으로 긴 캡슐(폭격) — 비스듬한 시점(SQ)으로 납작하게
+  ctx.beginPath();
+  if (c.x0 == null) { ctx.ellipse(c.x, gy, R, R * SQ, 0, 0, 7); return; }
+  const ry = R * SQ;
+  ctx.moveTo(c.x0, gy - ry); ctx.lineTo(c.x1, gy - ry); ctx.ellipse(c.x1, gy, R, ry, 0, -Math.PI / 2, Math.PI / 2); ctx.lineTo(c.x0, gy + ry); ctx.ellipse(c.x0, gy, R, ry, 0, Math.PI / 2, Math.PI * 1.5); ctx.closePath();
+}
+function drawCalls() {   // 안개 위에 그림: 착탄까지 줄어드는 고리 + 표적 구역 + 카운트다운
+  const my = me().team;
+  for (const c of G.calls) {
+    if (G.time > c.t2 + 0.3) continue;
+    const mine = c.team === my, rgb = mine ? '80,160,255' : '255,70,55', gy = c.y - Zs(c.x, c.y);
+    const total = Math.max(0.01, c.t1 - c.t0), left = Math.max(0, c.t1 - G.time), k = left / total, pz = 0.65 + 0.35 * Math.sin(G.time * (mine ? 10 : 18));
+    callPath(c, c.r, gy); ctx.fillStyle = `rgba(${rgb},${(mine ? 0.08 : 0.14) * pz + (left ? 0 : 0.1)})`; ctx.fill();
+    ctx.strokeStyle = `rgba(${rgb},${0.85 * pz})`; ctx.lineWidth = 2; ctx.stroke();
+    if (left > 0) {   // 줄어드는 고리
+      callPath(c, c.r * (1 + 1.4 * k), gy); ctx.setLineDash([7, 5]); ctx.lineDashOffset = -G.time * 30; ctx.strokeStyle = `rgba(${rgb},${0.35 + 0.55 * (1 - k)})`; ctx.lineWidth = 2.6; ctx.stroke(); ctx.setLineDash([]);
+    }
+    const ex = c.x0 != null ? (c.x1 - c.x0) / 2 : 0, ry = c.r * SQ;   // 십자 눈금
+    for (const [dx, dy] of [[-(c.r + ex), 0], [c.r + ex, 0], [0, -ry], [0, ry]]) { const s = Math.sign(dx) || 0, t = Math.sign(dy) || 0; line([c.x + dx - s * 10, gy + dy - t * 6], [c.x + dx + s * 6, gy + dy + t * 4], 2, `rgba(${rgb},.9)`); }
+    const [ic, nm] = CALL_INFO[c.kind] || CALL_INFO.fire, txt = left > 0 ? `${ic} ${mine ? '' : tt('적') + ' '}${tt(nm)} ${left.toFixed(1)}` : `${ic} ${tt('착탄')}!`;
+    ctx.font = `900 ${mine ? 13 : 15}px -apple-system, sans-serif`; ctx.textAlign = 'center'; ctx.lineWidth = 3.5; ctx.strokeStyle = 'rgba(20,16,12,.85)';
+    ctx.fillStyle = mine ? '#cfe6ff' : '#ffd0c4'; ctx.strokeText(txt, c.x, gy - ry - 12); ctx.fillText(txt, c.x, gy - ry - 12);
+  }
+}
 const SALVAGE_RATE = 0.3, SALVAGE_HOT = 2.5, SALVAGE_LIFE = 60;   // 잔해 회수: 유닛 값의 30% · 2.5초 식힘 · 60초 유지
 function useSkill(pl, x, y) {
   const id = skillId(pl), S = SKILLS[id];
@@ -6141,8 +6217,8 @@ function useSkill(pl, x, y) {
   pl.skillUses = (pl.skillUses || 0) + 1; (G.skillLog ||= []).push({ t: G.time, team: pl.team });
   const foe = 1 - pl.team, strike = (sx, sy, delay, r = 42) => G.strikes.push({ x: sx, y: sy, t: delay, r, team: pl.team, src: pl.hq });
   switch (id) {
-    case 'barrage': for (let i = 0; i < 6; i++) { const a = rnd(0, 6.28), d = rnd(0, 55); strike(x + Math.cos(a) * d, y + Math.sin(a) * d, 1.2 + i * 0.28); } break;
-    case 'airstrike': for (let i = 0; i < 5; i++) strike(x - 120 + i * 60, y + rnd(-12, 12), 1.4 + i * 0.16, 38); G.fx.push({ k: 'plane', x: x - 400, y, t: 0, ttl: 2.4 }); break;
+    case 'barrage': { const c = addCall(pl, 'barrage', x, y, 1.2, 1.4, { r: 95 }); for (let i = 0; i < 6; i++) { const a = rnd(0, 6.28), d = rnd(0, 55); strike(x + Math.cos(a) * d, y + Math.sin(a) * d, 1.2 + i * 0.28); G.strikes[G.strikes.length - 1].call = c; } break; }
+    case 'airstrike': { const c = addCall(pl, 'airstrike', x, y, 1.4, 0.64, { r: 46, x0: x - 120, x1: x + 120 }); for (let i = 0; i < 5; i++) { strike(x - 120 + i * 60, y + rnd(-12, 12), 1.4 + i * 0.16, 38); G.strikes[G.strikes.length - 1].call = c; } G.fx.push({ k: 'plane', x: x - 400, y, t: 0, ttl: 2.4 }); break; }
     case 'paradrop': for (const [t, dx, dy] of [['mech', -18, 0], ['mech', 18, 0], ['eng', 0, 20]]) {
       const ux = clamp(x + dx, 20, WW - 20), uy = clamp(y + dy, 20, WH - 20); if (!passXY(TYPES[t].move, ux, uy)) continue;
       const u = makeUnit(pl, t, ux, uy); u.dropT = 1.2; G.units.push(u); G.fx.push({ k: 'chute', x: ux, y: uy, t: 0, ttl: 1.2 }); } break;
@@ -6176,7 +6252,7 @@ function updateSkills(dt) {
     s.t -= dt; if (s.t > 0) continue;
     s.done = true;
     const S = s.dmg || { soft: 60, light: 70, heavy: 75, air: 0, bldg: 60 }; G.curBarrage = s.src && s.src.T && s.src.T.jet ? 'jet' : false;
-    for (const e of G.units) if (e.alive && e.team !== s.team && e.T.move !== 'air' && !e.T.flat) { const d = Math.hypot(e.x - s.x, e.y - s.y); if (d < s.r) damage(e, S[e.T.armor] * (1 - 0.5 * d / s.r) * (e.inTrench ? 0.5 : 1), s.src); }
+    for (const e of G.units) if (e.alive && e.team !== s.team && e.T.move !== 'air' && !e.T.flat) { const d = Math.hypot(e.x - s.x, e.y - s.y); if (d < s.r) { if (s.call && !e.T.building) s.call.hit = true; } if (d < s.r) damage(e, S[e.T.armor] * (1 - 0.5 * d / s.r) * (e.inTrench ? 0.5 : 1), s.src); }
     G.curBarrage = false; G.fx.push({ k: 'boom', x: s.x, y: s.y - Zs(s.x, s.y), t: 0, ttl: 0.6, r: s.r }, { k: 'ring', x: s.x, y: s.y - Zs(s.x, s.y), t: 0, ttl: 0.45, r: s.r * 1.6 }); sfx('boom', s.x, s.y); shake(5, s.x, s.y);
   }
   G.strikes = G.strikes.filter(s => !s.done);
@@ -6922,7 +6998,7 @@ function useOp(pl, id, units, x, y) {   // 호스트에서 실제 실행 (PVP �
   units = units.filter(u => u.alive && u.owner === pl.id && !u.T.building && !u.routing && !u.T.jet);
   if (!O.free && !units.length) return false;
   let w = null;
-  if (id === 'fire') G.barrages.push({ x, y, t0: G.time + 1.8, n: 8, k: 0, owner: pl.id, team: pl.team });
+  if (id === 'fire') G.barrages.push({ x, y, t0: G.time + 1.8, n: 8, k: 0, owner: pl.id, team: pl.team, call: addCall(pl, 'fire', x, y, 3.0, 8 * 0.16, { r: 70 + BARRAGE_T.splash * 0.6 }) });
   else if (id === 'assault') for (const s of formation(units, x, y)) issue(s.u, { kind: 'amove', x: s.x, y: s.y }, false);
   else if (id === 'flank') {
     w = flankPoint(pl, units, x, y);
@@ -6959,7 +7035,7 @@ function updateOps(dt) {
   for (const b of G.barrages) while (b.k < b.n && G.time >= b.t0 + b.k * 0.16) {   // 본부 포대에서 날아가는 포탄
     const src = G.players[b.owner].hq, a = rnd(0, 6.283), r = Math.sqrt(Math.random()) * 70, tx = b.x + Math.cos(a) * r, ty = b.y + Math.sin(a) * r;
     const sx = src.x, sy = src.y - 40 - Zs(src.x, src.y), len = Math.hypot(tx - sx, ty - sy);
-    G.shots.push({ kind: 'arty', x: sx, y: sy, sx, sy, tx, ty, tz: 0, prog: 0, len, sp: len / 1.2, team: b.team, src, T: BARRAGE_T });
+    G.shots.push({ kind: 'arty', x: sx, y: sy, sx, sy, tx, ty, tz: 0, prog: 0, len, sp: len / 1.2, team: b.team, src, T: BARRAGE_T, call: b.call });
     if (b.k === 0) sfx('arty', sx, sy);
     b.k++;
   }
@@ -7005,14 +7081,6 @@ function drawMissions() {   // 작전도 화살표: 중대 → (우회점) → �
     const lbl = `${O.icon} ${coName(m.co)} ${O.name}${m.done ? ' ✓' : ''}`, ly = gz(m.x, m.y) - 26;
     ctx.strokeText(lbl, m.x, ly); ctx.fillStyle = '#f4f5ea'; ctx.fillText(lbl, m.x, ly);
     ctx.globalAlpha = 1;
-  }
-  for (const b of G.barrages) {   // 포격 지원 예고: 붉은 표적 + 카운트다운
-    const gy = b.y - Zs(b.x, b.y), left = Math.max(0, b.t0 + 1.2 - G.time), pz = 0.6 + Math.sin(G.time * 16) * 0.3;
-    ctx.beginPath(); ctx.ellipse(b.x, gy, 70, 70 * SQ, 0, 0, 7); ctx.fillStyle = `rgba(224,60,40,${0.12 * pz})`; ctx.fill();
-    ctx.setLineDash([5, 5]); ctx.strokeStyle = `rgba(240,80,60,${pz})`; ctx.lineWidth = 2; ctx.stroke(); ctx.setLineDash([]);
-    line([b.x - 80, gy], [b.x + 80, gy], 1.2, 'rgba(240,80,60,.7)'); line([b.x, gy - 58], [b.x, gy + 58], 1.2, 'rgba(240,80,60,.7)');
-    ctx.font = '900 16px -apple-system, sans-serif'; ctx.textAlign = 'center'; ctx.fillStyle = '#ffd0c0'; ctx.strokeStyle = '#3a1810'; ctx.lineWidth = 3;
-    const txt = left > 0 ? `💥 ${left.toFixed(1)}` : '💥'; ctx.strokeText(txt, b.x, gy - 64); ctx.fillText(txt, b.x, gy - 64);
   }
 }
 // ---- 중대 카드 (화면 오른쪽 아래) · 작전 카드 바 (생산 패널 위)
@@ -7562,6 +7630,7 @@ function drawMissionMap(dt) {   // 작전 지도: 지형 그림 위에 아군·�
 }
 // ================= 지휘관 프로필 (개인화 페이지) =================
 const MEDALS = [
+  ['🧘', '침착한 손', '한 전투에서 적 포격 3번 피하기 (부대 2개 이상이 원 안에 있었는데 피해 0)', r => (r.stats.dodgeBest || 0) >= 3],
   ['🎖️', '첫 승리', '전투 1회 승리', r => r.stats.wins >= 1], ['🏅', '역전의 용사', '전투 10회 승리', r => r.stats.wins >= 10], ['🏆', '백전노장', '전투 50회 승리', r => r.stats.wins >= 50],
   ['🚩', '첫 점령', '스토리에서 지역 1곳 점령', r => r.stats.conquered >= 1], ['🗺️', '정복자', '지역 10곳 점령', r => r.stats.conquered >= 10], ['🌏', '통일 영웅', '전장 하나를 통일', r => r.stats.unified >= 1],
   ['💥', '격파왕', '적 부대 200개 격파', r => r.stats.kills >= 200], ['⭐', '장교 임관', '소위 진급', r => rankOf(r.xp).i >= 10], ['🌟', '장군 진급', '준장 진급', r => rankOf(r.xp).i >= 16], ['👑', '4성 장군', '대장 진급', r => rankOf(r.xp).i >= 19],
@@ -7752,7 +7821,7 @@ function update(dt) {
   updateEconomy(dt);
   updatePoints(dt); updateCrates(dt); updateSkills(dt); checkObjective(dt); updateTutorial(); sampleArmy(dt);
   for (const u of G.units) { if (u.dropT > 0) u.dropT -= dt; if (u.alive) updateMorale(u, dt); }
-  updateSupply(dt); updateMedics(dt); updateTeller(dt); updateOps(dt); updateTask(dt); updateAirDefense(dt);
+  updateSupply(dt); updateMedics(dt); updateTeller(dt); updateOps(dt); updateCalls(dt); updateTask(dt); updateAirDefense(dt);
   for (const u of G.units) {   // 숲 매복: 숲에서 2초 동안 움직이지도 쏘지도 않으면 매복 상태
     if (!u.alive || u.T.building || u.T.move === 'air') continue;
     const inF = tileAt(u.x, u.y) === TILES.forest && !u.moving, was = u.ambush;
@@ -7773,6 +7842,7 @@ function update(dt) {
           if (!e.alive || e.team === s.team || e.T.move === 'air') continue;
           const dd = Math.hypot(e.x - s.tx, e.y - s.ty);
           G.curBarrage = s.T === BARRAGE_T ? 'fire' : false;
+          if (dd < s.T.splash + e.T.r * 0.5 && s.call && !e.T.building) s.call.hit = true;
           if (dd < s.T.splash + e.T.r * 0.5) damage(e, s.T.dmg[e.T.armor] * (1 - 0.6 * Math.min(1, dd / s.T.splash)) * (e.inTrench ? 0.5 : 1) * lvMul(s.src) * ((s.T.bonus && s.T.bonus[roleOf(e.type)]) || 1) * counterMul(s.src.type, e.type), s.src);
         }
         G.curBarrage = false; sfx('small', s.tx, s.ty);
@@ -7913,6 +7983,7 @@ function endGame(win, why) {
   for (const e of EVENTS) prevBest[e.id] = Math.max(0, ...rec.battles.map(b => b.pts[e.id] || 0));
   const entry = { date: Date.now(), map: G.mapType, diff: G.diff, win, time: t, pvp: !!G.net, pts: sc.pts, total: sc.total, gold, kills: G.ukills[pl.team] };
   rec.battles.push(entry); rec.battles = rec.battles.slice(-60); rec.gold += gold;
+  rec.stats.dodgeBest = Math.max(rec.stats.dodgeBest || 0, G.dodges || 0);
   rec.stats.battles++; if (win) rec.stats.wins++; rec.stats.kills += G.ukills[pl.team] || 0; rec.stats.bestScore = Math.max(rec.stats.bestScore || 0, sc.total); saveRec(rec);
   // 기여도: 격파 수가 많은 유닛 (전사한 유닛 포함)
   const roster = [...G.units, ...G.fallen].filter(u => u.owner === ME && !u.T.building && (u.kills || 0) > 0)
